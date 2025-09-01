@@ -11,8 +11,4 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<EnableDynamicLoading>true</EnableDynamicLoading>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Folder Include="Source\"/>
-	</ItemGroup>
 </Project>

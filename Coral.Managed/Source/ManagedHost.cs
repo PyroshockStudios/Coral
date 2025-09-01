@@ -16,7 +16,7 @@ internal static class ManagedHost
 	private static unsafe delegate*<NativeString, MessageLevel, void> s_MessageCallback;
 
 	[UnmanagedCallersOnly]
-	private static unsafe void Initialize(delegate*<NativeString, MessageLevel, void> InMessageCallback, delegate*<NativeString, void> InExceptionCallback)
+	internal static unsafe void Initialize(delegate*<NativeString, MessageLevel, void> InMessageCallback, delegate*<NativeString, void> InExceptionCallback)
 	{
 		s_MessageCallback = InMessageCallback;
 		s_ExceptionCallback = InExceptionCallback;

@@ -115,6 +115,11 @@ namespace Coral {
 		return properties;
 	}
 
+	MethodInfo Type::GetMethodByName(std::string_view MethodName) const
+	{
+		return MethodInfo();
+	}
+
 	bool Type::HasAttribute(const Type& InAttributeType) const
 	{
 		return s_ManagedFunctions.HasTypeAttributeFptr(m_Id, InAttributeType.m_Id);

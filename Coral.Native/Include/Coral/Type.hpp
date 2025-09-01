@@ -30,6 +30,8 @@ namespace Coral {
 		std::vector<FieldInfo> GetFields() const;
 		std::vector<PropertyInfo> GetProperties() const;
 
+		MethodInfo GetMethodByName(std::string_view MethodName) const;
+
 		bool HasAttribute(const Type& InAttributeType) const;
 		std::vector<Attribute> GetAttributes() const;
 
@@ -46,47 +48,21 @@ namespace Coral {
 
 	public:
 		template<typename... TArgs>
-		ManagedObject CreateInstance(TArgs&&... InArguments) const
+		ManagedObject CreateInstance(MethodParams<TArgs&&...>&& InParameters, ManagedObject* Exception = nullptr) const
 		{
-			constexpr size_t argumentCount = sizeof...(InArguments);
-
+			constexpr size_t paramCount = sizeof(InParameters.parameterValues) / sizeof(*InParameters.parameterValues);
 			ManagedObject result;
 
-			if constexpr (argumentCount > 0)
-			{
-				const void* argumentsArr[argumentCount];
-				ManagedType argumentTypes[argumentCount];
-				AddToArray<TArgs...>(argumentsArr, argumentTypes, std::forward<TArgs>(InArguments)..., std::make_index_sequence<argumentCount> {});
-				result = CreateInstanceInternal(argumentsArr, argumentTypes, argumentCount);
-			}
-			else
-			{
-				result = CreateInstanceInternal(nullptr, nullptr, 0);
-			}
+				result = CreateInstanceInternal(InParameters.parameterValues, InParameters.parameterTypes, paramCount);
 
 			return result;
 		}
 
 		template <typename TReturn, typename... TArgs>
-		TReturn InvokeStaticMethod(std::string_view InMethodName, TArgs&&... InParameters) const
+		TReturn InvokeStaticMethod(MethodParams<TArgs&&...>&& InParameters, ManagedObject* Exception = nullptr) const
 		{
-			constexpr size_t parameterCount = sizeof...(InParameters);
-
-			TReturn result;
-
-			if constexpr (parameterCount > 0)
-			{
-				const void* parameterValues[parameterCount];
-				ManagedType parameterTypes[parameterCount];
-				AddToArray<TArgs...>(parameterValues, parameterTypes, std::forward<TArgs>(InParameters)..., std::make_index_sequence<parameterCount> {});
-				InvokeStaticMethodRetInternal(InMethodName, parameterValues, parameterTypes, parameterCount, &result);
-			}
-			else
-			{
-				InvokeStaticMethodRetInternal(InMethodName, nullptr, nullptr, 0, &result);
-			}
-
-			return result;
+			constexpr size_t paramCount = sizeof(InParameters.parameterValues) / sizeof(*InParameters.parameterValues);
+			InvokeStaticMethodRetInternal(Exception, InMethod.m_Handle, InParameters.parameterValues, InParameters.parameterTypes, paramCount, &result);
 		}
 
 		template <typename... TArgs>
@@ -109,8 +85,8 @@ namespace Coral {
 
 	private:
 		ManagedObject CreateInstanceInternal(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-		void InvokeStaticMethodInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-		void InvokeStaticMethodRetInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+		void InvokeStaticMethodInternal(ManagedObject* Exception, std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+		void InvokeStaticMethodRetInternal(ManagedObject* Exception, std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
 
 	private:
 		TypeId m_Id = -1;

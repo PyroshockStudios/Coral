@@ -553,7 +553,26 @@ internal static class TypeInterface
 		}
 	}
 
-	[UnmanagedCallersOnly]
+    // TODO(Peter): Refactor this to GetMemberInfoName (should work for all types of members)
+    [UnmanagedCallersOnly]
+    internal static unsafe int GetMethodInfoFromName(NativeString InMethodName)
+    {
+        try
+        {
+            var methodInfo = TryGetMethodInfo(type, InMethodName, InParameterTypes, InParameterCount, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            if (!s_CachedMethods.TryGetValue(InMethodInfo, out var methodInfo) || methodInfo == null)
+                return NativeString.Null();
+
+            return methodInfo.Name;
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return NativeString.Null();
+        }
+    }
+
+    [UnmanagedCallersOnly]
 	internal static unsafe void GetMethodInfoReturnType(int InMethodInfo, int* OutReturnType)
 	{
 		try

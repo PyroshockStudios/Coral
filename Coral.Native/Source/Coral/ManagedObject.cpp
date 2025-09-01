@@ -57,22 +57,30 @@ namespace Coral {
 		return *this;
 	}
 
-	void ManagedObject::InvokeMethodInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	void ManagedObject::InvokeMethodInternal(ManagedObject* Exception, ManagedHandle InMethodHandle, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
 		// NOTE(Peter): If you get an exception in this function it's most likely because you're using a Native only debugger type in Visual Studio
 		//				and it's catching a C# exception even though it shouldn't. I recommend switching the debugger type to Mixed (.NET Core)
 		//				which should be the default for Hazelnut, or simply press "Continue" until it works.
 		//				This is a problem with the Visual Studio debugger and nothing we can change.
-		auto methodName = String::New(InMethodName);
-		s_ManagedFunctions.InvokeMethodFptr(m_Handle, methodName, InParameters, InParameterTypes, static_cast<int32_t>(InLength));
-		String::Free(methodName);
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeMethodFptr(m_Handle, InMethodHandle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), Exception ? &exceptionResult : nullptr);
+		if (Exception)
+		{
+			*Exception = ManagedObject();
+			Exception->m_Handle = exceptionResult;
+		}
 	}
 
-	void ManagedObject::InvokeMethodRetInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+	void ManagedObject::InvokeMethodRetInternal(ManagedObject* Exception, ManagedHandle InMethodHandle, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
 	{
-		auto methodName = String::New(InMethodName);
-		s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, methodName, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage);
-		String::Free(methodName);
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethodHandle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, Exception ? &exceptionResult : nullptr);
+		if (Exception)
+		{
+			*Exception = ManagedObject();
+			Exception->m_Handle = exceptionResult;
+		}
 	}
 
 	void ManagedObject::SetFieldValueRaw(std::string_view InFieldName, void* InValue) const
@@ -89,18 +97,29 @@ namespace Coral {
 		String::Free(fieldName);
 	}
 
-	void ManagedObject::SetPropertyValueRaw(std::string_view InPropertyName, void* InValue) const
+	void ManagedObject::SetPropertyValueRaw(std::string_view InPropertyName, void* InValue, ManagedObject* Exception) const
 	{
+		void* exceptionResult = nullptr;
 		auto propertyName = String::New(InPropertyName);
-		s_ManagedFunctions.SetPropertyValueFptr(m_Handle, propertyName, InValue);
-		String::Free(propertyName);
+		s_ManagedFunctions.SetPropertyValueFptr(m_Handle, propertyName, InValue, Exception ? &exceptionResult : nullptr);
+		if (Exception)
+		{
+			*Exception = ManagedObject();
+			Exception->m_Handle = exceptionResult;
+		}
 	}
-	
-	void ManagedObject::GetPropertyValueRaw(std::string_view InPropertyName, void* OutValue) const
+
+	void ManagedObject::GetPropertyValueRaw(std::string_view InPropertyName, void* OutValue, ManagedObject* Exception) const
 	{
+		void* exceptionResult = nullptr;
 		auto propertyName = String::New(InPropertyName);
-		s_ManagedFunctions.GetPropertyValueFptr(m_Handle, propertyName, OutValue);
+		s_ManagedFunctions.GetPropertyValueFptr(m_Handle, propertyName, OutValue, Exception ? &exceptionResult : nullptr);
 		String::Free(propertyName);
+		if (Exception)
+		{
+			*Exception = ManagedObject();
+			Exception->m_Handle = exceptionResult;
+		}
 	}
 
 	const Type& ManagedObject::GetType()
@@ -126,4 +145,3 @@ namespace Coral {
 	}
 
 }
-

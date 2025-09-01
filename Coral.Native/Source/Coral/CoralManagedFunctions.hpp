@@ -74,16 +74,16 @@ namespace Coral {
 	using GetAttributeTypeFn = void (*)(ManagedHandle, TypeId*);
 #pragma endregion
 
-	using CreateObjectFn = void* (*)(TypeId, Bool32, const void**, const ManagedType*, int32_t);
+	using CreateObjectFn = void* (*)(TypeId, Bool32, const void**, const ManagedType*, int32_t, void**);
 	using CopyObjectFn = void* (*)(void*);
-	using InvokeMethodFn = void (*)(void*, String, const void**, const ManagedType*, int32_t);
-	using InvokeMethodRetFn = void (*)(void*, String, const void**, const ManagedType*, int32_t, void*);
-	using InvokeStaticMethodFn = void (*)(TypeId, String, const void**, const ManagedType*, int32_t);
-	using InvokeStaticMethodRetFn = void (*)(TypeId, String, const void**, const ManagedType*, int32_t, void*);
+	using InvokeMethodFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void**);
+	using InvokeMethodRetFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
+	using InvokeStaticMethodFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void**);
+	using InvokeStaticMethodRetFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
 	using SetFieldValueFn = void (*)(void*, String, void*);
 	using GetFieldValueFn = void (*)(void*, String, void*);
-	using SetPropertyValueFn = void (*)(void*, String, void*);
-	using GetPropertyValueFn = void (*)(void*, String, void*);
+	using SetPropertyValueFn = void (*)(void*, String, void*, void**);
+	using GetPropertyValueFn = void (*)(void*, String, void*, void**);
 	using DestroyObjectFn = void (*)(void*);
 	using GetObjectTypeIdFn = void (*)(void*, int32_t*);
 
