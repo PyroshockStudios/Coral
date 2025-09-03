@@ -57,68 +57,61 @@ namespace Coral {
 		return *this;
 	}
 
-	void ManagedObject::InvokeMethodInternal(ManagedObject* Exception, ManagedHandle InMethodHandle, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	void ManagedObject::InvokeMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
 		// NOTE(Peter): If you get an exception in this function it's most likely because you're using a Native only debugger type in Visual Studio
 		//				and it's catching a C# exception even though it shouldn't. I recommend switching the debugger type to Mixed (.NET Core)
 		//				which should be the default for Hazelnut, or simply press "Continue" until it works.
 		//				This is a problem with the Visual Studio debugger and nothing we can change.
 		void* exceptionResult = nullptr;
-		s_ManagedFunctions.InvokeMethodFptr(m_Handle, InMethodHandle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), Exception ? &exceptionResult : nullptr);
-		if (Exception)
+		s_ManagedFunctions.InvokeMethodFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
+		if (OutException)
 		{
-			*Exception = ManagedObject();
-			Exception->m_Handle = exceptionResult;
+			*OutException = ManagedObject();
+			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	void ManagedObject::InvokeMethodRetInternal(ManagedObject* Exception, ManagedHandle InMethodHandle, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+	void ManagedObject::InvokeMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
 	{
 		void* exceptionResult = nullptr;
-		s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethodHandle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, Exception ? &exceptionResult : nullptr);
-		if (Exception)
+		s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, OutException ? &exceptionResult : nullptr);
+		if (OutException)
 		{
-			*Exception = ManagedObject();
-			Exception->m_Handle = exceptionResult;
+			*OutException = ManagedObject();
+			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	void ManagedObject::SetFieldValueRaw(std::string_view InFieldName, void* InValue) const
+	void ManagedObject::SetFieldValueRaw(const FieldInfo& InField , void* InValue) const
 	{
-		auto fieldName = String::New(InFieldName);
-		s_ManagedFunctions.SetFieldValueFptr(m_Handle, fieldName, InValue);
-		String::Free(fieldName);
+		s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, InValue);
 	}
 
-	void ManagedObject::GetFieldValueRaw(std::string_view InFieldName, void* OutValue) const
+	void ManagedObject::GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const
 	{
-		auto fieldName = String::New(InFieldName);
-		s_ManagedFunctions.GetFieldValueFptr(m_Handle, fieldName, OutValue);
-		String::Free(fieldName);
+		s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, OutValue);
 	}
 
-	void ManagedObject::SetPropertyValueRaw(std::string_view InPropertyName, void* InValue, ManagedObject* Exception) const
+	void ManagedObject::SetPropertyValueRaw(const PropertyInfo& InProperty, void* InValue, ManagedObject* OutException) const
 	{
 		void* exceptionResult = nullptr;
-		auto propertyName = String::New(InPropertyName);
-		s_ManagedFunctions.SetPropertyValueFptr(m_Handle, propertyName, InValue, Exception ? &exceptionResult : nullptr);
-		if (Exception)
+		s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, InValue, OutException ? &exceptionResult : nullptr);
+		if (OutException)
 		{
-			*Exception = ManagedObject();
-			Exception->m_Handle = exceptionResult;
+			*OutException = ManagedObject();
+			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	void ManagedObject::GetPropertyValueRaw(std::string_view InPropertyName, void* OutValue, ManagedObject* Exception) const
+	void ManagedObject::GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, ManagedObject* OutException) const
 	{
 		void* exceptionResult = nullptr;
-		auto propertyName = String::New(InPropertyName);
-		s_ManagedFunctions.GetPropertyValueFptr(m_Handle, propertyName, OutValue, Exception ? &exceptionResult : nullptr);
-		String::Free(propertyName);
-		if (Exception)
+		s_ManagedFunctions.GetPropertyValueFptr(m_Handle, InProperty.m_Handle, OutValue, OutException ? &exceptionResult : nullptr);
+		if (OutException)
 		{
-			*Exception = ManagedObject();
-			Exception->m_Handle = exceptionResult;
+			*OutException = ManagedObject();
+			OutException->m_Handle = exceptionResult;
 		}
 	}
 

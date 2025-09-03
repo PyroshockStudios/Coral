@@ -49,6 +49,7 @@ namespace Coral {
 #pragma endregion
 
 #pragma region MethodInfo
+	using GetMethodInfoByNameFn = ManagedHandle (*)(TypeId, String, int32_t, BindingFlags);
 	using GetMethodInfoNameFn = String (*)(ManagedHandle);
 	using GetMethodInfoReturnTypeFn = void (*)(ManagedHandle, TypeId*);
 	using GetMethodInfoParameterTypesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
@@ -57,6 +58,7 @@ namespace Coral {
 #pragma endregion
 
 #pragma region FieldInfo
+	using GetFieldInfoByNameFn = ManagedHandle (*)(TypeId, String, BindingFlags);
 	using GetFieldInfoNameFn = String (*)(ManagedHandle);
 	using GetFieldInfoTypeFn = void (*)(ManagedHandle, TypeId*);
 	using GetFieldInfoAccessibilityFn = TypeAccessibility (*)(ManagedHandle);
@@ -64,6 +66,7 @@ namespace Coral {
 #pragma endregion
 
 #pragma region PropertyInfo
+	using GetPropertyInfoByNameFn = ManagedHandle (*)(TypeId, String, BindingFlags);
 	using GetPropertyInfoNameFn = String (*)(ManagedHandle);
 	using GetPropertyInfoTypeFn = void (*)(ManagedHandle, TypeId*);
 	using GetPropertyInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
@@ -80,10 +83,10 @@ namespace Coral {
 	using InvokeMethodRetFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
 	using InvokeStaticMethodFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void**);
 	using InvokeStaticMethodRetFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
-	using SetFieldValueFn = void (*)(void*, String, void*);
-	using GetFieldValueFn = void (*)(void*, String, void*);
-	using SetPropertyValueFn = void (*)(void*, String, void*, void**);
-	using GetPropertyValueFn = void (*)(void*, String, void*, void**);
+	using SetFieldValueFn = void (*)(void*, ManagedHandle, void*);
+	using GetFieldValueFn = void (*)(void*, ManagedHandle, void*);
+	using SetPropertyValueFn = void (*)(void*, ManagedHandle, void*, void**);
+	using GetPropertyValueFn = void (*)(void*, ManagedHandle, void*, void**);
 	using DestroyObjectFn = void (*)(void*);
 	using GetObjectTypeIdFn = void (*)(void*, int32_t*);
 
@@ -127,6 +130,7 @@ namespace Coral {
 #pragma endregion
 
 #pragma region MethodInfo
+		GetMethodInfoByNameFn GetMethodInfoByNameFptr = nullptr;
 		GetMethodInfoNameFn GetMethodInfoNameFptr = nullptr;
 		GetMethodInfoReturnTypeFn GetMethodInfoReturnTypeFptr = nullptr;
 		GetMethodInfoParameterTypesFn GetMethodInfoParameterTypesFptr = nullptr;
@@ -135,6 +139,7 @@ namespace Coral {
 #pragma endregion
 
 #pragma region FieldInfo
+		GetFieldInfoByNameFn GetFieldInfoByNameFptr = nullptr;
 		GetFieldInfoNameFn GetFieldInfoNameFptr = nullptr;
 		GetFieldInfoTypeFn GetFieldInfoTypeFptr = nullptr;
 		GetFieldInfoAccessibilityFn GetFieldInfoAccessibilityFptr = nullptr;
@@ -142,6 +147,7 @@ namespace Coral {
 #pragma endregion
 
 #pragma region PropertyInfo
+		GetPropertyInfoByNameFn GetPropertyInfoByNameFptr = nullptr;
 		GetPropertyInfoNameFn GetPropertyInfoNameFptr = nullptr;
 		GetPropertyInfoTypeFn GetPropertyInfoTypeFptr = nullptr;
 		GetPropertyInfoAttributesFn GetPropertyInfoAttributesFptr = nullptr;

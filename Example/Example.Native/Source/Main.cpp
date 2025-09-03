@@ -53,10 +53,11 @@ static Coral::Array<float> ArrayReturnIcall()
 
 int main([[maybe_unused]] int argc, char** argv)
 {
+	using Coral::MethodParams;
+
 	auto exeDir = std::filesystem::path(argv[0]).parent_path();
 	auto coralDir = exeDir.string();
-	Coral::HostSettings settings =
-	{
+	Coral::HostSettings settings = {
 		.CoralDirectory = coralDir,
 		.ExceptionCallback = ExceptionCallback
 	};
@@ -68,7 +69,7 @@ int main([[maybe_unused]] int argc, char** argv)
 	auto assemblyPath = exeDir / "Example.Managed.dll";
 	auto& assembly = loadContext.LoadAssembly(assemblyPath.string());
 
-	assembly.AddInternalCall("Example.Managed.ExampleClass", "VectorAddIcall",   reinterpret_cast<void*>(&VectorAddIcall));
+	assembly.AddInternalCall("Example.Managed.ExampleClass", "VectorAddIcall", reinterpret_cast<void*>(&VectorAddIcall));
 	assembly.AddInternalCall("Example.Managed.ExampleClass", "PrintStringIcall", reinterpret_cast<void*>(&PrintStringIcall));
 	assembly.AddInternalCall("Example.Managed.ExampleClass", "NativeArrayIcall", reinterpret_cast<void*>(&NativeArrayIcall));
 	assembly.AddInternalCall("Example.Managed.ExampleClass", "ArrayReturnIcall", reinterpret_cast<void*>(&ArrayReturnIcall));
@@ -78,7 +79,7 @@ int main([[maybe_unused]] int argc, char** argv)
 	auto& exampleType = assembly.GetType("Example.Managed.ExampleClass");
 
 	// Call the static method "StaticMethod" with value 50
-	exampleType.InvokeStaticMethod("StaticMethod", 50.0f);
+	exampleType.InvokeStaticMethod(exampleType.GetMethodByName("StaticMethod", 1), MethodParams { 50.0f });
 
 	// Get a reference to the CustomAttribute type
 	auto& customAttributeType = assembly.GetType("Example.Managed.CustomAttribute");
@@ -95,30 +96,30 @@ int main([[maybe_unused]] int argc, char** argv)
 	}
 
 	// Create an instance of type Example.Managed.ExampleClass and pass 50 to the constructor
-	auto exampleInstance = exampleType.CreateInstance(50);
+	auto exampleInstance = exampleType.CreateInstance(MethodParams { 50 });
 
 	// Invoke the method named "MemberMethod" with a MyVec3 argument (doesn't return anything)
-	exampleInstance.InvokeMethod("Void MemberMethod(MyVec3)", MyVec3 { 10.0f, 10.0f, 10.0f });
+	exampleInstance.InvokeMethod(exampleType.GetMethodByName("MemberMethod", 1), MethodParams { MyVec3 { 10.0f, 10.0f, 10.0f } });
 
 	// Invokes the setter on PublicProp with the value 10 (will be multiplied by 2 in C#)
-	exampleInstance.SetPropertyValue("PublicProp", 10);
+	exampleInstance.SetPropertyValue(exampleType.GetPropertyByName("PublicProp"), 10);
 
 	// Get the value of PublicProp as an int
-	std::cout << exampleInstance.GetPropertyValue<int32_t>("PublicProp") << std::endl;
+	std::cout << exampleInstance.GetPropertyValue<int32_t>(exampleType.GetPropertyByName("PublicProp")) << std::endl;
 
 	// Sets the value of the private field "myPrivateValue" with the value 10 (will NOT be multiplied by 2 in C#)
-	exampleInstance.SetFieldValue("myPrivateValue", 10);
+	exampleInstance.SetFieldValue(exampleType.GetFieldByName("myPrivateValue"), 10);
 
 	// Get the value of myPrivateValue as an int
-	std::cout << exampleInstance.GetFieldValue<int32_t>("myPrivateValue") << std::endl;
+	std::cout << exampleInstance.GetFieldValue<int32_t>(exampleType.GetFieldByName("myPrivateValue")) << std::endl;
 
 	// Invokes StringDemo method which will in turn invoke PrintStringIcall with a string parameter
-	exampleInstance.InvokeMethod("StringDemo");
+	exampleInstance.InvokeMethod(exampleType.GetMethodByName("StringDemo", 0));
 
 	// Invokes ArrayDemo method which will in turn invoke NativeArrayIcall and pass the values we give here
 	// and also invoke ArrayReturnIcall
 	auto arr = Coral::Array<float>::New({ 5.0f, 0.0f, 10.0f, -50.0f });
-	exampleInstance.InvokeMethod("ArrayDemo", arr);
+	exampleInstance.InvokeMethod(exampleType.GetMethodByName("ArrayDemo", 1), MethodParams{ arr });
 	Coral::Array<float>::Free(arr);
 
 	return 0;

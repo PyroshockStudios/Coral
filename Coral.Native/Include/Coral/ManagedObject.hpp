@@ -3,9 +3,12 @@
 #include "Core.hpp"
 #include "Utility.hpp"
 #include "String.hpp"
-#include "MethodInfo.hpp"
 
 namespace Coral {
+
+	class FieldInfo;
+	class MethodInfo;
+	class PropertyInfo;
 
 	class ManagedAssembly;
 	class Type;
@@ -19,18 +22,25 @@ namespace Coral {
 		MethodParams(MethodParams&&) = default;
 		MethodParams& operator=(MethodParams&&) = default;
 
+		MethodParams(const TArgs&... InParameters)
+		{
+			if constexpr (sizeof...(InParameters))
+			{
+				AddToArray<TArgs...>(parameterValues, parameterTypes, std::forward<TArgs>(InParameters)..., std::make_index_sequence<sizeof...(InParameters)> {});
+			}
+		}
 		MethodParams(TArgs&&... InParameters)
 		{
 			if constexpr (sizeof...(InParameters))
 			{
-				AddToArray<TArgs...>(parameterValues, parameterTypes, std::forward<TArgs>(InParameters)..., std::make_index_sequence<parameterCount> {});
+				AddToArray<TArgs...>(parameterValues, parameterTypes, std::forward<TArgs>(InParameters)..., std::make_index_sequence<sizeof...(InParameters)> {});
 			}
 		}
 
 	private:
 		friend class ManagedObject;
-		const void* parameterValues[sizeof...(InParameters)];
-		ManagedType parameterTypes[sizeof...(InParameters)];
+		const void* parameterValues[sizeof...(TArgs)];
+		ManagedType parameterTypes[sizeof...(TArgs)];
 	};
 	class alignas(8) ManagedObject
 	{
@@ -44,53 +54,53 @@ namespace Coral {
 		ManagedObject& operator=(ManagedObject&& InOther) noexcept;
 
 		template <typename TReturn, typename... TArgs>
-		TReturn InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs&&...>&& InParameters, ManagedObject* Exception = nullptr) const
+		TReturn InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
 		{
 			constexpr size_t paramCount = sizeof(InParameters.parameterValues) / sizeof(*InParameters.parameterValues);
 			TReturn result;
-			InvokeMethodRetInternal(Exception, InMethod.m_Handle, InParameters.parameterValues, InParameters.parameterTypes, paramCount, &result);
+			InvokeMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, paramCount, &result);
 			return result;
 		}
 
 		template <typename... TArgs>
-		void InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs&&...>&& InParameters, ManagedObject* Exception = nullptr) const
+		void InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
 		{
 			constexpr size_t paramCount = sizeof(InParameters.parameterValues) / sizeof(*InParameters.parameterValues);
-			InvokeMethodInternal(Exception, InMethod.m_Handle, InParameters.parameterValues, InParameters.parameterTypes, paramCount);
+			InvokeMethodInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, paramCount);
 		}
 
 		template <typename TValue>
-		void SetFieldValue(std::string_view InFieldName, TValue InValue) const
+		void SetFieldValue(const FieldInfo& InField, TValue InValue) const
 		{
-			SetFieldValueRaw(InFieldName, &InValue);
+			SetFieldValueRaw(InField, &InValue);
 		}
 
 		template <typename TReturn>
-		TReturn GetFieldValue(std::string_view InFieldName) const
+		TReturn GetFieldValue(const FieldInfo& InField) const
 		{
 			TReturn result;
-			GetFieldValueRaw(InFieldName, &result);
+			GetFieldValueRaw(InField, &result);
 			return result;
 		}
 
 		template <typename TValue>
-		void SetPropertyValue(std::string_view InPropertyName, TValue InValue) const
+		void SetPropertyValue(const PropertyInfo& InProperty, TValue InValue) const
 		{
-			SetPropertyValueRaw(InPropertyName, &InValue);
+			SetPropertyValueRaw(InProperty, &InValue);
 		}
 
 		template <typename TReturn>
-		TReturn GetPropertyValue(std::string_view InPropertyName) const
+		TReturn GetPropertyValue(const PropertyInfo& InProperty) const
 		{
 			TReturn result;
-			GetPropertyValueRaw(InPropertyName, &result);
+			GetPropertyValueRaw(InProperty, &result);
 			return result;
 		}
 
-		void SetFieldValueRaw(std::string_view InFieldName, void* InValue) const;
-		void GetFieldValueRaw(std::string_view InFieldName, void* OutValue) const;
-		void SetPropertyValueRaw(std::string_view InPropertyName, void* InValue, ManagedObject* Exception = nullptr) const;
-		void GetPropertyValueRaw(std::string_view InPropertyName, void* OutValue, ManagedObject* Exception = nullptr) const;
+		void SetFieldValueRaw(const FieldInfo& InField, void* InValue) const;
+		void GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const;
+		void SetPropertyValueRaw(const PropertyInfo& InProperty, void* InValue, ManagedObject* OutException = nullptr) const;
+		void GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, ManagedObject* OutException = nullptr) const;
 
 		const Type& GetType();
 
@@ -99,8 +109,8 @@ namespace Coral {
 		bool IsValid() const { return m_Handle != nullptr && m_Type != nullptr; }
 
 	private:
-		void InvokeMethodInternal(ManagedObject* Exception, ManagedHandle InMethodHandle, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-		void InvokeMethodRetInternal(ManagedObject* Exception, ManagedHandle InMethodHandle, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+		void InvokeMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+		void InvokeMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
 
 	public:
 		alignas(8) void* m_Handle = nullptr;
@@ -116,35 +126,35 @@ namespace Coral {
 	static_assert(sizeof(ManagedObject) == 16);
 
 	template <>
-	inline void ManagedObject::SetFieldValue(std::string_view InFieldName, std::string InValue) const
+	inline void ManagedObject::SetFieldValue(const FieldInfo& InField, std::string InValue) const
 	{
 		String s = String::New(InValue);
-		SetFieldValueRaw(InFieldName, &InValue);
+		SetFieldValueRaw(InField, &InValue);
 		String::Free(s);
 	}
 
 	template <>
-	inline void ManagedObject::SetFieldValue(std::string_view InFieldName, bool InValue) const
+	inline void ManagedObject::SetFieldValue(const FieldInfo& InField, bool InValue) const
 	{
 		Bool32 s = InValue;
-		SetFieldValueRaw(InFieldName, &s);
+		SetFieldValueRaw(InField, &s);
 	}
 
 	template <>
-	inline std::string ManagedObject::GetFieldValue(std::string_view InFieldName) const
+	inline std::string ManagedObject::GetFieldValue(const FieldInfo& InField) const
 	{
 		String result;
-		GetFieldValueRaw(InFieldName, &result);
+		GetFieldValueRaw(InField, &result);
 		auto s = result.Data() ? std::string(result) : "";
 		String::Free(result);
 		return s;
 	}
 
 	template <>
-	inline bool ManagedObject::GetFieldValue(std::string_view InFieldName) const
+	inline bool ManagedObject::GetFieldValue(const FieldInfo& InField) const
 	{
 		Bool32 result;
-		GetFieldValueRaw(InFieldName, &result);
+		GetFieldValueRaw(InField, &result);
 		return result;
 	}
 

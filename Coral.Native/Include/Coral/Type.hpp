@@ -30,7 +30,9 @@ namespace Coral {
 		std::vector<FieldInfo> GetFields() const;
 		std::vector<PropertyInfo> GetProperties() const;
 
-		MethodInfo GetMethodByName(std::string_view MethodName) const;
+		MethodInfo GetMethodByName(std::string_view MethodName, int32_t InParamCount, BindingFlags InBindingFlags = BindingFlags::Public | BindingFlags::NonPublic | BindingFlags::Static) const;
+		FieldInfo GetFieldByName(std::string_view FieldName, BindingFlags InBindingFlags = BindingFlags::Public | BindingFlags::NonPublic | BindingFlags::Static) const;
+		PropertyInfo GetPropertyByName(std::string_view PropertyName, BindingFlags InBindingFlags = BindingFlags::Public | BindingFlags::NonPublic | BindingFlags::Static) const;
 
 		bool HasAttribute(const Type& InAttributeType) const;
 		std::vector<Attribute> GetAttributes() const;
@@ -47,46 +49,43 @@ namespace Coral {
 		TypeId GetTypeId() const { return m_Id; }
 
 	public:
-		template<typename... TArgs>
-		ManagedObject CreateInstance(MethodParams<TArgs&&...>&& InParameters, ManagedObject* Exception = nullptr) const
+		template <typename... TArgs>
+		ManagedObject CreateInstance(MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
 		{
 			constexpr size_t paramCount = sizeof(InParameters.parameterValues) / sizeof(*InParameters.parameterValues);
 			ManagedObject result;
-
-				result = CreateInstanceInternal(InParameters.parameterValues, InParameters.parameterTypes, paramCount);
-
+			result = CreateInstanceInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, paramCount);
 			return result;
 		}
 
 		template <typename TReturn, typename... TArgs>
-		TReturn InvokeStaticMethod(MethodParams<TArgs&&...>&& InParameters, ManagedObject* Exception = nullptr) const
+		TReturn InvokeStaticMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
 		{
+			TReturn result = {};
 			constexpr size_t paramCount = sizeof(InParameters.parameterValues) / sizeof(*InParameters.parameterValues);
-			InvokeStaticMethodRetInternal(Exception, InMethod.m_Handle, InParameters.parameterValues, InParameters.parameterTypes, paramCount, &result);
+			InvokeStaticMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, paramCount, &result);
+			return result;
 		}
 
 		template <typename... TArgs>
-		void InvokeStaticMethod(std::string_view InMethodName, TArgs&&... InParameters)
+		void InvokeStaticMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
 		{
 			constexpr size_t parameterCount = sizeof...(InParameters);
-
 			if constexpr (parameterCount > 0)
 			{
-				const void* parameterValues[parameterCount];
-				ManagedType parameterTypes[parameterCount];
-				AddToArray<TArgs...>(parameterValues, parameterTypes, std::forward<TArgs>(InParameters)..., std::make_index_sequence<parameterCount> {});
-				InvokeStaticMethodInternal(InMethodName, parameterValues, parameterTypes, parameterCount);
+				constexpr size_t paramCount = sizeof(InParameters.parameterValues) / sizeof(*InParameters.parameterValues);
+				InvokeStaticMethodInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, paramCount);
 			}
 			else
 			{
-				InvokeStaticMethodInternal(InMethodName, nullptr, nullptr, 0);
+				InvokeStaticMethodInternal(OutException, InMethod, nullptr, nullptr, 0);
 			}
 		}
 
 	private:
-		ManagedObject CreateInstanceInternal(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-		void InvokeStaticMethodInternal(ManagedObject* Exception, std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-		void InvokeStaticMethodRetInternal(ManagedObject* Exception, std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+		ManagedObject CreateInstanceInternal(ManagedObject* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+		void InvokeStaticMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+		void InvokeStaticMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
 
 	private:
 		TypeId m_Id = -1;

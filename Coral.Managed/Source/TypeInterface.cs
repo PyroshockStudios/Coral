@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Runtime.Loader;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Coral.Managed;
 
@@ -17,10 +18,10 @@ internal static class TypeInterface
 {
 
 	internal readonly static UniqueIdList<Type> s_CachedTypes = new();
-	internal readonly static UniqueIdList<MethodInfo> s_CachedMethods = new();
-	internal readonly static UniqueIdList<FieldInfo> s_CachedFields = new();
-	internal readonly static UniqueIdList<PropertyInfo> s_CachedProperties = new();
-	internal readonly static UniqueIdList<Attribute> s_CachedAttributes = new();
+	internal readonly static UniqueIdList<MethodInfo> s_CachedMethods = new(Util.GetStableHash);
+	internal readonly static UniqueIdList<FieldInfo> s_CachedFields = new(Util.GetStableHash);
+    internal readonly static UniqueIdList<PropertyInfo> s_CachedProperties = new(Util.GetStableHash);
+    internal readonly static UniqueIdList<Attribute> s_CachedAttributes = new();
 
 	internal static Type? FindType(int InAssemblyLoadContextId, string? InTypeName)
 	{
@@ -535,8 +536,29 @@ internal static class TypeInterface
 		}
 	}
 
-	// TODO(Peter): Refactor this to GetMemberInfoName (should work for all types of members)
-	[UnmanagedCallersOnly]
+
+    [UnmanagedCallersOnly]
+    internal static unsafe int GetMethodInfoByName(int InType, NativeString InMethodName, int InParamCount, uint InBindingFlags)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
+                return -1;
+			BindingFlags flags = (BindingFlags)InBindingFlags;
+            var methodInfo = type.GetMethods(flags)
+                         .FirstOrDefault(m => m.Name == InMethodName &&
+                                              m.GetParameters().Length == InParamCount);
+            return s_CachedMethods.Add(methodInfo);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+			return -1;
+        }
+    }
+
+    // TODO(Peter): Refactor this to GetMemberInfoName (should work for all types of members)
+    [UnmanagedCallersOnly]
 	internal static unsafe NativeString GetMethodInfoName(int InMethodInfo)
 	{
 		try
@@ -552,25 +574,6 @@ internal static class TypeInterface
 			return NativeString.Null();
 		}
 	}
-
-    // TODO(Peter): Refactor this to GetMemberInfoName (should work for all types of members)
-    [UnmanagedCallersOnly]
-    internal static unsafe int GetMethodInfoFromName(NativeString InMethodName)
-    {
-        try
-        {
-            var methodInfo = TryGetMethodInfo(type, InMethodName, InParameterTypes, InParameterCount, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-            if (!s_CachedMethods.TryGetValue(InMethodInfo, out var methodInfo) || methodInfo == null)
-                return NativeString.Null();
-
-            return methodInfo.Name;
-        }
-        catch (Exception ex)
-        {
-            HandleException(ex);
-            return NativeString.Null();
-        }
-    }
 
     [UnmanagedCallersOnly]
 	internal static unsafe void GetMethodInfoReturnType(int InMethodInfo, int* OutReturnType)
@@ -701,7 +704,27 @@ internal static class TypeInterface
 		}
 	}
 
-	[UnmanagedCallersOnly]
+
+
+    [UnmanagedCallersOnly]
+    internal static unsafe int GetFieldInfoByName(int InType, NativeString InFieldName, uint InBindingFlags)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
+                return -1;
+            BindingFlags flags = (BindingFlags)InBindingFlags;
+			var fieldInfo = type.GetField(InFieldName, flags);
+            return s_CachedFields.Add(fieldInfo);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return -1;
+        }
+    }
+
+    [UnmanagedCallersOnly]
 	internal static unsafe NativeString GetFieldInfoName(int InFieldInfo)
 	{
 		try
@@ -783,7 +806,26 @@ internal static class TypeInterface
 		}
 	}
 
-	[UnmanagedCallersOnly]
+
+    [UnmanagedCallersOnly]
+    internal static unsafe int GetPropertyInfoByName(int InType, NativeString InPropertyName, uint InBindingFlags)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
+                return -1;
+            BindingFlags flags = (BindingFlags)InBindingFlags;
+            var propertyInfo = type.GetProperty(InPropertyName, flags);
+            return s_CachedProperties.Add(propertyInfo);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return -1;
+        }
+    }
+
+    [UnmanagedCallersOnly]
 	internal static unsafe NativeString GetPropertyInfoName(int InPropertyInfo)
 	{
 		try

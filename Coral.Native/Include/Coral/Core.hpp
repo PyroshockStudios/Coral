@@ -84,6 +84,68 @@ namespace Coral {
 		PrivateProtected
 	};
 
+	enum class BindingFlags : uint32_t
+	{
+		Default = 0,
+		IgnoreCase = 1 << 0,
+		DeclaredOnly = 1 << 1,
+		Instance = 1 << 2,
+		Static = 1 << 3,
+		Public = 1 << 4,
+		NonPublic = 1 << 5,
+		FlattenHierarchy = 1 << 6,
+		InvokeMethod = 1 << 8,
+		CreateInstance = 1 << 9,
+		GetField = 1 << 10,
+		SetField = 1 << 11,
+		GetProperty = 1 << 12,
+		SetProperty = 1 << 13,
+		PutDispProperty = 1 << 14,
+		PutRefDispProperty = 1 << 15,
+		ExactBinding = 1 << 16,
+		SuppressChangeType = 1 << 17,
+		OptionalParamBinding = 1 << 18,
+		IgnoreReturn = 1 << 24,
+		DoNotWrapExceptions = 1 << 25
+	};
+
+	constexpr inline BindingFlags operator|(BindingFlags a, BindingFlags b)
+	{
+		return static_cast<BindingFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+	}
+
+	constexpr inline BindingFlags operator&(BindingFlags a, BindingFlags b)
+	{
+		return static_cast<BindingFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+	}
+
+	constexpr inline BindingFlags operator^(BindingFlags a, BindingFlags b)
+	{
+		return static_cast<BindingFlags>(static_cast<uint32_t>(a) ^ static_cast<uint32_t>(b));
+	}
+
+	constexpr inline BindingFlags operator~(BindingFlags a)
+	{
+		return static_cast<BindingFlags>(~static_cast<uint32_t>(a));
+	}
+	constexpr inline BindingFlags& operator|=(BindingFlags& a, BindingFlags b)
+	{
+		a = a | b;
+		return a;
+	}
+
+	constexpr inline BindingFlags& operator&=(BindingFlags& a, BindingFlags b)
+	{
+		a = a & b;
+		return a;
+	}
+
+	constexpr inline BindingFlags& operator^=(BindingFlags& a, BindingFlags b)
+	{
+		a = a ^ b;
+		return a;
+	}
+
 	using TypeId = int32_t;
 	using ManagedHandle = int32_t;
 

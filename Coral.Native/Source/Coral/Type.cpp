@@ -115,10 +115,24 @@ namespace Coral {
 		return properties;
 	}
 
-	MethodInfo Type::GetMethodByName(std::string_view MethodName) const
+	MethodInfo Type::GetMethodByName(std::string_view MethodName, int32_t InParamCount, BindingFlags InBindingFlags) const
 	{
-		return MethodInfo();
+		ScopedString string = ScopedString(MethodName);
+		MethodInfo method {};
+		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, InParamCount, InBindingFlags);
+		return method;
 	}
+
+	FieldInfo Type::GetFieldByName(std::string_view FieldName, BindingFlags InBindingFlags) const
+	{
+		return FieldInfo();
+	}
+
+	PropertyInfo Type::GetPropertyByName(std::string_view PropertyName, BindingFlags InBindingFlags) const
+	{
+		return PropertyInfo();
+	}
+
 
 	bool Type::HasAttribute(const Type& InAttributeType) const
 	{
@@ -166,26 +180,40 @@ namespace Coral {
 		return m_Id == InOther.m_Id;
 	}
 
-	ManagedObject Type::CreateInstanceInternal(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	ManagedObject Type::CreateInstanceInternal(ManagedObject* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
+		void* exceptionResult = nullptr;
 		ManagedObject result;
-		result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength));
+		result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
 		result.m_Type = this;
+		if (OutException)
+		{
+			*OutException = ManagedObject();
+			OutException->m_Handle = exceptionResult;
+		}
 		return result;
 	}
 
-	void Type::InvokeStaticMethodInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	void Type::InvokeStaticMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
-		auto methodName = String::New(InMethodName);
-		s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, methodName, InParameters, InParameterTypes, static_cast<int32_t>(InLength));
-		String::Free(methodName);
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
+		if (OutException)
+		{
+			*OutException = ManagedObject();
+			OutException->m_Handle = exceptionResult;
+		}
 	}
 
-	void Type::InvokeStaticMethodRetInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+	void Type::InvokeStaticMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
 	{
-		auto methodName = String::New(InMethodName);
-		s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, methodName, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage);
-		String::Free(methodName);
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, &exceptionResult);
+		if (OutException)
+		{
+			*OutException = ManagedObject();
+			OutException->m_Handle = exceptionResult;
+		}
 	}
 
 

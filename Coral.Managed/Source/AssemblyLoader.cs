@@ -236,8 +236,6 @@ public static class AssemblyLoader
 		}
 #endif
 
-		ManagedObject.s_CachedMethods.Clear();
-
 		TypeInterface.s_CachedTypes.Clear();
 		TypeInterface.s_CachedMethods.Clear();
 		TypeInterface.s_CachedFields.Clear();

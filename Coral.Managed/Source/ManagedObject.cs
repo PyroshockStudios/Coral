@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting;
 
 namespace Coral.Managed;
 
@@ -188,9 +189,7 @@ internal static class ManagedObject
                 LogMessage($"Cannot invoke method {methodInfo.Name} on a null type.", MessageLevel.Error);
                 return;
             }
-
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
-
             methodInfo.Invoke(null, parameters);
         }
         catch (Exception ex)
@@ -345,26 +344,24 @@ internal static class ManagedObject
     }
 
     [UnmanagedCallersOnly]
-    internal static void SetFieldValue(IntPtr InTarget, NativeString InFieldName, IntPtr InValue)
+    internal static void SetFieldValue(IntPtr InTarget, int InField, IntPtr InValue)
     {
         try
         {
+            if (!TypeInterface.s_CachedFields.TryGetValue(InField, out var fieldInfo) || fieldInfo == null)
+            {
+                LogMessage($"Cannot get field id={InField} as it does not exist.", MessageLevel.Error);
+                return;
+            }
             var target = GCHandle.FromIntPtr(InTarget).Target;
 
             if (target == null)
             {
-                LogMessage($"Cannot set value of field {InFieldName} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
+                LogMessage($"Cannot set value of field {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
                 return;
             }
 
             var targetType = target.GetType();
-            var fieldInfo = targetType.GetField(InFieldName!, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (fieldInfo == null)
-            {
-                LogMessage($"Failed to find field '{InFieldName}' in type '{targetType.FullName}'.", MessageLevel.Error);
-                return;
-            }
 
             if (fieldInfo.FieldType == typeof(string))
             {
@@ -372,7 +369,7 @@ internal static class ManagedObject
 
                 if (fieldValue == null)
                 {
-                    LogMessage($"Failed to get field '{InFieldName}' value in type '{targetType.FullName}'.", MessageLevel.Error);
+                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{targetType.FullName}'.", MessageLevel.Error);
                     return;
                 }
 
@@ -385,7 +382,7 @@ internal static class ManagedObject
 
                 if (fieldValue == null)
                 {
-                    LogMessage($"Failed to get field '{InFieldName}' value in type '{targetType.FullName}'.", MessageLevel.Error);
+                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{targetType.FullName}'.", MessageLevel.Error);
                     return;
                 }
 
@@ -406,26 +403,24 @@ internal static class ManagedObject
     }
 
     [UnmanagedCallersOnly]
-    internal static void GetFieldValue(IntPtr InTarget, NativeString InFieldName, IntPtr OutValue)
+    internal static void GetFieldValue(IntPtr InTarget, int InField, IntPtr OutValue)
     {
         try
         {
+            if (!TypeInterface.s_CachedFields.TryGetValue(InField, out var fieldInfo) || fieldInfo == null)
+            {
+                LogMessage($"Cannot get field id={InField} as it does not exist.", MessageLevel.Error);
+                return;
+            }
             var target = GCHandle.FromIntPtr(InTarget).Target;
 
             if (target == null)
             {
-                LogMessage($"Cannot get value of field {InFieldName} from object with handle {InTarget}. Target was null.", MessageLevel.Error);
+                LogMessage($"Cannot set value of field {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
                 return;
             }
 
             var targetType = target.GetType();
-            var fieldInfo = targetType.GetField(InFieldName!, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (fieldInfo == null)
-            {
-                LogMessage($"Failed to find field '{InFieldName}' in type '{targetType.FullName}'.", MessageLevel.Error);
-                return;
-            }
 
             // Handles strings gracefully internally.
             Marshalling.MarshalReturnValue(target, fieldInfo.GetValue(target), fieldInfo, OutValue);

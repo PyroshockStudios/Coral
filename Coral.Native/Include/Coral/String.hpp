@@ -35,6 +35,10 @@ namespace Coral {
 	{
 		ScopedString(String InString)
 		    : m_String(InString) {}
+		ScopedString(const char* InString)
+		    : m_String(String::New(InString)) {}
+		ScopedString(std::string_view InString)
+		    : m_String(String::New(InString)) {}
 
 		ScopedString& operator=(String InOther)
 		{
