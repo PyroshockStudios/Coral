@@ -3,7 +3,7 @@ project(Coral)
 
 option(CORAL_EXAMPLE "Build the example programs" OFF)
 option(CORAL_TESTING "Build the tests" ON)
-set(CORAL_DOTNET_VERSION "Required .NET version" CACHE STRING "9.0.0")
+set(CORAL_DOTNET_VERSION "9.0.0" CACHE STRING "Required .NET version")
 
 include(ExternalProject)
 
@@ -56,7 +56,7 @@ if(NOT DOTNET_RTVER)
 endif()
 message(STATUS "Found a suitable .NET runtime, version ${DOTNET_RTVER}")
 
-set(CORAL_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
+set(CORAL_ROOT ${CMAKE_CURRENT_LIST_DIR})
 
 file(GLOB CORAL_MANAGED_SRC CONFIGURE_DEPENDS ${CORAL_ROOT}/Coral.Managed/Source/*.cs)
 add_custom_command(
