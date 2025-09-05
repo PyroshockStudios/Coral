@@ -21,16 +21,18 @@ namespace Coral {
 
     enum class ManagedType : uint32_t
     {
-        Unknown,
+		Unknown,
+		
+        Void,
 
         SByte,
         Byte,
         Short,
         UShort,
         Int,
-        UInt,
-        Long,
-        ULong,
+		UInt,
+		Long,
+		ULong,
 
         Float,
         Double,
@@ -48,9 +50,9 @@ namespace Coral {
 
     template<typename TArg>
     constexpr ManagedType GetManagedType()
-    {
-        if constexpr (std::is_pointer_v<std::remove_reference_t<TArg>>)
-            return ManagedType::Pointer;
+	{
+		if constexpr (std::is_pointer_v<std::remove_reference_t<TArg>>)
+			return ManagedType::Pointer;
         else if constexpr (std::same_as<TArg, uint8_t> || std::same_as<TArg, std::byte>)
             return ManagedType::Byte;
         else if constexpr (std::same_as<TArg, uint16_t>)
@@ -80,7 +82,9 @@ namespace Coral {
         else if constexpr (is_specialization_of_v<Coral::Array, TArg>)
             return ManagedType::Array;
         else if constexpr (std::same_as<TArg, std::string> || std::same_as<TArg, Coral::String>)
-            return ManagedType::String;
+			return ManagedType::String;
+		else if constexpr (std::same_as<TArg, void>)
+			return ManagedType::Void;
         else
             return ManagedType::Unknown;
     }

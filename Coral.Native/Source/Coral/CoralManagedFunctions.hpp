@@ -15,10 +15,11 @@ namespace Coral {
     using SetInternalCallsFn = void (*)(int32_t, void*, int32_t);
     using CreateAssemblyLoadContextFn = int32_t(*)(String, String);
     using UnloadAssemblyLoadContextFn = void (*)(int32_t);
-    using LoadAssemblyFn = int32_t(*)(int32_t, String);
+	using LoadAssemblyFn = int32_t (*)(int32_t, String);
     using LoadAssemblyFromMemoryFn = int32_t(*)(int32_t, const std::byte*, int64_t);
     using GetLastLoadStatusFn = AssemblyLoadStatus(*)();
     using GetAssemblyNameFn = String(*)(int32_t, int32_t);
+	using GetSystemAssemblyFn = int32_t (*)(int32_t);
 
 #pragma region DotnetServices
     using RunMSBuildFn = void(*)(String, Bool32, Bool32*);
@@ -105,6 +106,7 @@ namespace Coral {
         UnloadAssemblyLoadContextFn UnloadAssemblyLoadContextFptr = nullptr;
         GetLastLoadStatusFn GetLastLoadStatusFptr = nullptr;
         GetAssemblyNameFn GetAssemblyNameFptr = nullptr;
+		GetSystemAssemblyFn GetSystemAssemblyFptr = nullptr;
 
 #pragma region DotnetServices
         RunMSBuildFn RunMSBuildFptr = nullptr;

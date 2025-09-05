@@ -104,6 +104,7 @@ namespace Coral {
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
         alc.m_Host = this;
+		alc.LoadSystemAssembly();
         return alc;
     }
 
@@ -113,7 +114,8 @@ namespace Coral {
         ScopedString dllPath = String::New(InDllPath);
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
-        alc.m_Host = this;
+		alc.m_Host = this;
+		alc.LoadSystemAssembly();
         return alc;
     }
 
@@ -300,7 +302,8 @@ namespace Coral {
         s_ManagedFunctions.LoadAssemblyFromMemoryFptr = LoadCoralManagedFunctionPtr<LoadAssemblyFromMemoryFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("LoadAssemblyFromMemory"));
         s_ManagedFunctions.UnloadAssemblyLoadContextFptr = LoadCoralManagedFunctionPtr<UnloadAssemblyLoadContextFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("UnloadAssemblyLoadContext"));
         s_ManagedFunctions.GetLastLoadStatusFptr = LoadCoralManagedFunctionPtr<GetLastLoadStatusFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetLastLoadStatus"));
-        s_ManagedFunctions.GetAssemblyNameFptr = LoadCoralManagedFunctionPtr<GetAssemblyNameFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetAssemblyName"));
+		s_ManagedFunctions.GetAssemblyNameFptr = LoadCoralManagedFunctionPtr<GetAssemblyNameFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetAssemblyName"));
+		s_ManagedFunctions.GetSystemAssemblyFptr = LoadCoralManagedFunctionPtr<GetSystemAssemblyFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetSystemAssembly"));
 
         s_ManagedFunctions.RunMSBuildFptr = LoadCoralManagedFunctionPtr<RunMSBuildFn>(CORAL_STR("Coral.Managed.MSBuildRunner, Coral.Managed"), CORAL_STR("Run"));
 

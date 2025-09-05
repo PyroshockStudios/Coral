@@ -62,38 +62,9 @@ namespace Coral {
 		result.m_OwnerContextId = m_ContextId;
 		result.m_LoadStatus = s_ManagedFunctions.GetLastLoadStatusFptr();
 
-		if (result.m_LoadStatus == AssemblyLoadStatus::Success)
-		{
-			auto assemblyName = s_ManagedFunctions.GetAssemblyNameFptr(m_ContextId, result.m_AssemblyId);
-			result.m_Name = assemblyName;
-			String::Free(assemblyName);
-
-			// TODO(Emily): Is it always desirable to preload every type from an assembly?
-			int32_t typeCount = 0;
-			s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, result.m_AssemblyId, nullptr, &typeCount);
-
-			std::vector<TypeId> typeIds(static_cast<size_t>(typeCount));
-			s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, result.m_AssemblyId, typeIds.data(), &typeCount);
-
-			// reserve to avoid bad references after resizing
-			result.m_LocalTypes.reserve(typeIds.size());
-			for (auto typeId : typeIds)
-			{
-				// global cache
-				Type type;
-				type.m_Id = typeId;
-				TypeCache::Get().CacheType(std::move(type));
-				// local cache
-				Type type2;
-				type2.m_Id = typeId;
-				Type& inserted = result.m_LocalTypes.emplace_back(std::move(type2));
-				result.m_LocalTypeIdCache[inserted.GetTypeId()] = &inserted;
-				result.m_LocalTypeNameCache[inserted.GetFullName()] = &inserted;
-			}
-		}
+		LoadAssemblyData(result);
 
 		String::Free(filepath);
-		LoadAssemblyTypes(result);
 		return result;
 	}
 
@@ -102,32 +73,25 @@ namespace Coral {
 		auto [idx, result] = m_LoadedAssemblies.EmplaceBack();
 		result.m_Host = m_Host;
 		result.m_AssemblyId = s_ManagedFunctions.LoadAssemblyFromMemoryFptr(m_ContextId, data, dataLength);
+		result.m_OwnerContextId = m_ContextId;
 		result.m_LoadStatus = s_ManagedFunctions.GetLastLoadStatusFptr();
 
-		if (result.m_LoadStatus == AssemblyLoadStatus::Success)
-		{
-			auto assemblyName = s_ManagedFunctions.GetAssemblyNameFptr(m_ContextId, result.m_AssemblyId);
-			result.m_Name = assemblyName;
-			String::Free(assemblyName);
+				LoadAssemblyData(result);
 
-			int32_t typeCount = 0;
-			s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, result.m_AssemblyId, nullptr, &typeCount);
-			std::vector<TypeId> typeIds(static_cast<size_t>(typeCount));
-			s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, result.m_AssemblyId, typeIds.data(), &typeCount);
-
-			for (auto typeId : typeIds)
-			{
-				Type type;
-				type.m_Id = typeId;
-				TypeCache::Get().CacheType(std::move(type));
-			}
-		}
-		LoadAssemblyTypes(result);
 		return result;
 	}
 
-	void AssemblyLoadContext::LoadAssemblyTypes(ManagedAssembly& assembly)
+	void AssemblyLoadContext::LoadSystemAssembly()
 	{
+		auto [idx, result] = m_LoadedAssemblies.EmplaceBack();
+		result.m_Host = m_Host;
+		result.m_AssemblyId = s_ManagedFunctions.GetSystemAssemblyFptr(m_ContextId);
+		result.m_OwnerContextId = m_ContextId;
+		result.m_LoadStatus = s_ManagedFunctions.GetLastLoadStatusFptr();
+
+		LoadAssemblyData(result);
+
+		TypeCache::Get().m_VoidType = TypeCache::Get().GetTypeByName("System.Void");
 		TypeCache::Get().m_ByteType = TypeCache::Get().GetTypeByName("System.Byte");
 		TypeCache::Get().m_SByteType = TypeCache::Get().GetTypeByName("System.SByte");
 		TypeCache::Get().m_ShortType = TypeCache::Get().GetTypeByName("System.Int16");
@@ -141,6 +105,46 @@ namespace Coral {
 		TypeCache::Get().m_BoolType = TypeCache::Get().GetTypeByName("System.Boolean");
 		TypeCache::Get().m_CharType = TypeCache::Get().GetTypeByName("System.Char");
 		TypeCache::Get().m_StringType = TypeCache::Get().GetTypeByName("System.String");
+		TypeCache::Get().m_ObjectType = TypeCache::Get().GetTypeByName("System.Object");
+		TypeCache::Get().m_IntPtrType = TypeCache::Get().GetTypeByName("System.IntPtr");
+		TypeCache::Get().m_UIntPtrType = TypeCache::Get().GetTypeByName("System.UIntPtr");
+		TypeCache::Get().m_DecimalType = TypeCache::Get().GetTypeByName("System.Decimal");
+		TypeCache::Get().m_DateTimeType = TypeCache::Get().GetTypeByName("System.DateTime");
+		TypeCache::Get().m_ExceptionType = TypeCache::Get().GetTypeByName("System.Exception");
+		TypeCache::Get().m_ArrayType = TypeCache::Get().GetTypeByName("System.Array");
+		m_SystemAssembly = &result;
+	}
+	void AssemblyLoadContext::LoadAssemblyData(ManagedAssembly& assembly)
+	{
+		if (assembly.m_LoadStatus == AssemblyLoadStatus::Success)
+		{
+			auto assemblyName = s_ManagedFunctions.GetAssemblyNameFptr(m_ContextId, assembly.m_AssemblyId);
+			assembly.m_Name = assemblyName;
+			String::Free(assemblyName);
+
+			// TODO(Emily): Is it always desirable to preload every type from an assembly?
+			int32_t typeCount = 0;
+			s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, assembly.m_AssemblyId, nullptr, &typeCount);
+
+			std::vector<TypeId> typeIds(static_cast<size_t>(typeCount));
+			s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, assembly.m_AssemblyId, typeIds.data(), &typeCount);
+
+			// reserve to avoid bad references after resizing
+			assembly.m_LocalTypes.reserve(typeIds.size());
+			for (auto typeId : typeIds)
+			{
+				// global cache
+				Type type;
+				type.m_Id = typeId;
+				TypeCache::Get().CacheType(std::move(type));
+				// local cache
+				Type type2;
+				type2.m_Id = typeId;
+				Type& inserted = assembly.m_LocalTypes.emplace_back(std::move(type2));
+				assembly.m_LocalTypeIdCache[inserted.GetTypeId()] = &inserted;
+				assembly.m_LocalTypeNameCache[inserted.GetFullName()] = &inserted;
+			}
+		}
 	}
 }
 

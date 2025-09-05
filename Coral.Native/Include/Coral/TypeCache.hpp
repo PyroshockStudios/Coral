@@ -27,8 +27,9 @@ namespace Coral {
 
         void Clear();
 
-        static Type* ByteType() { return Get().m_ByteType; }
-        static Type* SByteType() { return Get().m_SByteType; }
+        static Type* VoidType() { return Get().m_VoidType; }
+		static Type* ByteType() { return Get().m_ByteType; }
+		static Type* SByteType() { return Get().m_SByteType; }
         static Type* ShortType() { return Get().m_ShortType; }
         static Type* UShortType() { return Get().m_UShortType; }
         static Type* IntType() { return Get().m_IntType; }
@@ -39,14 +40,23 @@ namespace Coral {
         static Type* DoubleType() { return Get().m_DoubleType; }
         static Type* BoolType() { return Get().m_BoolType; }
         static Type* CharType() { return Get().m_CharType; }
-        static Type* StringType() { return Get().m_StringType; }
-    private:
+		static Type* StringType() { return Get().m_StringType; }
+        static Type* ObjectType() { return Get().m_ObjectType; }
+        static Type* IntPtrType() { return Get().m_IntPtrType; }
+		static Type* UIntPtrType() { return Get().m_UIntPtrType; }
+		static Type* DecimalType() { return Get().m_DecimalType; }
+		static Type* DateTimeType() { return Get().m_DateTimeType; }
+		static Type* ExceptionType() { return Get().m_ExceptionType; }
+		static Type* ArrayType() { return Get().m_ArrayType; }
+
+	private:
         friend class AssemblyLoadContext;
 
         StableVector<Type> m_Types;
         std::unordered_map<std::string, Type*> m_NameCache;
         std::unordered_map<TypeId, Type*> m_IDCache;
 
+        Type* m_VoidType = {};
         Type* m_ByteType = {};
         Type* m_SByteType = {};
         Type* m_ShortType = {};
@@ -60,6 +70,13 @@ namespace Coral {
         Type* m_BoolType = {};
         Type* m_CharType = {};
         Type* m_StringType = {};
+		Type* m_ObjectType = {};
+        Type* m_IntPtrType = {};
+        Type* m_UIntPtrType = {};
+		Type* m_DecimalType = {};
+		Type* m_DateTimeType = {};
+		Type* m_ExceptionType = {};
+        Type* m_ArrayType = {};
     };
 
 }

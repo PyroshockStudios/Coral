@@ -15,6 +15,8 @@ using static ManagedHost;
 internal enum ManagedType : uint
 {
     Unknown,
+    
+    Void,
 
     SByte,
     Byte,
@@ -372,8 +374,7 @@ internal static class ManagedObject
 
                 if (fieldValue == null)
                 {
-                    var targetType = target.GetType();
-                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{targetType.FullName}'.", MessageLevel.Error);
+                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
                     return;
                 }
 
@@ -386,7 +387,7 @@ internal static class ManagedObject
 
                 if (fieldValue == null)
                 {
-                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{targetType.FullName}'.", MessageLevel.Error);
+                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
                     return;
                 }
 
@@ -439,24 +440,22 @@ internal static class ManagedObject
         if (exception != null) *exception = IntPtr.Zero;
         try
         {
-             if (!TypeInterface.s_CachedFields.TryGetValue(InField, out var fieldInfo) || fieldInfo == null)
+            if (!TypeInterface.s_CachedProperties.TryGetValue(InProperty, out var propertyInfo) || propertyInfo == null)
             {
-                LogMessage($"Cannot get field id={InField} as it does not exist.", MessageLevel.Error);
+                LogMessage($"Cannot get property id={InProperty} as it does not exist.", MessageLevel.Error);
                 return;
             }
             var target = GCHandle.FromIntPtr(InTarget).Target;
 
             if (target == null)
             {
-                LogMessage($"Cannot set value of field {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
+                LogMessage($"Cannot set value of property {propertyInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
                 return;
             }
 
-
-
             if (propertyInfo.SetMethod == null)
             {
-                LogMessage($"Cannot set value of property '{InPropertyName}'. No setter was found.", MessageLevel.Error);
+                LogMessage($"Cannot set value of property '{propertyInfo.Name}'. No setter was found.", MessageLevel.Error);
                 return;
             }
 
@@ -487,26 +486,22 @@ internal static class ManagedObject
         if (exception != null) *exception = IntPtr.Zero;
         try
         {
+            if (!TypeInterface.s_CachedProperties.TryGetValue(InProperty, out var propertyInfo) || propertyInfo == null)
+            {
+                LogMessage($"Cannot get property id={InProperty} as it does not exist.", MessageLevel.Error);
+                return;
+            }
             var target = GCHandle.FromIntPtr(InTarget).Target;
 
             if (target == null)
             {
-                LogMessage($"Cannot get value of property '{InPropertyName}' from object with handle {InTarget}. Target was null.", MessageLevel.Error);
-                return;
-            }
-
-            var targetType = target.GetType();
-            var propertyInfo = targetType.GetProperty(InPropertyName!, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (propertyInfo == null)
-            {
-                LogMessage($"Failed to find property '{InPropertyName}' in type '{targetType.FullName}'.", MessageLevel.Error);
+                LogMessage($"Cannot get value of property {propertyInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
                 return;
             }
 
             if (propertyInfo.GetMethod == null)
             {
-                LogMessage($"Cannot get value of property '{InPropertyName}'. No getter was found.", MessageLevel.Error);
+                LogMessage($"Cannot get value of property '{propertyInfo.Name}'. No getter was found.", MessageLevel.Error);
                 return;
             }
 

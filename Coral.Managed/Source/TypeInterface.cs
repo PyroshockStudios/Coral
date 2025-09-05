@@ -48,9 +48,10 @@ internal static class TypeInterface
 
 	private static Dictionary<Type, ManagedType> s_TypeConverters = new()
 	{
+		{ typeof(void), ManagedType.Void },
 		{ typeof(sbyte), ManagedType.SByte },
 		{ typeof(byte), ManagedType.Byte },
-		{ typeof(short), ManagedType.Short },
+        { typeof(short), ManagedType.Short },
 		{ typeof(ushort), ManagedType.UShort },
 		{ typeof(int), ManagedType.Int },
 		{ typeof(uint), ManagedType.UInt },
@@ -97,19 +98,19 @@ internal static class TypeInterface
 			{
 				ManagedType paramType;
 
-				if (methodParams[i].ParameterType.IsPointer || methodParams[i].ParameterType == typeof(IntPtr))
+				if (methodParams[i].ParameterType.IsPointer || methodParams[i].ParameterType == typeof(IntPtr) || methodParams[i].ParameterType == typeof(UIntPtr))
 				{
 					paramType = ManagedType.Pointer;
 				} 
-				else if (methodParams[i].ParameterType.IsArray)
+				else if (methodParams[i].ParameterType.IsArray || methodParams[i].ParameterType == typeof(Array))
 				{
 					paramType = ManagedType.Array;
-				}
-				else if (methodParams[i].ParameterType.IsClass || methodParams[i].ParameterType == typeof(object))
-				{
-					paramType = ManagedType.Object;
-				}
-				else if (!s_TypeConverters.TryGetValue(methodParams[i].ParameterType, out paramType))
+                }
+                else if (methodParams[i].ParameterType.IsClass || methodParams[i].ParameterType == typeof(object))
+                {
+                    paramType = ManagedType.Object;
+                }
+                else if (!s_TypeConverters.TryGetValue(methodParams[i].ParameterType, out paramType))
 				{
 					paramType = ManagedType.Unknown;
 				}

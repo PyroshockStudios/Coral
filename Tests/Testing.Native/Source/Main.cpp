@@ -168,8 +168,8 @@ static void RegisterMemberMethodTests(Coral::ManagedObject& InObject)
     StringTest_Fn = InObject.GetType().GetMethod("StringTest");
     DummyStructTest_Fn = InObject.GetType().GetMethod("DummyStructTest");
     DummyStructPtrTest_Fn = InObject.GetType().GetMethod("DummyStructPtrTest");
-    OverloadIntTest_Fn = InObject.GetType().GetMethod("OverloadIntTest", { 3 });
-    OverloadFloatTest_Fn = InObject.GetType().GetMethod("OverloadFloatTest", { 3 });
+	OverloadIntTest_Fn = InObject.GetType().GetMethod("OverloadTest", { Coral::TypeCache::IntType() }, false);
+	OverloadFloatTest_Fn = InObject.GetType().GetMethod("OverloadTest", { Coral::TypeCache::FloatType() }, false);
 
     RegisterTest("SByteTest", [&InObject]() mutable { return InObject.InvokeMethod<int8_t>(SByteTest_Fn, MethodParams{ int8_t(10) }) == 20; });
     RegisterTest("ByteTest", [&InObject]() mutable { return InObject.InvokeMethod<uint8_t>(ByteTest_Fn, MethodParams{ uint8_t(10) }) == 20; });
@@ -212,12 +212,12 @@ static void RegisterMemberMethodTests(Coral::ManagedObject& InObject)
             return result->X == 20 && result->Y - 20.0f < 0.001f && result->Z == 20;
         });
 
-    RegisterTest("OverloadTest", [&InObject]() mutable
+    RegisterTest("OverloadTest (Int)", [&InObject]() mutable
         {
             return InObject.InvokeMethod<int32_t>(OverloadIntTest_Fn, MethodParams{ 50 }) == 1050;
         });
 
-    RegisterTest("OverloadTest", [&InObject]() mutable
+    RegisterTest("OverloadTest (Float)", [&InObject]() mutable
         {
             return InObject.InvokeMethod<float>(OverloadFloatTest_Fn, MethodParams{ 5.0f }) == 15.0f;
         });

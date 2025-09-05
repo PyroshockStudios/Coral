@@ -115,7 +115,7 @@ namespace Coral {
     inline void ManagedObject::SetFieldValue(const FieldInfo& InField, std::string InValue) const
     {
         String s = String::New(InValue);
-        SetFieldValueRaw(InField, &InValue);
+		SetFieldValueRaw(InField, &s);
         String::Free(s);
     }
 
