@@ -23,6 +23,11 @@
 #ifdef CORAL_WINDOWS
     #define CORAL_CALLTYPE __cdecl
     #define CORAL_HOSTFXR_NAME "hostfxr.dll"
+
+    // TODO(Emily): On Windows shouldn't this use the `UNICODE` macro?
+    #ifdef _WCHAR_T_DEFINED
+        #define CORAL_WIDE_CHARS
+    #endif
 #else
     #define CORAL_CALLTYPE
 

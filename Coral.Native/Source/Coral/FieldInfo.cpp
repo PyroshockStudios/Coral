@@ -1,3 +1,5 @@
+#include "FieldInfo.hpp"
+#include "FieldInfo.hpp"
 #include "Coral/FieldInfo.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
@@ -29,6 +31,16 @@ namespace Coral {
     TypeAccessibility FieldInfo::GetAccessibility() const
     {
         return s_ManagedFunctions.GetFieldInfoAccessibilityFptr(m_Handle);
+    }
+
+    bool FieldInfo::IsStatic() const
+    {
+        return s_ManagedFunctions.GetFieldInfoIsStaticFptr(m_Handle);
+    }
+
+    bool FieldInfo::IsLiteral() const
+    {
+        return s_ManagedFunctions.GetFieldInfoIsLiteralFptr(m_Handle);
     }
 
     std::vector<Attribute> FieldInfo::GetAttributes() const

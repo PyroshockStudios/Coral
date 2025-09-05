@@ -54,6 +54,11 @@ namespace Coral {
         return s_ManagedFunctions.GetMethodInfoAccessibilityFptr(m_Handle);
     }
 
+    bool MethodInfo::IsStatic() const
+    {
+        return s_ManagedFunctions.GetMethodInfoIsStaticFptr(m_Handle);
+    }
+
     std::vector<Attribute> MethodInfo::GetAttributes() const
     {
         int32_t attributeCount;

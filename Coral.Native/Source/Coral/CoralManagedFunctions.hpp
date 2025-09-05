@@ -13,13 +13,13 @@ namespace Coral {
     class ManagedField;
 
     using SetInternalCallsFn = void (*)(int32_t, void*, int32_t);
-    using CreateAssemblyLoadContextFn = int32_t (*)(String, String);
+    using CreateAssemblyLoadContextFn = int32_t(*)(String, String);
     using UnloadAssemblyLoadContextFn = void (*)(int32_t);
-    using LoadAssemblyFn = int32_t (*)(int32_t, String);
-    using LoadAssemblyFromMemoryFn = int32_t (*)(int32_t, const std::byte*, int64_t);
-    using GetLastLoadStatusFn = AssemblyLoadStatus (*)();
-    using GetAssemblyNameFn = String (*)(int32_t, int32_t);
-    using GetSystemAssemblyFn = int32_t (*)(int32_t);
+    using LoadAssemblyFn = int32_t(*)(int32_t, String);
+    using LoadAssemblyFromMemoryFn = int32_t(*)(int32_t, const std::byte*, int64_t);
+    using GetLastLoadStatusFn = AssemblyLoadStatus(*)();
+    using GetAssemblyNameFn = String(*)(int32_t, int32_t);
+    using GetSystemAssemblyFn = int32_t(*)(int32_t);
 
 #pragma region DotnetServices
     using RunMSBuildFn = void (*)(String, Bool32, Bool32*);
@@ -29,53 +29,58 @@ namespace Coral {
 
     using GetAssemblyTypesFn = void (*)(int32_t, int32_t, TypeId*, int32_t*);
     using GetTypeIdFn = void (*)(String, TypeId*);
-    using GetFullTypeNameFn = String (*)(TypeId);
-    using GetTypeNameFn = String (*)(TypeId);
-    using GetTypeNamespaceFn = String (*)(TypeId);
-    using GetAssemblyQualifiedNameFn = String (*)(TypeId);
+    using GetFullTypeNameFn = String(*)(TypeId);
+    using GetTypeNameFn = String(*)(TypeId);
+    using GetTypeNamespaceFn = String(*)(TypeId);
+    using GetAssemblyQualifiedNameFn = String(*)(TypeId);
     using GetBaseTypeFn = void (*)(TypeId, TypeId*);
     using GetInterfaceTypeCountFn = void (*)(TypeId, int32_t*);
     using GetInterfaceTypesFn = void (*)(TypeId, TypeId*);
-    using GetTypeSizeFn = int32_t (*)(TypeId);
-    using IsTypeSubclassOfFn = Bool32 (*)(TypeId, TypeId);
-    using IsTypeAssignableToFn = Bool32 (*)(TypeId, TypeId);
-    using IsTypeAssignableFromFn = Bool32 (*)(TypeId, TypeId);
-    using IsTypeSZArrayFn = Bool32 (*)(TypeId);
+    using GetTypeSizeFn = int32_t(*)(TypeId);
+    using IsTypeSubclassOfFn = Bool32(*)(TypeId, TypeId);
+    using IsTypeAssignableToFn = Bool32(*)(TypeId, TypeId);
+    using IsTypeAssignableFromFn = Bool32(*)(TypeId, TypeId);
+    using IsTypeSZArrayFn = Bool32(*)(TypeId);
     using GetElementTypeFn = void (*)(TypeId, TypeId*);
     using GetTypeMethodsFn = void (*)(TypeId, ManagedHandle*, int32_t*);
     using GetTypeFieldsFn = void (*)(TypeId, ManagedHandle*, int32_t*);
     using GetTypePropertiesFn = void (*)(TypeId, ManagedHandle*, int32_t*);
-    using HasTypeAttributeFn = Bool32 (*)(TypeId, TypeId);
+    using HasTypeAttributeFn = Bool32(*)(TypeId, TypeId);
     using GetTypeAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
-    using GetTypeManagedTypeFn = ManagedType (*)(TypeId);
-    using GetTypeGenericArgumentFn = TypeId (*)(TypeId, int32_t);
-    using GetTypeGenericTypeDefinitionFn = TypeId (*)(TypeId);
+    using GetTypeManagedTypeFn = ManagedType(*)(TypeId);
+    using GetTypeGenericArgumentFn = TypeId(*)(TypeId, int32_t);
+    using GetTypeGenericTypeDefinitionFn = TypeId(*)(TypeId);
 
 #pragma endregion
 
 #pragma region MethodInfo
-    using GetMethodInfoByNameFn = ManagedHandle (*)(TypeId, String, BindingFlags);
-    using GetMethodInfoByNameParamCountFn = ManagedHandle (*)(TypeId, String, int32_t, BindingFlags);
-    using GetMethodInfoByNameParamTypesFn = ManagedHandle (*)(TypeId, String, int32_t, const TypeId*, BindingFlags);
-    using GetMethodInfoNameFn = String (*)(ManagedHandle);
+    using GetMethodInfoByNameFn = ManagedHandle(*)(TypeId, String, BindingFlags);
+    using GetMethodInfoByNameParamCountFn = ManagedHandle(*)(TypeId, String, int32_t, BindingFlags);
+    using GetMethodInfoByNameParamTypesFn = ManagedHandle(*)(TypeId, String, int32_t, const TypeId*, BindingFlags);
+    using GetMethodInfoNameFn = String(*)(ManagedHandle);
     using GetMethodInfoReturnTypeFn = void (*)(ManagedHandle, TypeId*);
     using GetMethodInfoParameterTypesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
-    using GetMethodInfoAccessibilityFn = TypeAccessibility (*)(ManagedHandle);
+    using GetMethodInfoAccessibilityFn = TypeAccessibility(*)(ManagedHandle);
+    using GetMethodInfoIsStaticFn = Bool32(*)(ManagedHandle);
     using GetMethodInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
 #pragma endregion
 
 #pragma region FieldInfo
-    using GetFieldInfoByNameFn = ManagedHandle (*)(TypeId, String, BindingFlags);
-    using GetFieldInfoNameFn = String (*)(ManagedHandle);
+    using GetFieldInfoByNameFn = ManagedHandle(*)(TypeId, String, BindingFlags);
+    using GetFieldInfoNameFn = String(*)(ManagedHandle);
     using GetFieldInfoTypeFn = void (*)(ManagedHandle, TypeId*);
-    using GetFieldInfoAccessibilityFn = TypeAccessibility (*)(ManagedHandle);
+    using GetFieldInfoAccessibilityFn = TypeAccessibility(*)(ManagedHandle);
+    using GetFieldInfoIsStaticFn = Bool32(*)(ManagedHandle);
+    using GetFieldInfoIsLiteralFn = Bool32(*)(ManagedHandle);
     using GetFieldInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
 #pragma endregion
 
 #pragma region PropertyInfo
-    using GetPropertyInfoByNameFn = ManagedHandle (*)(TypeId, String, BindingFlags);
-    using GetPropertyInfoNameFn = String (*)(ManagedHandle);
+    using GetPropertyInfoByNameFn = ManagedHandle(*)(TypeId, String, BindingFlags);
+    using GetPropertyInfoNameFn = String(*)(ManagedHandle);
     using GetPropertyInfoTypeFn = void (*)(ManagedHandle, TypeId*);
+    using GetPropertyInfoGetMethodFn = ManagedHandle(*)(ManagedHandle);
+    using GetPropertyInfoSetMethodFn = ManagedHandle(*)(ManagedHandle);
     using GetPropertyInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
 #pragma endregion
 
@@ -151,6 +156,7 @@ namespace Coral {
         GetMethodInfoReturnTypeFn GetMethodInfoReturnTypeFptr = nullptr;
         GetMethodInfoParameterTypesFn GetMethodInfoParameterTypesFptr = nullptr;
         GetMethodInfoAccessibilityFn GetMethodInfoAccessibilityFptr = nullptr;
+        GetMethodInfoIsStaticFn GetMethodInfoIsStaticFptr = nullptr;
         GetMethodInfoAttributesFn GetMethodInfoAttributesFptr = nullptr;
 #pragma endregion
 
@@ -159,6 +165,8 @@ namespace Coral {
         GetFieldInfoNameFn GetFieldInfoNameFptr = nullptr;
         GetFieldInfoTypeFn GetFieldInfoTypeFptr = nullptr;
         GetFieldInfoAccessibilityFn GetFieldInfoAccessibilityFptr = nullptr;
+        GetFieldInfoIsStaticFn GetFieldInfoIsStaticFptr = nullptr;
+        GetFieldInfoIsLiteralFn GetFieldInfoIsLiteralFptr = nullptr;
         GetFieldInfoAttributesFn GetFieldInfoAttributesFptr = nullptr;
 #pragma endregion
 
@@ -166,6 +174,8 @@ namespace Coral {
         GetPropertyInfoByNameFn GetPropertyInfoByNameFptr = nullptr;
         GetPropertyInfoNameFn GetPropertyInfoNameFptr = nullptr;
         GetPropertyInfoTypeFn GetPropertyInfoTypeFptr = nullptr;
+        GetPropertyInfoGetMethodFn GetPropertyInfoGetMethodFptr = nullptr;
+        GetPropertyInfoSetMethodFn GetPropertyInfoSetMethodFptr = nullptr;
         GetPropertyInfoAttributesFn GetPropertyInfoAttributesFptr = nullptr;
 #pragma endregion
 

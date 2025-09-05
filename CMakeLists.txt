@@ -3,13 +3,7 @@ project(Coral)
 
 option(CORAL_EXAMPLE "Build the example programs" OFF)
 option(CORAL_TESTING "Build the tests" ON)
-option(CORAL_WIDE_CHARS "Use UTF16 rather than UTF8" ON)
 set(CORAL_DOTNET_VERSION "9.0.0" CACHE STRING "Required .NET version")
-
-if (CORAL_WIDE_CHARS)
-    add_definitions(-DCORAL_WIDE_CHARS=1)
-    set(CORAL_WIDE_CHARS 1)
-endif()
 
 include(ExternalProject)
 

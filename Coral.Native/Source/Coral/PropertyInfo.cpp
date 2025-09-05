@@ -26,6 +26,20 @@ namespace Coral {
         return *m_Type;
     }
 
+    MethodInfo PropertyInfo::GetGetMethod() const
+    {
+        MethodInfo info;
+        info.m_Handle = s_ManagedFunctions.GetPropertyInfoGetMethodFptr(m_Handle);
+        return info;
+    }
+
+    MethodInfo PropertyInfo::GetSetMethod() const
+    {
+        MethodInfo info;
+        info.m_Handle = s_ManagedFunctions.GetPropertyInfoSetMethodFptr(m_Handle);
+        return info;
+    }
+
     std::vector<Attribute> PropertyInfo::GetAttributes() const
     {
         int32_t attributeCount;

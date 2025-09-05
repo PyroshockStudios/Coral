@@ -16,6 +16,8 @@ namespace Coral {
         Type& GetType();
 
         TypeAccessibility GetAccessibility() const;
+        bool IsStatic() const;
+        bool IsLiteral() const;
 
         std::vector<Attribute> GetAttributes() const;
 

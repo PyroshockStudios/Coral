@@ -8,7 +8,7 @@ namespace Coral {
     class Type;
     class Attribute;
     class Object;
-
+    class PropertyInfo;
     class MethodInfo
     {
     public:
@@ -18,6 +18,7 @@ namespace Coral {
         const std::vector<Type*>& GetParameterTypes();
 
         TypeAccessibility GetAccessibility() const;
+        bool IsStatic() const;
 
         std::vector<Attribute> GetAttributes() const;
 
@@ -38,6 +39,7 @@ namespace Coral {
 
         friend class Type;
         friend class Object;
+        friend class PropertyInfo;
     };
 
 }

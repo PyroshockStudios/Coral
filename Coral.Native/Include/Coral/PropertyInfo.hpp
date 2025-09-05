@@ -15,6 +15,9 @@ namespace Coral {
         std::string GetName() const;
         Type& GetType();
 
+        MethodInfo GetGetMethod() const;
+        MethodInfo GetSetMethod() const;
+
         std::vector<Attribute> GetAttributes() const;
 
         constexpr inline operator bool()

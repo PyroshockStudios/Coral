@@ -745,6 +745,38 @@ internal static class TypeInterface
             HandleException(e);
         }
     }
+    [UnmanagedCallersOnly]
+    internal static unsafe TypeAccessibility GetMethodInfoAccessibility(int InMethodInfo)
+    {
+        try
+        {
+            if (!s_CachedMethods.TryGetValue(InMethodInfo, out var methodInfo) || methodInfo == null)
+                return TypeAccessibility.Internal;
+
+            return GetTypeAccessibility(methodInfo);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return TypeAccessibility.Public;
+        }
+    }
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 GetMethodInfoIsStatic(int InMethodInfo)
+    {
+        try
+        {
+            if (!s_CachedMethods.TryGetValue(InMethodInfo, out var methodInfo) || methodInfo == null)
+                return false;
+
+            return methodInfo.IsStatic;
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return false;
+        }
+    }
 
     [UnmanagedCallersOnly]
     internal static unsafe void GetMethodInfoAttributes(int InMethodInfo, int* OutAttributes, int* OutAttributesCount)
@@ -777,56 +809,6 @@ internal static class TypeInterface
             HandleException(ex);
         }
     }
-
-    internal enum TypeAccessibility
-    {
-        Public,
-        Private,
-        Protected,
-        Internal,
-        ProtectedPublic,
-        PrivateProtected
-    }
-
-    private static TypeAccessibility GetTypeAccessibility(FieldInfo InFieldInfo)
-    {
-        if (InFieldInfo.IsPublic) return TypeAccessibility.Public;
-        if (InFieldInfo.IsPrivate) return TypeAccessibility.Private;
-        if (InFieldInfo.IsFamily) return TypeAccessibility.Protected;
-        if (InFieldInfo.IsAssembly) return TypeAccessibility.Internal;
-        if (InFieldInfo.IsFamilyOrAssembly) return TypeAccessibility.ProtectedPublic;
-        if (InFieldInfo.IsFamilyAndAssembly) return TypeAccessibility.PrivateProtected;
-        return TypeAccessibility.Public;
-    }
-
-    private static TypeAccessibility GetTypeAccessibility(MethodInfo InMethodInfo)
-    {
-        if (InMethodInfo.IsPublic) return TypeAccessibility.Public;
-        if (InMethodInfo.IsPrivate) return TypeAccessibility.Private;
-        if (InMethodInfo.IsFamily) return TypeAccessibility.Protected;
-        if (InMethodInfo.IsAssembly) return TypeAccessibility.Internal;
-        if (InMethodInfo.IsFamilyOrAssembly) return TypeAccessibility.ProtectedPublic;
-        if (InMethodInfo.IsFamilyAndAssembly) return TypeAccessibility.PrivateProtected;
-        return TypeAccessibility.Public;
-    }
-
-    [UnmanagedCallersOnly]
-    internal static unsafe TypeAccessibility GetMethodInfoAccessibility(int InMethodInfo)
-    {
-        try
-        {
-            if (!s_CachedMethods.TryGetValue(InMethodInfo, out var methodInfo) || methodInfo == null)
-                return TypeAccessibility.Internal;
-
-            return GetTypeAccessibility(methodInfo);
-        }
-        catch (Exception ex)
-        {
-            HandleException(ex);
-            return TypeAccessibility.Public;
-        }
-    }
-
 
 
     [UnmanagedCallersOnly]
@@ -900,6 +882,37 @@ internal static class TypeInterface
             return TypeAccessibility.Public;
         }
     }
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 GetFieldInfoIsStatic(int InFieldInfo)
+    {
+        try
+        {
+            if (!s_CachedFields.TryGetValue(InFieldInfo, out var fieldInfo) || fieldInfo == null)
+                return false;
+
+            return fieldInfo.IsStatic;
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return false;
+        }
+    }
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 GetFieldInfoIsLiteral(int InFieldInfo)
+    {
+        try
+        {
+            if (!s_CachedFields.TryGetValue(InFieldInfo, out var fieldInfo) || fieldInfo == null)
+                return false;
+            return fieldInfo.IsLiteral;
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return false;
+        }
+    }
 
     [UnmanagedCallersOnly]
     internal static unsafe void GetFieldInfoAttributes(int InFieldInfo, int* OutAttributes, int* OutAttributesCount)
@@ -910,7 +923,6 @@ internal static class TypeInterface
                 return;
 
             var attributes = fieldInfo.GetCustomAttributes().ToImmutableArray();
-
             if (attributes.Length == 0)
             {
                 *OutAttributesCount = 0;
@@ -988,6 +1000,38 @@ internal static class TypeInterface
             HandleException(ex);
         }
     }
+    [UnmanagedCallersOnly]
+    internal static unsafe int GetPropertyInfoGetMethod(int InPropertyInfo)
+    {
+        try
+        {
+            if (!s_CachedProperties.TryGetValue(InPropertyInfo, out var propertyInfo) || propertyInfo == null)
+                return -1;
+
+            return s_CachedMethods.Add(propertyInfo.GetMethod);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return -1;
+        }
+    }
+    [UnmanagedCallersOnly]
+    internal static unsafe int GetPropertyInfoSetMethod(int InPropertyInfo)
+    {
+        try
+        {
+            if (!s_CachedProperties.TryGetValue(InPropertyInfo, out var propertyInfo) || propertyInfo == null)
+                return -1;
+
+            return s_CachedMethods.Add(propertyInfo.SetMethod);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return -1;
+        }
+    }
 
     [UnmanagedCallersOnly]
     internal static unsafe void GetPropertyInfoAttributes(int InPropertyInfo, int* OutAttributes, int* OutAttributesCount)
@@ -1060,6 +1104,38 @@ internal static class TypeInterface
         {
             HandleException(ex);
         }
+    }
+
+    internal enum TypeAccessibility
+    {
+        Public,
+        Private,
+        Protected,
+        Internal,
+        ProtectedPublic,
+        PrivateProtected
+    }
+
+    private static TypeAccessibility GetTypeAccessibility(FieldInfo InFieldInfo)
+    {
+        if (InFieldInfo.IsPublic) return TypeAccessibility.Public;
+        if (InFieldInfo.IsPrivate) return TypeAccessibility.Private;
+        if (InFieldInfo.IsFamily) return TypeAccessibility.Protected;
+        if (InFieldInfo.IsAssembly) return TypeAccessibility.Internal;
+        if (InFieldInfo.IsFamilyOrAssembly) return TypeAccessibility.ProtectedPublic;
+        if (InFieldInfo.IsFamilyAndAssembly) return TypeAccessibility.PrivateProtected;
+        return TypeAccessibility.Public;
+    }
+
+    private static TypeAccessibility GetTypeAccessibility(MethodInfo InMethodInfo)
+    {
+        if (InMethodInfo.IsPublic) return TypeAccessibility.Public;
+        if (InMethodInfo.IsPrivate) return TypeAccessibility.Private;
+        if (InMethodInfo.IsFamily) return TypeAccessibility.Protected;
+        if (InMethodInfo.IsAssembly) return TypeAccessibility.Internal;
+        if (InMethodInfo.IsFamilyOrAssembly) return TypeAccessibility.ProtectedPublic;
+        if (InMethodInfo.IsFamilyAndAssembly) return TypeAccessibility.PrivateProtected;
+        return TypeAccessibility.Public;
     }
 
 }
