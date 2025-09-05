@@ -43,6 +43,9 @@ namespace Coral {
 
         ManagedType GetManagedType() const;
 
+        Type& GetGenericArgument(int32_t InArgIndex) const;
+        Type& GetGenericTypeDefinition() const;
+
         bool IsSZArray() const;
         Type& GetElementType();
 
@@ -65,7 +68,7 @@ namespace Coral {
                 return CreateInstanceInternal(OutException, nullptr, nullptr, 0);
             }
         }
-        
+
         template <typename TReturn = void, typename... TArgs>
         auto InvokeStaticMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
@@ -82,7 +85,7 @@ namespace Coral {
             }
             else
             {
-                TReturn result{};
+                TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
                     InvokeStaticMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, &result);
@@ -120,7 +123,7 @@ namespace Coral {
     class ReflectionType
     {
     public:
-        operator Type& () const;
+        operator Type&() const;
 
     public:
         TypeId m_TypeID;

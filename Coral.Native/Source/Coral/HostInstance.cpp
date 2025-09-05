@@ -7,9 +7,9 @@
 #include "CoralManagedFunctions.hpp"
 
 #ifdef CORAL_WINDOWS
-#include <ShlObj_core.h>
+    #include <ShlObj_core.h>
 #else
-#include <dlfcn.h>
+    #include <dlfcn.h>
 #endif
 #include <cassert>
 
@@ -57,7 +57,7 @@ namespace Coral {
     CoralInitStatus HostInstance::Initialize(HostSettings InSettings)
     {
         CORAL_VERIFY(!m_Initialized);
-		m_SupportedTargets = InSettings.SupportedTargets;
+        m_SupportedTargets = InSettings.SupportedTargets;
 
         if (!LoadHostFXR())
         {
@@ -73,10 +73,10 @@ namespace Coral {
         MessageFilter = m_Settings.MessageFilter;
 
         s_CoreCLRFunctions.SetHostFXRErrorWriter([](const UCChar* InMessage)
-            {
-                auto message = StringHelper::ConvertWideToUtf8(InMessage);
-                MessageCallback(message, MessageLevel::Error);
-            });
+        {
+            auto message = StringHelper::ConvertWideToUtf8(InMessage);
+            MessageCallback(message, MessageLevel::Error);
+        });
 
         m_CoralManagedAssemblyPath = std::filesystem::path(m_Settings.CoralDirectory) / "Coral.Managed.dll";
 
@@ -106,7 +106,7 @@ namespace Coral {
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
         alc.m_Host = this;
-		alc.LoadSystemAssembly();
+        alc.LoadSystemAssembly();
         return alc;
     }
 
@@ -116,8 +116,8 @@ namespace Coral {
         ScopedString dllPath = String::New(InDllPath);
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
-		alc.m_Host = this;
-		alc.LoadSystemAssembly();
+        alc.m_Host = this;
+        alc.LoadSystemAssembly();
         return alc;
     }
 
@@ -148,7 +148,7 @@ namespace Coral {
 
     static std::filesystem::path GetHostFXRPath(const std::vector<const char*>& supportedTargets)
     {
-		assert(supportedTargets.size() > 0 && "at least one supported target must be defined!");
+        assert(supportedTargets.size() > 0 && "at least one supported target must be defined!");
 #ifdef CORAL_WINDOWS
         std::filesystem::path basePath = "";
 
@@ -163,13 +163,11 @@ namespace Coral {
         basePath = pf;
         basePath /= "dotnet/host/fxr/";
 
-        auto searchPaths = std::array
-        {
+        auto searchPaths = std::array {
             basePath
         };
 #else
-        auto searchPaths = std::array
-        {
+        auto searchPaths = std::array {
             std::filesystem::path("/usr/local/lib/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/lib64/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/share/dotnet/host/fxr/"),
@@ -194,11 +192,11 @@ namespace Coral {
 
                 bool supported = false;
                 for (const char* majorStr : supportedTargets)
-				{
-					if (dirPath.starts_with(majorStr))
-						supported = true;
-				}
-				if (!supported) continue;
+                {
+                    if (dirPath.starts_with(majorStr))
+                        supported = true;
+                }
+                if (!supported) continue;
                 auto res = dir / std::filesystem::path(CORAL_HOSTFXR_NAME);
                 CORAL_VERIFY(std::filesystem::exists(res));
                 return res;
@@ -222,11 +220,11 @@ namespace Coral {
         void* libraryHandle = nullptr;
 
 #ifdef CORAL_WINDOWS
-#ifdef CORAL_WIDE_CHARS
+    #ifdef CORAL_WIDE_CHARS
         libraryHandle = LoadLibraryW(hostfxrPath.c_str());
-#else
+    #else
         libraryHandle = LoadLibraryA(hostfxrPath.string().c_str());
-#endif
+    #endif
 #else
         libraryHandle = dlopen(hostfxrPath.string().data(), RTLD_NOW | RTLD_GLOBAL);
 #endif
@@ -269,31 +267,30 @@ namespace Coral {
             CORAL_VERIFY(status == StatusCode::Success);
         }
 
-        using InitializeFn = void(*)(void(*)(String, MessageLevel), void(*)(String));
+        using InitializeFn = void (*)(void (*)(String, MessageLevel), void (*)(String));
         InitializeFn coralManagedEntryPoint = nullptr;
         coralManagedEntryPoint = LoadCoralManagedFunctionPtr<InitializeFn>(CORAL_STR("Coral.Managed.ManagedHost, Coral.Managed"), CORAL_STR("Initialize"));
 
         LoadCoralFunctions();
 
         coralManagedEntryPoint([](String InMessage, MessageLevel InLevel)
-            {
-                if (MessageFilter & InLevel)
-                {
-                    std::string message = InMessage;
-                    MessageCallback(message, InLevel);
-                }
-            },
-            [](String InMessage)
+        {
+            if (MessageFilter & InLevel)
             {
                 std::string message = InMessage;
-                if (!ExceptionCallback)
-                {
-                    MessageCallback(message, MessageLevel::Error);
-                    return;
-                }
+                MessageCallback(message, InLevel);
+            }
+        }, [](String InMessage)
+        {
+            std::string message = InMessage;
+            if (!ExceptionCallback)
+            {
+                MessageCallback(message, MessageLevel::Error);
+                return;
+            }
 
-                ExceptionCallback(message);
-            });
+            ExceptionCallback(message);
+        });
 
         ExceptionCallback = m_Settings.ExceptionCallback;
 
@@ -308,8 +305,8 @@ namespace Coral {
         s_ManagedFunctions.LoadAssemblyFromMemoryFptr = LoadCoralManagedFunctionPtr<LoadAssemblyFromMemoryFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("LoadAssemblyFromMemory"));
         s_ManagedFunctions.UnloadAssemblyLoadContextFptr = LoadCoralManagedFunctionPtr<UnloadAssemblyLoadContextFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("UnloadAssemblyLoadContext"));
         s_ManagedFunctions.GetLastLoadStatusFptr = LoadCoralManagedFunctionPtr<GetLastLoadStatusFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetLastLoadStatus"));
-		s_ManagedFunctions.GetAssemblyNameFptr = LoadCoralManagedFunctionPtr<GetAssemblyNameFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetAssemblyName"));
-		s_ManagedFunctions.GetSystemAssemblyFptr = LoadCoralManagedFunctionPtr<GetSystemAssemblyFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetSystemAssembly"));
+        s_ManagedFunctions.GetAssemblyNameFptr = LoadCoralManagedFunctionPtr<GetAssemblyNameFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetAssemblyName"));
+        s_ManagedFunctions.GetSystemAssemblyFptr = LoadCoralManagedFunctionPtr<GetSystemAssemblyFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetSystemAssembly"));
 
         s_ManagedFunctions.RunMSBuildFptr = LoadCoralManagedFunctionPtr<RunMSBuildFn>(CORAL_STR("Coral.Managed.MSBuildRunner, Coral.Managed"), CORAL_STR("Run"));
 
@@ -333,6 +330,9 @@ namespace Coral {
         s_ManagedFunctions.HasTypeAttributeFptr = LoadCoralManagedFunctionPtr<HasTypeAttributeFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("HasTypeAttribute"));
         s_ManagedFunctions.GetTypeAttributesFptr = LoadCoralManagedFunctionPtr<GetTypeAttributesFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetTypeAttributes"));
         s_ManagedFunctions.GetTypeManagedTypeFptr = LoadCoralManagedFunctionPtr<GetTypeManagedTypeFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetTypeManagedType"));
+        s_ManagedFunctions.GetTypeGenericArgumentFptr = LoadCoralManagedFunctionPtr<GetTypeGenericArgumentFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetTypeGenericArgument"));
+        s_ManagedFunctions.GetTypeGenericTypeDefinitionFptr = LoadCoralManagedFunctionPtr<GetTypeGenericTypeDefinitionFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetTypeGenericTypeDefinition"));
+
         s_ManagedFunctions.InvokeStaticMethodFptr = LoadCoralManagedFunctionPtr<InvokeStaticMethodFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeStaticMethod"));
         s_ManagedFunctions.InvokeStaticMethodRetFptr = LoadCoralManagedFunctionPtr<InvokeStaticMethodRetFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeStaticMethodRet"));
 
@@ -362,11 +362,11 @@ namespace Coral {
         s_ManagedFunctions.SetInternalCallsFptr = LoadCoralManagedFunctionPtr<SetInternalCallsFn>(CORAL_STR("Coral.Managed.Interop.InternalCallsManager, Coral.Managed"), CORAL_STR("SetInternalCalls"));
         s_ManagedFunctions.CreateObjectFptr = LoadCoralManagedFunctionPtr<CreateObjectFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("CreateObject"));
         s_ManagedFunctions.CopyObjectFptr = LoadCoralManagedFunctionPtr<CopyObjectFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("CopyObject"));
-		s_ManagedFunctions.InvokeMethodFptr = LoadCoralManagedFunctionPtr<InvokeMethodFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeMethod"));
-		s_ManagedFunctions.InvokeMethodRetFptr = LoadCoralManagedFunctionPtr<InvokeMethodRetFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeMethodRet"));
-		s_ManagedFunctions.InvokeDelegateFptr = LoadCoralManagedFunctionPtr<InvokeDelegateFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeDelegate"));
-		s_ManagedFunctions.InvokeDelegateRetFptr = LoadCoralManagedFunctionPtr<InvokeDelegateRetFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeDelegateRet"));
-		s_ManagedFunctions.SetFieldValueFptr = LoadCoralManagedFunctionPtr<SetFieldValueFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("SetFieldValue"));
+        s_ManagedFunctions.InvokeMethodFptr = LoadCoralManagedFunctionPtr<InvokeMethodFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeMethod"));
+        s_ManagedFunctions.InvokeMethodRetFptr = LoadCoralManagedFunctionPtr<InvokeMethodRetFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeMethodRet"));
+        s_ManagedFunctions.InvokeDelegateFptr = LoadCoralManagedFunctionPtr<InvokeDelegateFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeDelegate"));
+        s_ManagedFunctions.InvokeDelegateRetFptr = LoadCoralManagedFunctionPtr<InvokeDelegateRetFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("InvokeDelegateRet"));
+        s_ManagedFunctions.SetFieldValueFptr = LoadCoralManagedFunctionPtr<SetFieldValueFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("SetFieldValue"));
         s_ManagedFunctions.GetFieldValueFptr = LoadCoralManagedFunctionPtr<GetFieldValueFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("GetFieldValue"));
         s_ManagedFunctions.SetPropertyValueFptr = LoadCoralManagedFunctionPtr<SetPropertyValueFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("SetPropertyValue"));
         s_ManagedFunctions.GetPropertyValueFptr = LoadCoralManagedFunctionPtr<GetPropertyValueFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("GetPropertyValue"));
@@ -382,11 +382,9 @@ namespace Coral {
         void* funcPtr = nullptr;
 
         int status = s_CoreCLRFunctions.GetManagedFunctionPtr(InAssemblyPath.c_str(), InTypeName, InMethodName, InDelegateType, nullptr, &funcPtr);
-        if (status != StatusCode::Success || !funcPtr) {
-            std::cerr << "Failed to retrieve managed function pointer `" <<
-                StringHelper::UCCharToString(InTypeName) << "`::`" <<
-                StringHelper::UCCharToString(InMethodName) <<
-                "` from `" << InAssemblyPath << "`" << std::endl;
+        if (status != StatusCode::Success || !funcPtr)
+        {
+            std::cerr << "Failed to retrieve managed function pointer `" << StringHelper::UCCharToString(InTypeName) << "`::`" << StringHelper::UCCharToString(InMethodName) << "` from `" << InAssemblyPath << "`" << std::endl;
             CORAL_VERIFY(false);
         }
 

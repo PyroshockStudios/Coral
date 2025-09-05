@@ -15,138 +15,138 @@
 #define CORAL_LEAK_UC_TYPES_MSG_P(x) CORAL_DEPRECATE_MSG_P(CORAL_LEAK_UC_TYPES_MSG, #x)
 
 #ifdef _WIN32
-	#define CORAL_WINDOWS
+    #define CORAL_WINDOWS
 #elif defined(__APPLE__)
-	#define CORAL_APPLE
+    #define CORAL_APPLE
 #endif
 
 #ifdef CORAL_WINDOWS
-	#define CORAL_CALLTYPE __cdecl
-	#define CORAL_HOSTFXR_NAME "hostfxr.dll"
+    #define CORAL_CALLTYPE __cdecl
+    #define CORAL_HOSTFXR_NAME "hostfxr.dll"
 #else
-	#define CORAL_CALLTYPE
+    #define CORAL_CALLTYPE
 
-	#ifdef CORAL_APPLE
-		#define CORAL_HOSTFXR_NAME "libhostfxr.dylib"
-	#else
-		#define CORAL_HOSTFXR_NAME "libhostfxr.so"
-	#endif
+    #ifdef CORAL_APPLE
+        #define CORAL_HOSTFXR_NAME "libhostfxr.dylib"
+    #else
+        #define CORAL_HOSTFXR_NAME "libhostfxr.so"
+    #endif
 #endif
 
 #ifdef CORAL_WIDE_CHARS
-	#define CORAL_STR(s) L##s
+    #define CORAL_STR(s) L##s
 
-	using CharType [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCChar))]] = wchar_t;
-	using StringView [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCStringView))]] = std::wstring_view;
+using CharType [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCChar))]] = wchar_t;
+using StringView [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCStringView))]] = std::wstring_view;
 
-	namespace Coral {
-		using UCChar = wchar_t;
-		using UCStringView = std::wstring_view;
-		using UCString = std::wstring;
-	}
+namespace Coral {
+    using UCChar = wchar_t;
+    using UCStringView = std::wstring_view;
+    using UCString = std::wstring;
+}
 #else
-	#define CORAL_STR(s) s
+    #define CORAL_STR(s) s
 
-	using CharType [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCChar))]] = char;
-	using StringView [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCStringView))]] = std::string_view;
+using CharType [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCChar))]] = char;
+using StringView [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCStringView))]] = std::string_view;
 
-	namespace Coral {
-		using UCChar = char;
-		using UCStringView = std::string_view;
-		using UCString = std::string;
-	}
+namespace Coral {
+    using UCChar = char;
+    using UCStringView = std::string_view;
+    using UCString = std::string;
+}
 #endif
 
 #define CORAL_UNMANAGED_CALLERS_ONLY (std::bit_cast<const UCChar*>(-1ULL))
 
 namespace Coral {
 
-	using Bool32 = uint32_t;
-	using Char = char16_t; // C# strings are UTF16
-	static_assert(sizeof(Bool32) == 4);
-	static_assert(sizeof(Char) == 2);
+    using Bool32 = uint32_t;
+    using Char = char16_t; // C# strings are UTF16
+    static_assert(sizeof(Bool32) == 4);
+    static_assert(sizeof(Char) == 2);
 
-	enum class TypeAccessibility
-	{
-		Public,
-		Private,
-		Protected,
-		Internal,
-		ProtectedPublic,
-		PrivateProtected
-	};
+    enum class TypeAccessibility
+    {
+        Public,
+        Private,
+        Protected,
+        Internal,
+        ProtectedPublic,
+        PrivateProtected
+    };
 
-	enum class BindingFlags : uint32_t
-	{
-		Default = 0,
-		IgnoreCase = 1 << 0,
-		DeclaredOnly = 1 << 1,
-		Instance = 1 << 2,
-		Static = 1 << 3,
-		Public = 1 << 4,
-		NonPublic = 1 << 5,
-		FlattenHierarchy = 1 << 6,
-		InvokeMethod = 1 << 8,
-		CreateInstance = 1 << 9,
-		GetField = 1 << 10,
-		SetField = 1 << 11,
-		GetProperty = 1 << 12,
-		SetProperty = 1 << 13,
-		PutDispProperty = 1 << 14,
-		PutRefDispProperty = 1 << 15,
-		ExactBinding = 1 << 16,
-		SuppressChangeType = 1 << 17,
-		OptionalParamBinding = 1 << 18,
-		IgnoreReturn = 1 << 24,
-		DoNotWrapExceptions = 1 << 25
-	};
+    enum class BindingFlags : uint32_t
+    {
+        Default = 0,
+        IgnoreCase = 1 << 0,
+        DeclaredOnly = 1 << 1,
+        Instance = 1 << 2,
+        Static = 1 << 3,
+        Public = 1 << 4,
+        NonPublic = 1 << 5,
+        FlattenHierarchy = 1 << 6,
+        InvokeMethod = 1 << 8,
+        CreateInstance = 1 << 9,
+        GetField = 1 << 10,
+        SetField = 1 << 11,
+        GetProperty = 1 << 12,
+        SetProperty = 1 << 13,
+        PutDispProperty = 1 << 14,
+        PutRefDispProperty = 1 << 15,
+        ExactBinding = 1 << 16,
+        SuppressChangeType = 1 << 17,
+        OptionalParamBinding = 1 << 18,
+        IgnoreReturn = 1 << 24,
+        DoNotWrapExceptions = 1 << 25
+    };
 
-	constexpr inline BindingFlags operator|(BindingFlags a, BindingFlags b)
-	{
-		return static_cast<BindingFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
-	}
+    constexpr inline BindingFlags operator|(BindingFlags a, BindingFlags b)
+    {
+        return static_cast<BindingFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+    }
 
-	constexpr inline BindingFlags operator&(BindingFlags a, BindingFlags b)
-	{
-		return static_cast<BindingFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
-	}
+    constexpr inline BindingFlags operator&(BindingFlags a, BindingFlags b)
+    {
+        return static_cast<BindingFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+    }
 
-	constexpr inline BindingFlags operator^(BindingFlags a, BindingFlags b)
-	{
-		return static_cast<BindingFlags>(static_cast<uint32_t>(a) ^ static_cast<uint32_t>(b));
-	}
+    constexpr inline BindingFlags operator^(BindingFlags a, BindingFlags b)
+    {
+        return static_cast<BindingFlags>(static_cast<uint32_t>(a) ^ static_cast<uint32_t>(b));
+    }
 
-	constexpr inline BindingFlags operator~(BindingFlags a)
-	{
-		return static_cast<BindingFlags>(~static_cast<uint32_t>(a));
-	}
-	constexpr inline BindingFlags& operator|=(BindingFlags& a, BindingFlags b)
-	{
-		a = a | b;
-		return a;
-	}
+    constexpr inline BindingFlags operator~(BindingFlags a)
+    {
+        return static_cast<BindingFlags>(~static_cast<uint32_t>(a));
+    }
+    constexpr inline BindingFlags& operator|=(BindingFlags& a, BindingFlags b)
+    {
+        a = a | b;
+        return a;
+    }
 
-	constexpr inline BindingFlags& operator&=(BindingFlags& a, BindingFlags b)
-	{
-		a = a & b;
-		return a;
-	}
+    constexpr inline BindingFlags& operator&=(BindingFlags& a, BindingFlags b)
+    {
+        a = a & b;
+        return a;
+    }
 
-	constexpr inline BindingFlags& operator^=(BindingFlags& a, BindingFlags b)
-	{
-		a = a ^ b;
-		return a;
-	}
+    constexpr inline BindingFlags& operator^=(BindingFlags& a, BindingFlags b)
+    {
+        a = a ^ b;
+        return a;
+    }
 
-	using TypeId = int32_t;
-	using ManagedHandle = int32_t;
-	using MetadataToken = uint32_t;
+    using TypeId = int32_t;
+    using ManagedHandle = int32_t;
+    using MetadataToken = uint32_t;
 
-	struct InternalCall
-	{
-		// TODO(Emily): Review all `UCChar*` refs to see if they could be `UCStringView`.
-		const UCChar* Name;
-		void* NativeFunctionPtr;
-	};
+    struct InternalCall
+    {
+        // TODO(Emily): Review all `UCChar*` refs to see if they could be `UCStringView`.
+        const UCChar* Name;
+        void* NativeFunctionPtr;
+    };
 
 }

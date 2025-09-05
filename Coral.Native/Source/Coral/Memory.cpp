@@ -2,59 +2,59 @@
 
 namespace Coral {
 
-	void* Memory::AllocHGlobal(size_t InSize)
-	{
+    void* Memory::AllocHGlobal(size_t InSize)
+    {
 #ifdef CORAL_WINDOWS
-		return LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT, InSize);
+        return LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT, InSize);
 #else
-		return malloc(InSize);
+        return malloc(InSize);
 #endif
-	}
+    }
 
-	void Memory::FreeHGlobal(void* InPtr)
-	{
+    void Memory::FreeHGlobal(void* InPtr)
+    {
 #ifdef CORAL_WINDOWS
-		LocalFree(InPtr);
+        LocalFree(InPtr);
 #else
-		free(InPtr);
+        free(InPtr);
 #endif
-	}
+    }
 
-	UCChar* Memory::StringToCoTaskMemAuto(UCStringView InString)
-	{
-		size_t length = InString.length() + 1;
-		size_t size = length * sizeof(UCChar);
+    UCChar* Memory::StringToCoTaskMemAuto(UCStringView InString)
+    {
+        size_t length = InString.length() + 1;
+        size_t size = length * sizeof(UCChar);
 
-		// TODO(Emily): This (and a few other places) misuse the WC/MB split assuming Windows is the only WC platform.
-		//				If we want to decide that is a general assumption we can entirely remove the `CORAL_WIDE_CHARS`
-		//				Macro and its exclusive effects.
+        // TODO(Emily): This (and a few other places) misuse the WC/MB split assuming Windows is the only WC platform.
+        //				If we want to decide that is a general assumption we can entirely remove the `CORAL_WIDE_CHARS`
+        //				Macro and its exclusive effects.
 #ifdef CORAL_WINDOWS
-		auto* buffer = static_cast<UCChar*>(CoTaskMemAlloc(size));
+        auto* buffer = static_cast<UCChar*>(CoTaskMemAlloc(size));
 
-		if (buffer != nullptr)
-		{
-			memset(buffer, 0xCE, size);
-			wcscpy(buffer, InString.data());
-		}
+        if (buffer != nullptr)
+        {
+            memset(buffer, 0xCE, size);
+            wcscpy(buffer, InString.data());
+        }
 #else
-		UCChar* buffer;
+        UCChar* buffer;
 
-		if ((buffer = static_cast<UCChar*>(calloc(length, sizeof(UCChar)))))
-		{
-			strcpy(buffer, InString.data());
-		}
+        if ((buffer = static_cast<UCChar*>(calloc(length, sizeof(UCChar)))))
+        {
+            strcpy(buffer, InString.data());
+        }
 #endif
 
-		return buffer;
-	}
+        return buffer;
+    }
 
-	void Memory::FreeCoTaskMem(void* InMemory)
-	{
+    void Memory::FreeCoTaskMem(void* InMemory)
+    {
 #ifdef CORAL_WINDOWS
-		CoTaskMemFree(InMemory);
+        CoTaskMemFree(InMemory);
 #else
-		FreeHGlobal(InMemory);
+        FreeHGlobal(InMemory);
 #endif
-	}
+    }
 
 }

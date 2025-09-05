@@ -5,38 +5,39 @@
 
 namespace Coral {
 
-	class Type;
-	class Attribute;
-	class Object;
+    class Type;
+    class Attribute;
+    class Object;
 
-	class MethodInfo
-	{
-	public:
-		String GetName() const;
+    class MethodInfo
+    {
+    public:
+        String GetName() const;
 
-		Type& GetReturnType();
-		const std::vector<Type*>& GetParameterTypes();
+        Type& GetReturnType();
+        const std::vector<Type*>& GetParameterTypes();
 
-		TypeAccessibility GetAccessibility() const;
+        TypeAccessibility GetAccessibility() const;
 
-		std::vector<Attribute> GetAttributes() const;
+        std::vector<Attribute> GetAttributes() const;
 
-		constexpr inline operator bool()
-		{
-			return m_Handle != -1;
-		}
+        constexpr inline operator bool()
+        {
+            return m_Handle != -1;
+        }
 
-		MetadataToken GetMetadataToken() const
-		{
-			return static_cast<MetadataToken>(m_Handle);
-		}
-	private:
-		ManagedHandle m_Handle = -1;
-		Type* m_ReturnType = nullptr;
-		std::vector<Type*> m_ParameterTypes;
+        MetadataToken GetMetadataToken() const
+        {
+            return static_cast<MetadataToken>(m_Handle);
+        }
 
-		friend class Type;
-		friend class Object;
-	};
+    private:
+        ManagedHandle m_Handle = -1;
+        Type* m_ReturnType = nullptr;
+        std::vector<Type*> m_ParameterTypes;
+
+        friend class Type;
+        friend class Object;
+    };
 
 }

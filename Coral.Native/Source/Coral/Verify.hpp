@@ -1,32 +1,38 @@
 #pragma once
 
 #ifdef __clang__
-	#define CORAL_HAS_SOURCE_LOCATION 0
+    #define CORAL_HAS_SOURCE_LOCATION 0
 #else
-	#define CORAL_HAS_SOURCE_LOCATION __has_include(<source_location>)
+    #define CORAL_HAS_SOURCE_LOCATION __has_include(<source_location>)
 #endif
 
 #if CORAL_HAS_SOURCE_LOCATION
-#include <source_location>
+    #include <source_location>
 
-#define CORAL_SOURCE_LOCATION std::source_location location = std::source_location::current(); const char* file = location.file_name(); int line = location.line()
+    #define CORAL_SOURCE_LOCATION                                        \
+        std::source_location location = std::source_location::current(); \
+        const char* file = location.file_name();                         \
+        int line = location.line()
 #else
-#define CORAL_SOURCE_LOCATION const char* file = __FILE__; int line = __LINE__
+    #define CORAL_SOURCE_LOCATION    \
+        const char* file = __FILE__; \
+        int line = __LINE__
 #endif
 
 #if defined(__GNUC__)
-	#define CORAL_DEBUG_BREAK __builtin_trap()
+    #define CORAL_DEBUG_BREAK __builtin_trap()
 #elif defined(_MSC_VER)
-	#define CORAL_DEBUG_BREAK __debugbreak()
+    #define CORAL_DEBUG_BREAK __debugbreak()
 #else
-	#define CORAL_DEBUG_BREAK	
+    #define CORAL_DEBUG_BREAK
 #endif
 
-#define CORAL_VERIFY(expr) do {\
-						if(!(expr))\
-						{\
-							CORAL_SOURCE_LOCATION;\
-							std::cerr << "[Coral.Native]: Assert Failed! Expression: " << #expr << " at " << file << ":" << line << "\n";\
-							CORAL_DEBUG_BREAK;\
-						}\
-					} while(0)
+#define CORAL_VERIFY(expr)                                                                                                \
+    do {                                                                                                                  \
+        if (!(expr))                                                                                                      \
+        {                                                                                                                 \
+            CORAL_SOURCE_LOCATION;                                                                                        \
+            std::cerr << "[Coral.Native]: Assert Failed! Expression: " << #expr << " at " << file << ":" << line << "\n"; \
+            CORAL_DEBUG_BREAK;                                                                                            \
+        }                                                                                                                 \
+    } while (0)

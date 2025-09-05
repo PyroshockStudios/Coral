@@ -42,7 +42,7 @@ namespace Coral {
             }
             else
             {
-                TReturn result{};
+                TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
                     InvokeMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, &result);
@@ -55,37 +55,36 @@ namespace Coral {
             }
         }
 
-         template <typename TReturn = void, typename... TArgs>
-		auto InvokeDelegate(MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
-		{
-			constexpr size_t paramCount = sizeof...(TArgs);
+        template <typename TReturn = void, typename... TArgs>
+        auto InvokeDelegate(MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
+        {
+            constexpr size_t paramCount = sizeof...(TArgs);
 
-			if constexpr (std::is_void_v<TReturn>)
-			{
-				if (InParameters.paramCount > 0)
-				{
-					InvokeDelegateInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
-				}
-				else
-				{
-					InvokeDelegateInternal(OutException, nullptr, nullptr, 0);
-				}
-			}
-			else
-			{
-				TReturn result {};
-				if (InParameters.paramCount > 0)
-				{
-					InvokeDelegateRetInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, &result);
-				}
-				else
-				{
-					InvokeDelegateRetInternal(OutException, nullptr, nullptr, 0, &result);
-				}
-				return result;
-			}
-		}
-
+            if constexpr (std::is_void_v<TReturn>)
+            {
+                if (InParameters.paramCount > 0)
+                {
+                    InvokeDelegateInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
+                }
+                else
+                {
+                    InvokeDelegateInternal(OutException, nullptr, nullptr, 0);
+                }
+            }
+            else
+            {
+                TReturn result {};
+                if (InParameters.paramCount > 0)
+                {
+                    InvokeDelegateRetInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, &result);
+                }
+                else
+                {
+                    InvokeDelegateRetInternal(OutException, nullptr, nullptr, 0, &result);
+                }
+                return result;
+            }
+        }
 
         template <typename TValue>
         void SetFieldValue(const FieldInfo& InField, TValue InValue) const
@@ -127,11 +126,11 @@ namespace Coral {
         bool IsValid() const { return m_Handle != nullptr && m_Type != nullptr; }
 
     private:
-		void InvokeMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-		void InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+        void InvokeMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+        void InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
 
-		void InvokeDelegateInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-		void InvokeDelegateRetInternal(Object* OutException,  const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+        void InvokeDelegateInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+        void InvokeDelegateRetInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
 
     public:
         alignas(8) void* m_Handle = nullptr;
@@ -150,7 +149,7 @@ namespace Coral {
     inline void Object::SetFieldValue(const FieldInfo& InField, std::string InValue) const
     {
         String s = String::New(InValue);
-		SetFieldValueRaw(InField, &s);
+        SetFieldValueRaw(InField, &s);
         String::Free(s);
     }
 
