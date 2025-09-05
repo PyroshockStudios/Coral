@@ -110,7 +110,7 @@ namespace Coral {
         Type* m_ElementType = nullptr;
 
         friend class HostInstance;
-        friend class ManagedAssembly;
+        friend class Assembly;
         friend class AssemblyLoadContext;
         friend class MethodInfo;
         friend class FieldInfo;

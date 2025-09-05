@@ -18,7 +18,7 @@ namespace Coral {
 
     class HostInstance;
 
-    class ManagedAssembly
+    class Assembly
     {
     public:
         int32_t GetAssemblyID() const { return m_AssemblyId; }
@@ -31,7 +31,7 @@ namespace Coral {
         Type& GetType(std::string_view InClassName) const;
         Type& GetType(TypeId InTypeId) const;
 
-        const std::vector<Type>& GetTypes() const;
+        const std::vector<Type*>& GetTypes() const;
 
     private:
         HostInstance* m_Host = nullptr;
@@ -45,6 +45,7 @@ namespace Coral {
         std::vector<InternalCall> m_InternalCalls;
 
         std::vector<Type> m_LocalTypes;
+        std::vector<Type*> m_LocalTypeRefs;
         std::unordered_map<std::string, Type*> m_LocalTypeNameCache;
         std::unordered_map<TypeId, Type*> m_LocalTypeIdCache;
 
@@ -55,18 +56,18 @@ namespace Coral {
     class AssemblyLoadContext
     {
     public:
-        ManagedAssembly& LoadAssembly(std::string_view InFilePath);
-        ManagedAssembly& LoadAssemblyFromMemory(const std::byte* data, int64_t dataLength);
-        const StableVector<ManagedAssembly>& GetLoadedAssemblies() const { return m_LoadedAssemblies; }
+        Assembly& LoadAssembly(std::string_view InFilePath);
+        Assembly& LoadAssemblyFromMemory(const std::byte* data, int64_t dataLength);
+        const StableVector<Assembly>& GetLoadedAssemblies() const { return m_LoadedAssemblies; }
 
     private:
         void LoadSystemAssembly();
 
-        void LoadAssemblyData(ManagedAssembly& assembly);
+        void LoadAssemblyData(Assembly& assembly);
 
         int32_t m_ContextId;
-        StableVector<ManagedAssembly> m_LoadedAssemblies;
-        ManagedAssembly* m_SystemAssembly = nullptr;
+        StableVector<Assembly> m_LoadedAssemblies;
+        Assembly* m_SystemAssembly = nullptr;
 
         HostInstance* m_Host = nullptr;
 

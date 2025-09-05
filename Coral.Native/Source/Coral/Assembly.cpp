@@ -8,7 +8,7 @@
 
 namespace Coral {
 
-    void ManagedAssembly::AddInternalCall(std::string_view InClassName, std::string_view InVariableName, void* InFunctionPtr)
+    void Assembly::AddInternalCall(std::string_view InClassName, std::string_view InVariableName, void* InFunctionPtr)
     {
         CORAL_VERIFY(InFunctionPtr != nullptr);
 
@@ -27,32 +27,32 @@ namespace Coral {
         m_InternalCalls.emplace_back(internalCall);
     }
 
-    void ManagedAssembly::UploadInternalCalls()
+    void Assembly::UploadInternalCalls()
     {
         s_ManagedFunctions.SetInternalCallsFptr(m_OwnerContextId, m_InternalCalls.data(), static_cast<int32_t>(m_InternalCalls.size()));
     }
 
     static Type s_NullType;
 
-    Type& ManagedAssembly::GetType(std::string_view InClassName) const
+    Type& Assembly::GetType(std::string_view InClassName) const
     {
         auto it = m_LocalTypeNameCache.find(std::string(InClassName));
         return it == m_LocalTypeNameCache.end() ? s_NullType : *it->second;
     }
 
-    Type& ManagedAssembly::GetType(TypeId InClassId) const
+    Type& Assembly::GetType(TypeId InClassId) const
     {
         auto it = m_LocalTypeIdCache.find(InClassId);
         return it == m_LocalTypeIdCache.end() ? s_NullType : *it->second;
     }
 
-    const std::vector<Type>& ManagedAssembly::GetTypes() const
+    const std::vector<Type*>& Assembly::GetTypes() const
     {
-        return m_LocalTypes;
+        return m_LocalTypeRefs;
     }
 
     // TODO(Emily): Massive de-dup needed between `LoadAssembly` and `LoadAssemblyFromMemory`.
-    ManagedAssembly& AssemblyLoadContext::LoadAssembly(std::string_view InFilePath)
+    Assembly& AssemblyLoadContext::LoadAssembly(std::string_view InFilePath)
     {
         auto filepath = String::New(InFilePath);
 
@@ -68,7 +68,7 @@ namespace Coral {
         return result;
     }
 
-    ManagedAssembly& AssemblyLoadContext::LoadAssemblyFromMemory(const std::byte* data, int64_t dataLength)
+    Assembly& AssemblyLoadContext::LoadAssemblyFromMemory(const std::byte* data, int64_t dataLength)
     {
         auto [idx, result] = m_LoadedAssemblies.EmplaceBack();
         result.m_Host = m_Host;
@@ -114,7 +114,7 @@ namespace Coral {
         TypeCache::Get().m_ArrayType = TypeCache::Get().GetTypeByName("System.Array");
         m_SystemAssembly = &result;
     }
-    void AssemblyLoadContext::LoadAssemblyData(ManagedAssembly& assembly)
+    void AssemblyLoadContext::LoadAssemblyData(Assembly& assembly)
     {
         if (assembly.m_LoadStatus == AssemblyLoadStatus::Success)
         {
@@ -131,6 +131,7 @@ namespace Coral {
 
             // reserve to avoid bad references after resizing
             assembly.m_LocalTypes.reserve(typeIds.size());
+            assembly.m_LocalTypeRefs.reserve(typeIds.size());
             for (auto typeId : typeIds)
             {
                 // global cache
@@ -141,6 +142,7 @@ namespace Coral {
                 Type type2;
                 type2.m_Id = typeId;
                 Type& inserted = assembly.m_LocalTypes.emplace_back(std::move(type2));
+                assembly.m_LocalTypeRefs.push_back(&inserted);
                 assembly.m_LocalTypeIdCache[inserted.GetTypeId()] = &inserted;
                 assembly.m_LocalTypeNameCache[inserted.GetFullName()] = &inserted;
             }

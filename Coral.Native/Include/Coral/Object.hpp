@@ -10,7 +10,7 @@ namespace Coral {
     class MethodInfo;
     class PropertyInfo;
 
-    class ManagedAssembly;
+    class Assembly;
     class Type;
 
     class alignas(8) Object
@@ -137,7 +137,7 @@ namespace Coral {
         alignas(8) const Type* m_Type = nullptr;
 
     private:
-        friend class ManagedAssembly;
+        friend class Assembly;
         friend class Type;
     };
 

@@ -94,7 +94,7 @@ static Coral::Object NativeInstanceIcall()
     return instance;
 }
 
-static void RegisterTestInternalCalls(Coral::ManagedAssembly& InAssembly)
+static void RegisterTestInternalCalls(Coral::Assembly& InAssembly)
 {
     InAssembly.AddInternalCall("Testing.Managed.Tests", "SByteMarshalIcall", reinterpret_cast<void*>(&SByteMarshalIcall));
     InAssembly.AddInternalCall("Testing.Managed.Tests", "ByteMarshalIcall", reinterpret_cast<void*>(&ByteMarshalIcall));
