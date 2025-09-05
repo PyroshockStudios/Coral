@@ -1,13 +1,24 @@
-#include "Type.hpp"
+#include "Coral/Type.hpp"
+#include "Coral/TypeCache.hpp"
+#include "Coral/Attribute.hpp"
+
 #include "CoralManagedFunctions.hpp"
-#include "TypeCache.hpp"
-#include "Attribute.hpp"
 
 namespace Coral {
 
 	String Type::GetFullName() const
 	{
 		return s_ManagedFunctions.GetFullTypeNameFptr(m_Id);
+	}
+
+	String Type::GetName() const
+	{
+		return s_ManagedFunctions.GetTypeNameFptr(m_Id);
+	}
+
+	String Type::GetNamespace() const
+	{
+		return s_ManagedFunctions.GetTypeNamespaceFptr(m_Id);
 	}
 
 	String Type::GetAssemblyQualifiedName() const
@@ -25,6 +36,31 @@ namespace Coral {
 		}
 
 		return *m_BaseType;
+	}
+
+	std::vector<Type*>& Type::GetInterfaceTypes()
+	{
+		if (!m_InterfaceTypes)
+		{
+			int count;
+			s_ManagedFunctions.GetInterfaceTypeCountFptr(m_Id, &count);
+
+			std::vector<TypeId> typeIds;
+			typeIds.resize(static_cast<size_t>(count));
+			s_ManagedFunctions.GetInterfaceTypesFptr(m_Id, typeIds.data());
+
+			m_InterfaceTypes = std::vector<Type*>();
+			m_InterfaceTypes->reserve(static_cast<size_t>(count));
+
+			for (auto id : typeIds)
+			{
+				Type type;
+				type.m_Id = id;
+				m_InterfaceTypes->emplace_back(TypeCache::Get().CacheType(std::move(type)));
+			}
+		}
+
+		return *m_InterfaceTypes;
 	}
 
 	int32_t Type::GetSize() const
@@ -51,7 +87,7 @@ namespace Coral {
 	{
 		int32_t methodCount = 0;
 		s_ManagedFunctions.GetTypeMethodsFptr(m_Id, nullptr, &methodCount);
-		std::vector<ManagedHandle> handles(methodCount);
+		std::vector<ManagedHandle> handles(static_cast<size_t>(methodCount));
 		s_ManagedFunctions.GetTypeMethodsFptr(m_Id, handles.data(), &methodCount);
 
 		std::vector<MethodInfo> methods(handles.size());
@@ -65,7 +101,7 @@ namespace Coral {
 	{
 		int32_t fieldCount = 0;
 		s_ManagedFunctions.GetTypeFieldsFptr(m_Id, nullptr, &fieldCount);
-		std::vector<ManagedHandle> handles(fieldCount);
+		std::vector<ManagedHandle> handles(static_cast<size_t>(fieldCount));
 		s_ManagedFunctions.GetTypeFieldsFptr(m_Id, handles.data(), &fieldCount);
 
 		std::vector<FieldInfo> fields(handles.size());
@@ -79,7 +115,7 @@ namespace Coral {
 	{
 		int32_t propertyCount = 0;
 		s_ManagedFunctions.GetTypePropertiesFptr(m_Id, nullptr, &propertyCount);
-		std::vector<ManagedHandle> handles(propertyCount);
+		std::vector<ManagedHandle> handles(static_cast<size_t>(propertyCount));
 		s_ManagedFunctions.GetTypePropertiesFptr(m_Id, handles.data(), &propertyCount);
 
 		std::vector<PropertyInfo> properties(handles.size());
@@ -88,6 +124,60 @@ namespace Coral {
 
 		return properties;
 	}
+
+	MethodInfo Type::GetMethod(std::string_view MethodName, bool InStatic) const
+	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(MethodName);
+		MethodInfo method{};
+		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, flags);
+		return method;
+	}
+	MethodInfo Type::GetMethod(std::string_view MethodName, int32_t InParamCount, bool InStatic) const
+	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(MethodName);
+		MethodInfo method{};
+		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
+		return method;
+	}
+	MethodInfo Type::GetMethod(std::string_view MethodName, const std::vector<const Type*>& InParamTypes, bool InStatic) const
+	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(MethodName);
+		MethodInfo method{};
+		std::vector<TypeId>  typeIds = {};
+		typeIds.reserve(InParamTypes.size());
+		for (const Type* type : InParamTypes) {
+			typeIds.push_back(type->GetTypeId());
+		}
+		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamTypesFptr(m_Id, string, static_cast<int32_t>(typeIds.size()), typeIds.data(), flags);
+		return method;
+	}
+
+	FieldInfo Type::GetField(std::string_view FieldName, bool InStatic) const
+	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(FieldName);
+		FieldInfo field{};
+		field.m_Handle = s_ManagedFunctions.GetFieldInfoByNameFptr(m_Id, string, flags);
+		return field;
+	}
+
+	PropertyInfo Type::GetProperty(std::string_view PropertyName, bool InStatic) const
+	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(PropertyName);
+		PropertyInfo property{};
+		property.m_Handle = s_ManagedFunctions.GetPropertyInfoByNameFptr(m_Id, string, flags);
+		return property;
+	}
+
 
 	bool Type::HasAttribute(const Type& InAttributeType) const
 	{
@@ -98,7 +188,7 @@ namespace Coral {
 	{
 		int32_t attributeCount;
 		s_ManagedFunctions.GetTypeAttributesFptr(m_Id, nullptr, &attributeCount);
-		std::vector<ManagedHandle> attributeHandles(attributeCount);
+		std::vector<ManagedHandle> attributeHandles(static_cast<size_t>(attributeCount));
 		s_ManagedFunctions.GetTypeAttributesFptr(m_Id, attributeHandles.data(), &attributeCount);
 
 		std::vector<Attribute> result(attributeHandles.size());
@@ -135,26 +225,40 @@ namespace Coral {
 		return m_Id == InOther.m_Id;
 	}
 
-	ManagedObject Type::CreateInstanceInternal(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	Object Type::CreateInstanceInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
-		ManagedObject result;
-		result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength));
+		void* exceptionResult = nullptr;
+		Object result;
+		result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
 		result.m_Type = this;
+		if (OutException)
+		{
+			*OutException = Object();
+			OutException->m_Handle = exceptionResult;
+		}
 		return result;
 	}
 
-	void Type::InvokeStaticMethodInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	void Type::InvokeStaticMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
-		auto methodName = String::New(InMethodName);
-		s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, methodName, InParameters, InParameterTypes, static_cast<int32_t>(InLength));
-		String::Free(methodName);
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
+		if (OutException)
+		{
+			*OutException = Object();
+			OutException->m_Handle = exceptionResult;
+		}
 	}
 
-	void Type::InvokeStaticMethodRetInternal(std::string_view InMethodName, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+	void Type::InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
 	{
-		auto methodName = String::New(InMethodName);
-		s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, methodName, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage);
-		String::Free(methodName);
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, &exceptionResult);
+		if (OutException)
+		{
+			*OutException = Object();
+			OutException->m_Handle = exceptionResult;
+		}
 	}
 
 

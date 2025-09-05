@@ -95,9 +95,23 @@ public class MemberMethodTest
 	{
 		InValue += ", World!";
 		return InValue;
-	}
+    }
+    public int ArrayTest(int[] InListNumbers)
+    {
+        int result = 0;
+        foreach (int i in InListNumbers)
+        {
+            result += i;
+        }
 
-	public DummyStruct DummyStructTest(DummyStruct InValue)
+        return result;
+    }
+    public string ObjectTest( object obj)
+    {
+        return $"Type:{obj.GetType().Name}";
+    }
+
+    public DummyStruct DummyStructTest(DummyStruct InValue)
 	{
 		InValue.X *= 2;
 		InValue.Y *= 2.0f;
@@ -125,5 +139,6 @@ public class MemberMethodTest
 
 	[Dummy(SomeValue = 10.0f)]
 	public void SomeFunction(){}
+
 
 }

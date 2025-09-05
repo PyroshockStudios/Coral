@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Coral.Managed;
 
-internal enum MessageLevel { Info = 1, Warning = 2, Error = 4 }
+internal enum MessageLevel { Trace = 1, Info = 2, Warning = 4, Error = 8 }
 
 internal static class ManagedHost
 {
@@ -16,7 +16,7 @@ internal static class ManagedHost
 	private static unsafe delegate*<NativeString, MessageLevel, void> s_MessageCallback;
 
 	[UnmanagedCallersOnly]
-	private static unsafe void Initialize(delegate*<NativeString, MessageLevel, void> InMessageCallback, delegate*<NativeString, void> InExceptionCallback)
+	internal static unsafe void Initialize(delegate*<NativeString, MessageLevel, void> InMessageCallback, delegate*<NativeString, void> InExceptionCallback)
 	{
 		s_MessageCallback = InMessageCallback;
 		s_ExceptionCallback = InExceptionCallback;

@@ -7,6 +7,7 @@ namespace Coral {
 
 	class Type;
 	class Attribute;
+	class Object;
 
 	class MethodInfo
 	{
@@ -20,12 +21,17 @@ namespace Coral {
 
 		std::vector<Attribute> GetAttributes() const;
 
+		constexpr inline operator bool()
+		{
+			return m_Handle != -1;
+		}
 	private:
 		ManagedHandle m_Handle = -1;
 		Type* m_ReturnType = nullptr;
 		std::vector<Type*> m_ParameterTypes;
 
 		friend class Type;
+		friend class Object;
 	};
 
 }

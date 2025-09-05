@@ -7,46 +7,48 @@
 #include <ranges>
 
 #include <Coral/HostInstance.hpp>
+#include <Coral/DotnetServices.hpp>
 #include <Coral/GC.hpp>
 #include <Coral/Array.hpp>
 #include <Coral/Attribute.hpp>
+#include <Coral/TypeCache.hpp>
 
-Coral::Type g_TestsType;
+static Coral::Type g_TestsType;
 
-void ExceptionCallback(std::string_view InMessage)
+static void ExceptionCallback(std::string_view InMessage)
 {
 	std::cout << "\033[1;31m " << "Unhandled native exception: " << InMessage << "\033[0m\n";
 }
 
-char8_t SByteMarshalIcall(char8_t InValue) { return InValue * 2; }
-uint8_t ByteMarshalIcall(uint8_t InValue) { return InValue * 2; }
-int16_t ShortMarshalIcall(int16_t InValue) { return InValue * 2; }
-uint16_t UShortMarshalIcall(uint16_t InValue) { return InValue * 2; }
-int32_t IntMarshalIcall(int32_t InValue) { return InValue * 2; }
-uint32_t UIntMarshalIcall(uint32_t InValue) { return InValue * 2; }
-int64_t LongMarshalIcall(int64_t InValue) { return InValue * 2; }
-uint64_t ULongMarshalIcall(uint64_t InValue) { return InValue * 2; }
-float FloatMarshalIcall(float InValue) { return InValue * 2.0f; }
-double DoubleMarshalIcall(double InValue) { return InValue * 2.0; }
-bool BoolMarshalIcall(bool InValue)
+static char8_t SByteMarshalIcall(char8_t InValue) { return InValue * 2; }
+static uint8_t ByteMarshalIcall(uint8_t InValue) { return InValue * 2; }
+static int16_t ShortMarshalIcall(int16_t InValue) { return InValue * 2; }
+static uint16_t UShortMarshalIcall(uint16_t InValue) { return InValue * 2; }
+static int32_t IntMarshalIcall(int32_t InValue) { return InValue * 2; }
+static uint32_t UIntMarshalIcall(uint32_t InValue) { return InValue * 2; }
+static int64_t LongMarshalIcall(int64_t InValue) { return InValue * 2; }
+static uint64_t ULongMarshalIcall(uint64_t InValue) { return InValue * 2; }
+static float FloatMarshalIcall(float InValue) { return InValue * 2.0f; }
+static double DoubleMarshalIcall(double InValue) { return InValue * 2.0; }
+static bool BoolMarshalIcall(bool InValue)
 {
 	std::cout << "C++: " << (uint32_t)InValue << std::endl;
 	return !InValue;
 }
-int32_t* IntPtrMarshalIcall(int32_t* InValue)
+static int32_t* IntPtrMarshalIcall(int32_t* InValue)
 {
 	*InValue *= 2;
 	return InValue;
 }
-Coral::String StringMarshalIcall(Coral::String InStr)
+static Coral::String StringMarshalIcall(Coral::String InStr)
 {
 	return InStr;
 }
-void StringMarshalIcall2(Coral::String InStr)
+static void StringMarshalIcall2(Coral::String InStr)
 {
 	std::cout << std::string(InStr) << std::endl;
 }
-bool TypeMarshalIcall(Coral::ReflectionType InReflectionType)
+static bool TypeMarshalIcall(Coral::ReflectionType InReflectionType)
 {
 	Coral::Type& type = InReflectionType;
 	return type == g_TestsType;
@@ -58,7 +60,7 @@ struct DummyStruct
 	float Y;
 	int32_t Z;
 };
-DummyStruct DummyStructMarshalIcall(DummyStruct InStruct)
+static DummyStruct DummyStructMarshalIcall(DummyStruct InStruct)
 {
 	InStruct.X *= 2;
 	InStruct.Y *= 2.0f;
@@ -66,7 +68,7 @@ DummyStruct DummyStructMarshalIcall(DummyStruct InStruct)
 	return InStruct;
 }
 
-DummyStruct* DummyStructPtrMarshalIcall(DummyStruct* InStruct)
+static DummyStruct* DummyStructPtrMarshalIcall(DummyStruct* InStruct)
 {
 	InStruct->X *= 2;
 	InStruct->Y *= 2.0f;
@@ -74,25 +76,25 @@ DummyStruct* DummyStructPtrMarshalIcall(DummyStruct* InStruct)
 	return InStruct;
 }
 
-Coral::Array<int32_t> EmptyArrayIcall()
+static Coral::Array<int32_t> EmptyArrayIcall()
 {
 	std::vector<int32_t> empty;
 	return Coral::Array<int32_t>::New(empty);
 }
 
-Coral::Array<float> FloatArrayIcall()
+static Coral::Array<float> FloatArrayIcall()
 {
 	std::vector<float> floats = { 5.0f, 10.0f, 15.0f, 50.0f };
 	return Coral::Array<float>::New(floats);
 }
 
-Coral::ManagedObject instance;
-Coral::ManagedObject NativeInstanceIcall()
+static Coral::Object instance;
+static Coral::Object NativeInstanceIcall()
 {
 	return instance;
 }
 
-void RegisterTestInternalCalls(Coral::ManagedAssembly& InAssembly)
+static void RegisterTestInternalCalls(Coral::ManagedAssembly& InAssembly)
 {
 	InAssembly.AddInternalCall("Testing.Managed.Tests", "SByteMarshalIcall", reinterpret_cast<void*>(&SByteMarshalIcall));
 	InAssembly.AddInternalCall("Testing.Managed.Tests", "ByteMarshalIcall", reinterpret_cast<void*>(&ByteMarshalIcall));
@@ -116,317 +118,420 @@ void RegisterTestInternalCalls(Coral::ManagedAssembly& InAssembly)
 	InAssembly.AddInternalCall("Testing.Managed.Tests", "NativeInstanceIcall", reinterpret_cast<void*>(&NativeInstanceIcall));
 }
 
+static Coral::MethodInfo SByteTest_Fn;
+static Coral::MethodInfo ByteTest_Fn;
+static Coral::MethodInfo ShortTest_Fn;
+static Coral::MethodInfo UShortTest_Fn;
+static Coral::MethodInfo IntTest_Fn;
+static Coral::MethodInfo UIntTest_Fn;
+static Coral::MethodInfo LongTest_Fn;
+static Coral::MethodInfo ULongTest_Fn;
+static Coral::MethodInfo FloatTest_Fn;
+static Coral::MethodInfo DoubleTest_Fn;
+static Coral::MethodInfo BoolTest_Fn;
+static Coral::MethodInfo IntPtrTest_Fn;
+static Coral::MethodInfo StringTest_Fn;
+static Coral::MethodInfo ArrayTest_Fn;
+static Coral::MethodInfo ObjectTest_Fn;
+static Coral::MethodInfo DummyStructTest_Fn;
+static Coral::MethodInfo DummyStructPtrTest_Fn;
+static Coral::MethodInfo OverloadIntTest_Fn;
+static Coral::MethodInfo OverloadFloatTest_Fn;
+
 struct Test
 {
 	std::string Name;
 	std::function<bool()> Func;
 };
-std::vector<Test> tests;
+static std::vector<Test> tests;
 
-void RegisterTest(std::string_view InName, std::function<bool()> InFunc)
+static void RegisterTest(std::string_view InName, std::function<bool()> InFunc)
 {
-	tests.push_back(Test{ std::string(InName), std::move(InFunc) });
+	tests.push_back(Test { std::string(InName), std::move(InFunc) });
 }
 
-void RegisterMemberMethodTests(Coral::HostInstance& InHost, Coral::ManagedObject InObject)
+static void RegisterMemberMethodTests(Coral::Object& InObject)
 {
-	RegisterTest("SByteTest", [InObject]() mutable{ return InObject.InvokeMethod<char8_t, char8_t>("SByteTest", 10) == 20; });
-	RegisterTest("ByteTest", [InObject]() mutable{ return InObject.InvokeMethod<uint8_t, uint8_t>("ByteTest", 10) == 20; });
-	RegisterTest("ShortTest", [InObject]() mutable{ return InObject.InvokeMethod<int16_t, int16_t>("ShortTest", 10) == 20; });
-	RegisterTest("UShortTest", [InObject]() mutable{ return InObject.InvokeMethod<uint16_t, uint16_t>("UShortTest", 10) == 20; });
-	RegisterTest("IntTest", [InObject]() mutable{ return InObject.InvokeMethod<int32_t, int32_t>("IntTest", 10) == 20; });
-	RegisterTest("UIntTest", [InObject]() mutable{ return InObject.InvokeMethod<uint32_t, uint32_t>("UIntTest", 10) == 20; });
-	RegisterTest("LongTest", [InObject]() mutable{ return InObject.InvokeMethod<int64_t, int64_t>("LongTest", 10) == 20; });
-	RegisterTest("ULongTest", [InObject]() mutable{ return InObject.InvokeMethod<uint64_t, uint64_t>("ULongTest", 10) == 20; });
-	RegisterTest("FloatTest", [InObject]() mutable{ return InObject.InvokeMethod<float, float>("FloatTest", 10.0f) - 20.0f < 0.001f; });
-	RegisterTest("DoubleTest", [InObject]() mutable{ return InObject.InvokeMethod<double, double>("DoubleTest", 10.0) - 20.0 < 0.001; });
-	//RegisterTest("BoolTest", [InObject]() mutable { return InObject.InvokeMethod<bool, bool>("BoolTest", false); });
-	RegisterTest("IntPtrTest", [InObject]() mutable{ int32_t v = 10; return *InObject.InvokeMethod<int32_t*, int32_t*>("IntPtrTest", &v) == 50; });
-	RegisterTest("StringTest", [InObject, &InHost]() mutable
+	using Coral::MethodParams;
+
+	SByteTest_Fn = InObject.GetType().GetMethod("SByteTest");
+	ByteTest_Fn = InObject.GetType().GetMethod("ByteTest");
+	ShortTest_Fn = InObject.GetType().GetMethod("ShortTest");
+	UShortTest_Fn = InObject.GetType().GetMethod("UShortTest");
+	IntTest_Fn = InObject.GetType().GetMethod("IntTest");
+	UIntTest_Fn = InObject.GetType().GetMethod("UIntTest");
+	LongTest_Fn = InObject.GetType().GetMethod("LongTest");
+	ULongTest_Fn = InObject.GetType().GetMethod("ULongTest");
+	FloatTest_Fn = InObject.GetType().GetMethod("FloatTest");
+	DoubleTest_Fn = InObject.GetType().GetMethod("DoubleTest");
+	BoolTest_Fn = InObject.GetType().GetMethod("BoolTest");
+	IntPtrTest_Fn = InObject.GetType().GetMethod("IntPtrTest");
+	StringTest_Fn = InObject.GetType().GetMethod("StringTest");
+	ArrayTest_Fn = InObject.GetType().GetMethod("ArrayTest");
+	ObjectTest_Fn = InObject.GetType().GetMethod("ObjectTest");
+	DummyStructTest_Fn = InObject.GetType().GetMethod("DummyStructTest");
+	DummyStructPtrTest_Fn = InObject.GetType().GetMethod("DummyStructPtrTest");
+	OverloadIntTest_Fn = InObject.GetType().GetMethod("OverloadTest", { Coral::TypeCache::IntType() }, false);
+	OverloadFloatTest_Fn = InObject.GetType().GetMethod("OverloadTest", { Coral::TypeCache::FloatType() }, false);
+
+	RegisterTest("SByteTest", [&InObject]() mutable
 	{
-		Coral::ScopedString str = InObject.InvokeMethod<Coral::String, Coral::String>("StringTest", Coral::String::New("Hello"));
-		return str == "Hello, World!";
+		return InObject.InvokeMethod<int8_t>(SByteTest_Fn, MethodParams { int8_t(10) }) == 20;
 	});
-	
-	RegisterTest("DummyStructTest", [InObject]() mutable
+	RegisterTest("ByteTest", [&InObject]() mutable
 	{
-		DummyStruct value =
-		{
+		return InObject.InvokeMethod<uint8_t>(ByteTest_Fn, MethodParams { uint8_t(10) }) == 20;
+	});
+	RegisterTest("ShortTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<int16_t>(ShortTest_Fn, MethodParams { int16_t(10) }) == 20;
+	});
+	RegisterTest("UShortTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<uint16_t>(UShortTest_Fn, MethodParams { uint16_t(10) }) == 20;
+	});
+	RegisterTest("IntTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<int32_t>(IntTest_Fn, MethodParams { int32_t(10) }) == 20;
+	});
+	RegisterTest("UIntTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<uint32_t>(UIntTest_Fn, MethodParams { uint32_t(10) }) == 20;
+	});
+	RegisterTest("LongTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<int64_t>(LongTest_Fn, MethodParams { int64_t(10) }) == 20;
+	});
+	RegisterTest("ULongTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<uint64_t>(ULongTest_Fn, MethodParams { uint64_t(10) }) == 20;
+	});
+	RegisterTest("FloatTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<float>(FloatTest_Fn, MethodParams { float(10.0f) }) - 20.0f < 0.001f;
+	});
+	RegisterTest("DoubleTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<double>(DoubleTest_Fn, MethodParams { double(10.0) }) - 20.0 < 0.001;
+	});
+	RegisterTest("BoolTest", [&InObject]() mutable
+	{
+		return InObject.InvokeMethod<Coral::Bool32>(BoolTest_Fn, MethodParams { Coral::Bool32(false) });
+	});
+	RegisterTest("IntPtrTest", [&InObject]() mutable
+	{
+		int32_t v = 10;
+		return *InObject.InvokeMethod<int32_t*>(IntPtrTest_Fn, MethodParams { (int32_t*)(&v) }) == 50;
+	});
+	RegisterTest("StringTest", [&InObject]() mutable
+	{
+		Coral::ScopedString str = InObject.InvokeMethod<Coral::String>(StringTest_Fn, MethodParams { Coral::String::New("Hello") });
+		return str == std::string_view("Hello, World!");
+	});
+	RegisterTest("ArrayTest", [&InObject]() mutable
+	{
+		int result = InObject.InvokeMethod<int32_t>(ArrayTest_Fn, MethodParams { Coral::Array<int32_t>::New({ 5, 2, -1, 8 }) });
+		return result == 14;
+	});
+	RegisterTest("ObjectTest", [&InObject]() mutable
+	{
+		Coral::ScopedString str = InObject.InvokeMethod<Coral::String>(ObjectTest_Fn, MethodParams { InObject });
+		return str == (std::string_view) "Type:MemberMethodTest";
+	});
+
+	RegisterTest("DummyStructTest", [&InObject]() mutable
+	{
+		DummyStruct value = {
 			.X = 10,
 			.Y = 10.0f,
 			.Z = 10,
 		};
-		auto result = InObject.InvokeMethod<DummyStruct, DummyStruct&>("DummyStructTest", value);
+		auto result = InObject.InvokeMethod<DummyStruct>(DummyStructTest_Fn, MethodParams { value });
 		return result.X == 20 && result.Y - 20.0f < 0.001f && result.Z == 20;
 	});
-	RegisterTest("DummyStructPtrTest", [InObject]() mutable
+	RegisterTest("DummyStructPtrTest", [&InObject]() mutable
 	{
-		DummyStruct value =
-		{
+		DummyStruct value = {
 			.X = 10,
 			.Y = 10.0f,
 			.Z = 10,
 		};
-		auto* result = InObject.InvokeMethod<DummyStruct*, DummyStruct*>("DummyStructPtrTest", &value);
+		auto* result = InObject.InvokeMethod<DummyStruct*>(DummyStructPtrTest_Fn, MethodParams { &value });
 		return result->X == 20 && result->Y - 20.0f < 0.001f && result->Z == 20;
 	});
 
-	RegisterTest("OverloadTest", [InObject]() mutable
+	RegisterTest("OverloadTest (Int)", [&InObject]() mutable
 	{
-		return InObject.InvokeMethod<int32_t, int32_t>("Int32 OverloadTest(Int32)", 50) == 1050;
+		return InObject.InvokeMethod<int32_t>(OverloadIntTest_Fn, MethodParams { 50 }) == 1050;
 	});
 
-	RegisterTest("OverloadTest", [InObject]() mutable
+	RegisterTest("OverloadTest (Float)", [&InObject]() mutable
 	{
-		return InObject.InvokeMethod<float, float>("OverloadTest", 5) == 15.0f;
+		return InObject.InvokeMethod<float>(OverloadFloatTest_Fn, MethodParams { 5.0f }) == 15.0f;
 	});
 }
 
-void RegisterFieldMarshalTests(Coral::HostInstance& InHost, Coral::ManagedObject InObject)
+static void RegisterFieldMarshalTests(Coral::Object& InObject)
 {
-	RegisterTest("SByteFieldTest", [InObject]() mutable
+	// ---- Fields ----
+	RegisterTest("SByteFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<char8_t>("SByteFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<char8_t>("SByteFieldTest", 20);
-		value = InObject.GetFieldValue<char8_t>("SByteFieldTest");
+		auto field = InObject.GetType().GetField("SByteFieldTest");
+		auto value = InObject.GetFieldValue<char8_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<char8_t>(field, 20);
+		value = InObject.GetFieldValue<char8_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("ByteFieldTest", [InObject]() mutable
+	RegisterTest("ByteFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<uint8_t>("ByteFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<uint8_t>("ByteFieldTest", 20);
-		value = InObject.GetFieldValue<uint8_t>("ByteFieldTest");
+		auto field = InObject.GetType().GetField("ByteFieldTest");
+		auto value = InObject.GetFieldValue<uint8_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<uint8_t>(field, 20);
+		value = InObject.GetFieldValue<uint8_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("ShortFieldTest", [InObject]() mutable
+	RegisterTest("ShortFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<int16_t>("ShortFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<int16_t>("ShortFieldTest", 20);
-		value = InObject.GetFieldValue<int16_t>("ShortFieldTest");
+		auto field = InObject.GetType().GetField("ShortFieldTest");
+		auto value = InObject.GetFieldValue<int16_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<int16_t>(field, 20);
+		value = InObject.GetFieldValue<int16_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("UShortFieldTest", [InObject]() mutable
+	RegisterTest("UShortFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<uint16_t>("UShortFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<uint16_t>("UShortFieldTest", 20);
-		value = InObject.GetFieldValue<uint16_t>("UShortFieldTest");
+		auto field = InObject.GetType().GetField("UShortFieldTest");
+		auto value = InObject.GetFieldValue<uint16_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<uint16_t>(field, 20);
+		value = InObject.GetFieldValue<uint16_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("IntFieldTest", [InObject]() mutable
+	RegisterTest("IntFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<int32_t>("IntFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<int32_t>("IntFieldTest", 20);
-		value = InObject.GetFieldValue<int32_t>("IntFieldTest");
+		auto field = InObject.GetType().GetField("IntFieldTest");
+		auto value = InObject.GetFieldValue<int32_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<int32_t>(field, 20);
+		value = InObject.GetFieldValue<int32_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("UIntFieldTest", [InObject]() mutable
+	RegisterTest("UIntFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<uint32_t>("UIntFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<uint32_t>("UIntFieldTest", 20);
-		value = InObject.GetFieldValue<uint32_t>("UIntFieldTest");
+		auto field = InObject.GetType().GetField("UIntFieldTest");
+		auto value = InObject.GetFieldValue<uint32_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<uint32_t>(field, 20);
+		value = InObject.GetFieldValue<uint32_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("LongFieldTest", [InObject]() mutable
+	RegisterTest("LongFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<int64_t>("LongFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<int64_t>("LongFieldTest", 20);
-		value = InObject.GetFieldValue<int64_t>("LongFieldTest");
+		auto field = InObject.GetType().GetField("LongFieldTest");
+		auto value = InObject.GetFieldValue<int64_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<int64_t>(field, 20);
+		value = InObject.GetFieldValue<int64_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("ULongFieldTest", [InObject]() mutable
+	RegisterTest("ULongFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<uint64_t>("ULongFieldTest");
-		if (value != 10)
-			return false;
-		InObject.SetFieldValue<uint64_t>("ULongFieldTest", 20);
-		value = InObject.GetFieldValue<uint64_t>("ULongFieldTest");
+		auto field = InObject.GetType().GetField("ULongFieldTest");
+		auto value = InObject.GetFieldValue<uint64_t>(field);
+		if (value != 10) return false;
+		InObject.SetFieldValue<uint64_t>(field, 20);
+		value = InObject.GetFieldValue<uint64_t>(field);
 		return value == 20;
 	});
 
-	RegisterTest("FloatFieldTest", [InObject]() mutable
+	RegisterTest("FloatFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<float>("FloatFieldTest");
-		if (value - 10.0f > 0.001f)
-			return false;
-		InObject.SetFieldValue<float>("FloatFieldTest", 20);
-		value = InObject.GetFieldValue<float>("FloatFieldTest");
-		return value - 20.0f < 0.001f;
+		auto field = InObject.GetType().GetField("FloatFieldTest");
+		auto value = InObject.GetFieldValue<float>(field);
+		if (std::abs(value - 10.0f) > 0.001f) return false;
+		InObject.SetFieldValue<float>(field, 20);
+		value = InObject.GetFieldValue<float>(field);
+		return std::abs(value - 20.0f) < 0.001f;
 	});
 
-	RegisterTest("DoubleFieldTest", [InObject]() mutable
+	RegisterTest("DoubleFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<double>("DoubleFieldTest");
-		if (value - 10.0 > 0.001)
-			return false;
-		InObject.SetFieldValue<double>("DoubleFieldTest", 20);
-		value = InObject.GetFieldValue<double>("DoubleFieldTest");
-		return value - 20.0 < 0.001;
+		auto field = InObject.GetType().GetField("DoubleFieldTest");
+		auto value = InObject.GetFieldValue<double>(field);
+		if (std::abs(value - 10.0) > 0.001) return false;
+		InObject.SetFieldValue<double>(field, 20);
+		value = InObject.GetFieldValue<double>(field);
+		return std::abs(value - 20.0) < 0.001;
 	});
-	
-	RegisterTest("BoolFieldTest", [InObject]() mutable
+
+	RegisterTest("BoolFieldTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetFieldValue<Coral::Bool32>("BoolFieldTest");
-		if (value != false)
-			return false;
-		InObject.SetFieldValue<Coral::Bool32>("BoolFieldTest", true);
-		value = InObject.GetFieldValue<Coral::Bool32>("BoolFieldTest");
+		auto field = InObject.GetType().GetField("BoolFieldTest");
+		auto value = InObject.GetFieldValue<bool>(field);
+		if (value != false) return false;
+		InObject.SetFieldValue<bool>(field, true);
+		value = InObject.GetFieldValue<bool>(field);
 		return static_cast<bool>(value);
 	});
-	RegisterTest("StringFieldTest", [InObject]() mutable
-	{
-		Coral::ScopedString value = InObject.GetFieldValue<Coral::String>("StringFieldTest");
-		if (value != "Hello")
-			return false;
 
-		InObject.SetFieldValue("StringFieldTest", Coral::String::New("Hello, World!"));
-		value = InObject.GetFieldValue<Coral::String>("StringFieldTest");
+	RegisterTest("StringFieldTest", [&InObject]() mutable
+	{
+		auto field = InObject.GetType().GetField("StringFieldTest");
+		auto value = InObject.GetFieldValue<std::string>(field);
+		if (value != "Hello") return false;
+		InObject.SetFieldValue<std::string>(field, "Hello, World!");
+		value = InObject.GetFieldValue<std::string>(field);
 		return value == "Hello, World!";
 	});
 
-	///// PROPERTIES ////
-
-	RegisterTest("SBytePropertyTest", [InObject]() mutable
+	// ---- Properties ----
+	RegisterTest("SBytePropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<char8_t>("SBytePropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<char8_t>("SBytePropertyTest", 20);
-		value = InObject.GetPropertyValue<char8_t>("SBytePropertyTest");
+		auto prop = InObject.GetType().GetProperty("SBytePropertyTest");
+		auto value = InObject.GetPropertyValue<char8_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<char8_t>(prop, 20);
+		value = InObject.GetPropertyValue<char8_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("BytePropertyTest", [InObject]() mutable
+	RegisterTest("BytePropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<uint8_t>("BytePropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<uint8_t>("BytePropertyTest", 20);
-		value = InObject.GetPropertyValue<uint8_t>("BytePropertyTest");
+		auto prop = InObject.GetType().GetProperty("BytePropertyTest");
+		auto value = InObject.GetPropertyValue<uint8_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<uint8_t>(prop, 20);
+		value = InObject.GetPropertyValue<uint8_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("ShortPropertyTest", [InObject]() mutable
+	RegisterTest("ShortPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<int16_t>("ShortPropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<int16_t>("ShortPropertyTest", 20);
-		value = InObject.GetPropertyValue<int16_t>("ShortPropertyTest");
+		auto prop = InObject.GetType().GetProperty("ShortPropertyTest");
+		auto value = InObject.GetPropertyValue<int16_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<int16_t>(prop, 20);
+		value = InObject.GetPropertyValue<int16_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("UShortPropertyTest", [InObject]() mutable
+	RegisterTest("UShortPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<uint16_t>("UShortPropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<uint16_t>("UShortPropertyTest", 20);
-		value = InObject.GetPropertyValue<uint16_t>("UShortPropertyTest");
+		auto prop = InObject.GetType().GetProperty("UShortPropertyTest");
+		auto value = InObject.GetPropertyValue<uint16_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<uint16_t>(prop, 20);
+		value = InObject.GetPropertyValue<uint16_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("IntPropertyTest", [InObject]() mutable
+	RegisterTest("IntPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<int32_t>("IntPropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<int32_t>("IntPropertyTest", 20);
-		value = InObject.GetPropertyValue<int32_t>("IntPropertyTest");
+		auto prop = InObject.GetType().GetProperty("IntPropertyTest");
+		auto value = InObject.GetPropertyValue<int32_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<int32_t>(prop, 20);
+		value = InObject.GetPropertyValue<int32_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("UIntPropertyTest", [InObject]() mutable
+	RegisterTest("UIntPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<uint32_t>("UIntPropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<uint32_t>("UIntPropertyTest", 20);
-		value = InObject.GetPropertyValue<uint32_t>("UIntPropertyTest");
+		auto prop = InObject.GetType().GetProperty("UIntPropertyTest");
+		auto value = InObject.GetPropertyValue<uint32_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<uint32_t>(prop, 20);
+		value = InObject.GetPropertyValue<uint32_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("LongPropertyTest", [InObject]() mutable
+	RegisterTest("LongPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<int64_t>("LongPropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<int64_t>("LongPropertyTest", 20);
-		value = InObject.GetPropertyValue<int64_t>("LongPropertyTest");
+		auto prop = InObject.GetType().GetProperty("LongPropertyTest");
+		auto value = InObject.GetPropertyValue<int64_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<int64_t>(prop, 20);
+		value = InObject.GetPropertyValue<int64_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("ULongPropertyTest", [InObject]() mutable
+	RegisterTest("ULongPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<uint64_t>("ULongPropertyTest");
-		if (value != 10)
-			return false;
-		InObject.SetPropertyValue<uint64_t>("ULongPropertyTest", 20);
-		value = InObject.GetPropertyValue<uint64_t>("ULongPropertyTest");
+		auto prop = InObject.GetType().GetProperty("ULongPropertyTest");
+		auto value = InObject.GetPropertyValue<uint64_t>(prop);
+		if (value != 10) return false;
+		InObject.SetPropertyValue<uint64_t>(prop, 20);
+		value = InObject.GetPropertyValue<uint64_t>(prop);
 		return value == 20;
 	});
 
-	RegisterTest("FloatPropertyTest", [InObject]() mutable
+	RegisterTest("FloatPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<float>("FloatPropertyTest");
-		if (value - 10.0f > 0.001f)
-			return false;
-		InObject.SetPropertyValue<float>("FloatPropertyTest", 20);
-		value = InObject.GetPropertyValue<float>("FloatPropertyTest");
-		return value - 20.0f < 0.001f;
+		auto prop = InObject.GetType().GetProperty("FloatPropertyTest");
+		auto value = InObject.GetPropertyValue<float>(prop);
+		if (std::abs(value - 10.0f) > 0.001f) return false;
+		InObject.SetPropertyValue<float>(prop, 20);
+		value = InObject.GetPropertyValue<float>(prop);
+		return std::abs(value - 20.0f) < 0.001f;
 	});
 
-	RegisterTest("DoublePropertyTest", [InObject]() mutable
+	RegisterTest("DoublePropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<double>("DoublePropertyTest");
-		if (value - 10.0 > 0.001)
-			return false;
-		InObject.SetPropertyValue<double>("DoublePropertyTest", 20);
-		value = InObject.GetPropertyValue<double>("DoublePropertyTest");
-		return value - 20.0 < 0.001;
+		auto prop = InObject.GetType().GetProperty("DoublePropertyTest");
+		auto value = InObject.GetPropertyValue<double>(prop);
+		if (std::abs(value - 10.0) > 0.001) return false;
+		InObject.SetPropertyValue<double>(prop, 20);
+		value = InObject.GetPropertyValue<double>(prop);
+		return std::abs(value - 20.0) < 0.001;
 	});
-	
-	RegisterTest("BoolPropertyTest", [InObject]() mutable
+
+	RegisterTest("BoolPropertyTest", [&InObject]() mutable
 	{
-		auto value = InObject.GetPropertyValue<Coral::Bool32>("BoolPropertyTest");
-		if (value != false)
-			return false;
-		InObject.SetPropertyValue<Coral::Bool32>("BoolPropertyTest", true);
-		value = InObject.GetPropertyValue<Coral::Bool32>("BoolPropertyTest");
+		auto prop = InObject.GetType().GetProperty("BoolPropertyTest");
+		auto value = InObject.GetPropertyValue<Coral::Bool32>(prop);
+		if (value != false) return false;
+		InObject.SetPropertyValue<Coral::Bool32>(prop, true);
+		value = InObject.GetPropertyValue<Coral::Bool32>(prop);
 		return static_cast<bool>(value);
 	});
-	RegisterTest("StringPropertyTest", [InObject]() mutable
+
+	RegisterTest("StringPropertyTest", [&InObject]() mutable
 	{
-		Coral::ScopedString value = InObject.GetPropertyValue<Coral::String>("StringPropertyTest");
-		if (value != "Hello")
-			return false;
-		InObject.SetPropertyValue("StringPropertyTest", Coral::String::New("Hello, World!"));
-		value = InObject.GetPropertyValue<Coral::String>("StringPropertyTest");
+		auto prop = InObject.GetType().GetProperty("StringPropertyTest");
+		std::string value = InObject.GetPropertyValue<Coral::String>(prop);
+		if (value != "Hello") return false;
+		InObject.SetPropertyValue(prop, Coral::String::New("Hello, World!"));
+		value = InObject.GetPropertyValue<Coral::String>(prop);
 		return value == "Hello, World!";
 	});
 }
+static void RegisterDelegateTests(Coral::Object& InObject)
+{
+	using Coral::MethodParams;
 
-void RunTests()
+	RegisterTest("CallDelegate", [&InObject]() mutable
+	{
+		Coral::Object fooDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetFooDelegate", true));
+		auto attributes = fooDelegate.GetType().GetAttributes();
+		if (attributes.empty()) return false;
+		if (attributes[0].GetFieldValue<int32_t>("SomeValue") != 2) return false;
+		Coral::Object myDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetMyDelegate", true), MethodParams {81});
+		Coral::ScopedString str =  myDelegate.InvokeDelegate<Coral::String>(MethodParams { fooDelegate });
+		return str == (std::string_view) "Knock Knock... Hello 81";
+	});
+}
+
+static void RunTests()
 {
 	size_t passedTests = 0;
 	for (size_t i = 0; i < tests.size(); i++)
@@ -440,31 +545,28 @@ void RunTests()
 		}
 		else
 		{
-			std::cerr << "\033[1;31m[" << i + 1 << " / " << tests.size() << " (" << test.Name << "): Failed\033[0m\n"; 
+			std::cerr << "\033[1;31m[" << i + 1 << " / " << tests.size() << " (" << test.Name << "): Failed\033[0m\n";
 		}
 	}
-	std::cout << "[NativeTest]: Done. " << passedTests << " passed, " << tests.size() - passedTests  << " failed.\n";
+	std::cout << "[NativeTest]: Done. " << passedTests << " passed, " << tests.size() - passedTests << " failed.\n";
 }
 
-int main(int argc, char** argv)
+int main([[maybe_unused]] int argc, char** argv)
 {
-#ifdef CORAL_TESTING_DEBUG
-	const char* ConfigName = "Debug";
-#else
-	const char* ConfigName = "Release";
-#endif
-
+	using Coral::MethodParams;
 	auto exeDir = std::filesystem::path(argv[0]).parent_path();
 	auto coralDir = exeDir.string();
-	Coral::HostSettings settings =
-	{
+	Coral::HostSettings settings = {
 		.CoralDirectory = coralDir,
 		.ExceptionCallback = ExceptionCallback
 	};
 	Coral::HostInstance hostInstance;
 	hostInstance.Initialize(settings);
 
-	auto loadContext = hostInstance.CreateAssemblyLoadContext("TestContext");
+	//Coral::DotnetServices::RunMSBuild((exeDir.parent_path().parent_path() / "CoralManaged.sln").string());
+
+	std::string testDllPath = exeDir.parent_path().string() + ":" + exeDir.parent_path().parent_path().string();
+	auto loadContext = hostInstance.CreateAssemblyLoadContext("TestContext", testDllPath);
 
 	auto assemblyPath = exeDir / "Testing.Managed.dll";
 	auto& assembly = loadContext.LoadAssembly(assemblyPath.string());
@@ -474,15 +576,17 @@ int main(int argc, char** argv)
 
 	auto& testsType = assembly.GetType("Testing.Managed.Tests");
 	g_TestsType = testsType;
-	testsType.InvokeStaticMethod("StaticMethodTest", 50.0f);
-	testsType.InvokeStaticMethod("StaticMethodTest", 1000);
+	auto staticMethodTest0 = testsType.GetMethod("StaticMethodTest", { Coral::TypeCache::FloatType() }, true);
+	auto staticMethodTest1 = testsType.GetMethod("StaticMethodTest", { Coral::TypeCache::IntType() }, true);
+	testsType.InvokeStaticMethod(staticMethodTest0, MethodParams { 50.0f });
+	testsType.InvokeStaticMethod(staticMethodTest1, MethodParams { 1000 });
 
 	auto& instanceTestType = assembly.GetType("Testing.Managed.InstanceTest");
 	instance = instanceTestType.CreateInstance();
-	instance.SetFieldValue("X", 500.0f);
+	instance.SetFieldValue(instanceTestType.GetField("X"), 500.0f);
 
-	Coral::ManagedObject testsInstance = testsType.CreateInstance();
-	testsInstance.InvokeMethod("RunManagedTests");
+	Coral::Object testsInstance = testsType.CreateInstance();
+	testsInstance.InvokeMethod(testsType.GetMethod("RunManagedTests"));
 	testsInstance.Destroy();
 
 	auto& fieldTestType = assembly.GetType("Testing.Managed.FieldMarshalTest");
@@ -491,23 +595,20 @@ int main(int argc, char** argv)
 	auto fieldTestObject = fieldTestType.CreateInstance();
 
 	auto dummyClassInstance = assembly.GetType("Testing.Managed.DummyClass").CreateInstance();
-	dummyClassInstance.SetFieldValue("X", 500.0f);
+	dummyClassInstance.SetFieldValue(dummyClassInstance.GetType().GetField("X"), 500.0f);
 
 	struct DummyStruct
 	{
 		float X;
 	} ds;
 	ds.X = 50.0f;
-	fieldTestObject.SetFieldValue("DummyClassTest", dummyClassInstance);
-	fieldTestObject.SetFieldValue("DummyStructTest", ds);
-	fieldTestObject.InvokeMethod("TestClassAndStruct");
+	fieldTestObject.SetFieldValue(fieldTestType.GetField("DummyClassTest"), dummyClassInstance);
+	fieldTestObject.SetFieldValue(fieldTestType.GetField("DummyStructTest"), ds);
+	fieldTestObject.InvokeMethod(fieldTestType.GetMethod("TestClassAndStruct"));
 	dummyClassInstance.Destroy();
 
 	for (auto fieldInfo : fieldTestType.GetFields())
 	{
-		auto& type = fieldInfo.GetType();
-		auto accessibility = fieldInfo.GetAccessibility();
-
 		auto attributes = fieldInfo.GetAttributes();
 		for (auto attrib : attributes)
 		{
@@ -520,8 +621,6 @@ int main(int argc, char** argv)
 
 	for (auto propertyInfo : fieldTestType.GetProperties())
 	{
-		auto& type = propertyInfo.GetType();
-
 		auto attributes = propertyInfo.GetAttributes();
 		for (auto attrib : attributes)
 		{
@@ -531,7 +630,7 @@ int main(int argc, char** argv)
 				std::cout << attrib.GetFieldValue<float>("SomeValue") << std::endl;
 		}
 	}
-	
+
 	auto& memberMethodTestType = assembly.GetType("Testing.Managed.MemberMethodTest");
 
 	// for (auto methodInfo : memberMethodTestType.GetMethods())
@@ -557,8 +656,12 @@ int main(int argc, char** argv)
 
 	auto memberMethodTest = memberMethodTestType.CreateInstance();
 
-	RegisterFieldMarshalTests(hostInstance, fieldTestObject);
-	RegisterMemberMethodTests(hostInstance, memberMethodTest);
+	auto& delegateTestType = assembly.GetType("Testing.Managed.DelegateTest");
+	auto delegateTest = delegateTestType.CreateInstance();
+
+	RegisterFieldMarshalTests(fieldTestObject);
+	RegisterMemberMethodTests(memberMethodTest);
+	RegisterDelegateTests(delegateTest);
 	RunTests();
 
 	memberMethodTest.Destroy();
@@ -570,23 +673,31 @@ int main(int argc, char** argv)
 	auto instance1 = virtualMethodTestType1.CreateInstance();
 	auto instance2 = virtualMethodTestType2.CreateInstance();
 
-	instance1.InvokeMethod("TestMe");
-	instance2.InvokeMethod("TestMe");
+	instance1.InvokeMethod(virtualMethodTestType1.GetMethod("TestMe"));
+	instance2.InvokeMethod(virtualMethodTestType2.GetMethod("TestMe"));
 
 	instance.Destroy();
 	instance1.Destroy();
 	instance2.Destroy();
 
+	auto loadContext2 = hostInstance.CreateAssemblyLoadContext("ALCTestMulti", testDllPath);
+	auto& multiAssembly = loadContext2.LoadAssembly(assemblyPath.string());
+
+	if (&multiAssembly.GetType("Testing.Managed.DummyClass") != &assembly.GetType("Testing.Managed.DummyClass"))
+	{
+		std::cout << "\033[1;32mMultiple instances of the same DLL seem to be working\033[0m" << std::endl;
+	}
+	else
+	{
+		std::cout << "\033[1;31mType cache is clashing between multiple instances of the same DLL\033[0m" << std::endl;
+	}
+
 	hostInstance.UnloadAssemblyLoadContext(loadContext);
 
 	Coral::GC::Collect();
 
-	std::cin.get();
-
-	loadContext = hostInstance.CreateAssemblyLoadContext("ALC2");
+	loadContext = hostInstance.CreateAssemblyLoadContext("ALC2", testDllPath);
 	auto& newAssembly = loadContext.LoadAssembly(assemblyPath.string());
-
-	auto ls = newAssembly.GetLoadStatus();
 
 	RegisterTestInternalCalls(newAssembly);
 	newAssembly.UploadInternalCalls();
@@ -596,13 +707,23 @@ int main(int argc, char** argv)
 
 	auto& instanceTestType2 = newAssembly.GetType("Testing.Managed.InstanceTest");
 	instance = instanceTestType2.CreateInstance();
-	instance.SetFieldValue("X", 500.0f);
+	instance.SetFieldValue(instanceTestType2.GetField("X"), 500.0f);
 
-	Coral::ManagedObject testsInstance2 = testsType2.CreateInstance();
-	testsInstance2.InvokeMethod("RunManagedTests");
+	auto& multiInheritanceTestType = newAssembly.GetType("Testing.Managed.MultiInheritanceTest");
+	std::cout << "Class: " << std::string(multiInheritanceTestType.GetFullName()) << std::endl;
+	std::cout << "\tBase: " << std::string(multiInheritanceTestType.GetBaseType().GetFullName()) << std::endl;
+	std::cout << "\tInterfaces:" << std::endl;
+
+	const auto& interfaceTypes = multiInheritanceTestType.GetInterfaceTypes();
+	for (const auto& type : interfaceTypes)
+	{
+		std::cout << "\t\t" << std::string(type->GetFullName()) << std::endl;
+	}
+
+	Coral::Object testsInstance2 = testsType2.CreateInstance();
+	testsInstance2.InvokeMethod(testsType2.GetMethod("RunManagedTests"));
 	testsInstance2.Destroy();
 	instance.Destroy();
-	std::cin.get();
 
 	return 0;
 }

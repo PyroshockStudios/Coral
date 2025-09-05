@@ -20,22 +20,10 @@ namespace Coral {
 			return result;
 		}
 
-		template<>
-		std::string GetFieldValue(std::string_view InFieldName)
+		constexpr inline operator bool()
 		{
-			String result;
-			GetFieldValueInternal(InFieldName, &result);
-			return std::string(result);
+			return m_Handle != -1;
 		}
-
-		template<>
-		bool GetFieldValue(std::string_view InFieldName)
-		{
-			Bool32 result;
-			GetFieldValueInternal(InFieldName, &result);
-			return result;
-		}
-
 	private:
 		void GetFieldValueInternal(std::string_view InFieldName, void* OutValue) const;
 

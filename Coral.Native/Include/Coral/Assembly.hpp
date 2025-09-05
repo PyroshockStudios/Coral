@@ -21,7 +21,7 @@ namespace Coral {
 	class ManagedAssembly
 	{
 	public:
-		int32_t GetAssemblyID() const { return m_AssemblyID; }
+		int32_t GetAssemblyID() const { return m_AssemblyId; }
 		AssemblyLoadStatus GetLoadStatus() const { return m_LoadStatus; }
 		std::string_view GetName() const { return m_Name; }
 
@@ -29,26 +29,30 @@ namespace Coral {
 		void UploadInternalCalls();
 
 		Type& GetType(std::string_view InClassName) const;
-		const std::vector<Type*>& GetTypes() const;
-		
+		Type& GetType(TypeId InTypeId) const;
+
+		const std::vector<Type>& GetTypes() const;
+
 	private:
 		HostInstance* m_Host = nullptr;
-		int32_t m_AssemblyID = -1;
+		int32_t m_AssemblyId = -1;
+		int32_t m_OwnerContextId = 0;
 		AssemblyLoadStatus m_LoadStatus = AssemblyLoadStatus::UnknownError;
 		std::string m_Name;
 
-	#if defined(CORAL_WIDE_CHARS)
-		std::vector<std::wstring> m_InternalCallNameStorage;
-	#else
-		std::vector<std::string> m_InternalCallNameStorage;
-	#endif
-		
+		std::vector<UCString> m_InternalCallNameStorage;
+
 		std::vector<InternalCall> m_InternalCalls;
 
-		std::vector<Type*> m_Types;
+		std::vector<Type> m_LocalTypes;
+		std::unordered_map<std::string, Type*> m_LocalTypeNameCache;
+		std::unordered_map<TypeId, Type*> m_LocalTypeIdCache;
+
 
 		friend class HostInstance;
 		friend class AssemblyLoadContext;
+
+
 	};
 
 	class AssemblyLoadContext
@@ -59,8 +63,13 @@ namespace Coral {
 		const StableVector<ManagedAssembly>& GetLoadedAssemblies() const { return m_LoadedAssemblies; }
 
 	private:
+		void LoadSystemAssembly();
+
+		void LoadAssemblyData(ManagedAssembly& assembly);
+
 		int32_t m_ContextId;
 		StableVector<ManagedAssembly> m_LoadedAssemblies;
+		ManagedAssembly* m_SystemAssembly = nullptr;
 
 		HostInstance* m_Host = nullptr;
 
