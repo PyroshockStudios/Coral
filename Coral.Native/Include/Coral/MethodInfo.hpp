@@ -12,7 +12,7 @@ namespace Coral {
     class MethodInfo
     {
     public:
-        String GetName() const;
+        std::string GetName() const;
 
         Type& GetReturnType();
         const std::vector<Type*>& GetParameterTypes();

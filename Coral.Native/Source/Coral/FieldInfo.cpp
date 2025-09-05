@@ -2,14 +2,16 @@
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
 #include "Coral/TypeCache.hpp"
+#include "Coral/StringHelper.hpp"
 
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {
 
-    String FieldInfo::GetName() const
+    std::string FieldInfo::GetName() const
     {
-        return s_ManagedFunctions.GetFieldInfoNameFptr(m_Handle);
+        String str = s_ManagedFunctions.GetFieldInfoNameFptr(m_Handle);
+        return StringHelper::ConsumeNativeString(str);
     }
 
     Type& FieldInfo::GetType()

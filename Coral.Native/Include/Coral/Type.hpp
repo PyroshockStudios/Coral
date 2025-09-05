@@ -14,10 +14,10 @@ namespace Coral {
     class Type
     {
     public:
-        String GetFullName() const;
-        String GetName() const;
-        String GetNamespace() const;
-        String GetAssemblyQualifiedName() const;
+        std::string GetFullName() const;
+        std::string GetName() const;
+        std::string GetNamespace() const;
+        std::string GetAssemblyQualifiedName() const;
 
         Type& GetBaseType();
         std::vector<Type*>& GetInterfaceTypes();

@@ -12,7 +12,7 @@ namespace Coral {
     class PropertyInfo
     {
     public:
-        String GetName() const;
+        std::string GetName() const;
         Type& GetType();
 
         std::vector<Attribute> GetAttributes() const;

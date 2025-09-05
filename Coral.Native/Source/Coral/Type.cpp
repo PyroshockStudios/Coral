@@ -1,29 +1,34 @@
 #include "Coral/Type.hpp"
 #include "Coral/TypeCache.hpp"
 #include "Coral/Attribute.hpp"
+#include "Coral/StringHelper.hpp"
 
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {
 
-    String Type::GetFullName() const
+    std::string Type::GetFullName() const
     {
-        return s_ManagedFunctions.GetFullTypeNameFptr(m_Id);
+        String str = s_ManagedFunctions.GetFullTypeNameFptr(m_Id);
+        return StringHelper::ConsumeNativeString(str);
     }
 
-    String Type::GetName() const
+    std::string Type::GetName() const
     {
-        return s_ManagedFunctions.GetTypeNameFptr(m_Id);
+        String str = s_ManagedFunctions.GetTypeNameFptr(m_Id);
+        return StringHelper::ConsumeNativeString(str);
     }
 
-    String Type::GetNamespace() const
+    std::string Type::GetNamespace() const
     {
-        return s_ManagedFunctions.GetTypeNamespaceFptr(m_Id);
+        String str = s_ManagedFunctions.GetTypeNamespaceFptr(m_Id);
+        return StringHelper::ConsumeNativeString(str);
     }
 
-    String Type::GetAssemblyQualifiedName() const
+    std::string Type::GetAssemblyQualifiedName() const
     {
-        return s_ManagedFunctions.GetAssemblyQualifiedNameFptr(m_Id);
+        String str = s_ManagedFunctions.GetAssemblyQualifiedNameFptr(m_Id);
+        return StringHelper::ConsumeNativeString(str);
     }
 
     Type& Type::GetBaseType()

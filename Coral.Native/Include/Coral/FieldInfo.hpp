@@ -12,7 +12,7 @@ namespace Coral {
     class FieldInfo
     {
     public:
-        String GetName() const;
+        std::string GetName() const;
         Type& GetType();
 
         TypeAccessibility GetAccessibility() const;

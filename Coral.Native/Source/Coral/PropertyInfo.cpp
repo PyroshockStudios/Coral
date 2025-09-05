@@ -2,14 +2,16 @@
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
 #include "Coral/TypeCache.hpp"
+#include "Coral/StringHelper.hpp"
 
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {
 
-    String PropertyInfo::GetName() const
+    std::string PropertyInfo::GetName() const
     {
-        return s_ManagedFunctions.GetPropertyInfoNameFptr(m_Handle);
+        String str = s_ManagedFunctions.GetPropertyInfoNameFptr(m_Handle);
+        return StringHelper::ConsumeNativeString(str);
     }
 
     Type& PropertyInfo::GetType()

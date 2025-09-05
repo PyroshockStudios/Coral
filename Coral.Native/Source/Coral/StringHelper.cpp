@@ -1,4 +1,5 @@
 #include "Coral/StringHelper.hpp"
+#include "Coral/String.hpp"
 
 #include <codecvt>
 
@@ -36,5 +37,11 @@ namespace Coral {
 #else
         return std::string(InString);
 #endif
+    }
+    std::string StringHelper::ConsumeNativeString(String& InString)
+    {
+        std::string str = UCCharToString(InString.Data());
+        String::Free(InString);
+        return str;
     }
 }
