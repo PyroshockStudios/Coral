@@ -1081,7 +1081,7 @@ internal static class TypeInterface
                 LogMessage($"Failed to find field with name '{InFieldName}' in attribute {targetType.FullName}.", MessageLevel.Error);
                 return;
             }
-
+            
             Marshalling.MarshalReturnValue(attribute, fieldInfo.GetValue(attribute), fieldInfo, OutValue);
         }
         catch (Exception ex)

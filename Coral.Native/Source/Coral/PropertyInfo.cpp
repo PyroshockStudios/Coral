@@ -55,4 +55,13 @@ namespace Coral {
         return result;
     }
 
+    Attribute PropertyInfo::GetAttribute(const Type& InAttributeType) const
+    {
+        auto list = GetAttributes();
+        for (Attribute& attr : list) {
+            if (attr.GetType() == InAttributeType) return attr;
+        }
+        return {};
+    }
+
 }

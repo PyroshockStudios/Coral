@@ -21,6 +21,7 @@ namespace Coral {
         bool IsStatic() const;
 
         std::vector<Attribute> GetAttributes() const;
+        Attribute GetAttribute(const Type& InAttributeType) const;
 
         constexpr inline operator bool()
         {
