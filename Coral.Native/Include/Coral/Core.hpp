@@ -23,11 +23,6 @@
 #ifdef CORAL_WINDOWS
 	#define CORAL_CALLTYPE __cdecl
 	#define CORAL_HOSTFXR_NAME "hostfxr.dll"
-
-	// TODO(Emily): On Windows shouldn't this use the `UNICODE` macro?
-	#ifdef _WCHAR_T_DEFINED
-		#define CORAL_WIDE_CHARS
-	#endif
 #else
 	#define CORAL_CALLTYPE
 
@@ -68,7 +63,6 @@ namespace Coral {
 
 	using Bool32 = uint32_t;
 	using Char = char16_t; // C# strings are UTF16
-
 	static_assert(sizeof(Bool32) == 4);
 	static_assert(sizeof(Char) == 2);
 
@@ -146,6 +140,7 @@ namespace Coral {
 
 	using TypeId = int32_t;
 	using ManagedHandle = int32_t;
+	using MetadataToken = uint32_t;
 
 	struct InternalCall
 	{

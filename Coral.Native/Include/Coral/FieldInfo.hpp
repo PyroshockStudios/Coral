@@ -23,6 +23,11 @@ namespace Coral {
 		{
 			return m_Handle != -1;
 		}
+
+		MetadataToken GetMetadataToken() const
+		{
+			return static_cast<MetadataToken>(m_Handle);
+		}
 	private:
 		ManagedHandle m_Handle = -1;
 		Type* m_Type = nullptr;
