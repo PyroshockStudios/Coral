@@ -1,3 +1,4 @@
+#include "Type.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/TypeCache.hpp"
 #include "Coral/Attribute.hpp"
@@ -201,6 +202,15 @@ namespace Coral {
             result[i].m_Handle = attributeHandles[i];
 
         return result;
+    }
+
+    Attribute Type::GetAttribute(const Type& InAttributeType) const
+    {
+        auto list = GetAttributes();
+        for (Attribute& attr : list) {
+            if (attr.GetType() == InAttributeType) return attr;
+        }
+        return {};
     }
 
     ManagedType Type::GetManagedType() const

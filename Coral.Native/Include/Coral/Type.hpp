@@ -40,6 +40,7 @@ namespace Coral {
 
         bool HasAttribute(const Type& InAttributeType) const;
         std::vector<Attribute> GetAttributes() const;
+        Attribute GetAttribute(const Type& InAttributeType) const;
 
         ManagedType GetManagedType() const;
 
