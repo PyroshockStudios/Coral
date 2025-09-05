@@ -10,6 +10,7 @@
 #include <Coral/GC.hpp>
 #include <Coral/Array.hpp>
 #include <Coral/Attribute.hpp>
+#include <Coral/TypeCache.hpp>
 
 static void ExceptionCallback(std::string_view InMessage)
 {
@@ -76,10 +77,10 @@ int main([[maybe_unused]] int argc, char** argv)
 	assembly.UploadInternalCalls();
 
 	// Get a reference to the ExampleClass type
-	auto& exampleType = assembly.GetType("Example.Managed.ExampleClass");
+	auto exampleType = *Coral::TypeCache::GetType("Example.Managed.ExampleClass");
 
 	// Call the static method "StaticMethod" with value 50
-	exampleType.InvokeStaticMethod(exampleType.GetMethodByName("StaticMethod", 1), MethodParams { 50.0f });
+	exampleType.InvokeStaticMethod(exampleType.GetMethod("StaticMethod", 1, true), MethodParams { 50.0f });
 
 	// Get a reference to the CustomAttribute type
 	auto& customAttributeType = assembly.GetType("Example.Managed.CustomAttribute");
@@ -99,27 +100,27 @@ int main([[maybe_unused]] int argc, char** argv)
 	auto exampleInstance = exampleType.CreateInstance(MethodParams { 50 });
 
 	// Invoke the method named "MemberMethod" with a MyVec3 argument (doesn't return anything)
-	exampleInstance.InvokeMethod(exampleType.GetMethodByName("MemberMethod", 1), MethodParams { MyVec3 { 10.0f, 10.0f, 10.0f } });
+	exampleInstance.InvokeMethod(exampleType.GetMethod("MemberMethod", 1), MethodParams { MyVec3 { 10.0f, 10.0f, 10.0f } });
 
 	// Invokes the setter on PublicProp with the value 10 (will be multiplied by 2 in C#)
-	exampleInstance.SetPropertyValue(exampleType.GetPropertyByName("PublicProp"), 10);
+	exampleInstance.SetPropertyValue(exampleType.GetProperty("PublicProp"), 10);
 
 	// Get the value of PublicProp as an int
-	std::cout << exampleInstance.GetPropertyValue<int32_t>(exampleType.GetPropertyByName("PublicProp")) << std::endl;
+	std::cout << exampleInstance.GetPropertyValue<int32_t>(exampleType.GetProperty("PublicProp")) << std::endl;
 
 	// Sets the value of the private field "myPrivateValue" with the value 10 (will NOT be multiplied by 2 in C#)
-	exampleInstance.SetFieldValue(exampleType.GetFieldByName("myPrivateValue"), 10);
+	exampleInstance.SetFieldValue(exampleType.GetField("myPrivateValue"), 10);
 
 	// Get the value of myPrivateValue as an int
-	std::cout << exampleInstance.GetFieldValue<int32_t>(exampleType.GetFieldByName("myPrivateValue")) << std::endl;
+	std::cout << exampleInstance.GetFieldValue<int32_t>(exampleType.GetField("myPrivateValue")) << std::endl;
 
 	// Invokes StringDemo method which will in turn invoke PrintStringIcall with a string parameter
-	exampleInstance.InvokeMethod(exampleType.GetMethodByName("StringDemo", 0));
+	exampleInstance.InvokeMethod(exampleType.GetMethod("StringDemo", 0));
 
 	// Invokes ArrayDemo method which will in turn invoke NativeArrayIcall and pass the values we give here
 	// and also invoke ArrayReturnIcall
 	auto arr = Coral::Array<float>::New({ 5.0f, 0.0f, 10.0f, -50.0f });
-	exampleInstance.InvokeMethod(exampleType.GetMethodByName("ArrayDemo", 1), MethodParams{ arr });
+	exampleInstance.InvokeMethod(exampleType.GetMethod("ArrayDemo", 1), MethodParams{ arr });
 	Coral::Array<float>::Free(arr);
 
 	return 0;

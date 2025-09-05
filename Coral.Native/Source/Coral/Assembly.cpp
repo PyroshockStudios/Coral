@@ -36,28 +36,17 @@ namespace Coral {
 
 	Type& ManagedAssembly::GetType(std::string_view InClassName) const
 	{
-		Type* type = TypeCache::Get().GetTypeByName(InClassName);
-		return type != nullptr ? *type : s_NullType;
-	}
-
-	Type& ManagedAssembly::GetLocalType(std::string_view InClassName) const
-	{
 		auto it = m_LocalTypeNameCache.find(std::string(InClassName));
 		return it == m_LocalTypeNameCache.end() ? s_NullType : *it->second;
 	}
 
-	Type& ManagedAssembly::GetLocalType(TypeId InClassId) const
+	Type& ManagedAssembly::GetType(TypeId InClassId) const
 	{
 		auto it = m_LocalTypeIdCache.find(InClassId);
 		return it == m_LocalTypeIdCache.end() ? s_NullType : *it->second;
 	}
 
-	const std::vector<Type*>& ManagedAssembly::GetTypes() const
-	{
-		return m_Types;
-	}
-
-	const std::vector<Type>& ManagedAssembly::GetLocalTypes() const
+	const std::vector<Type>& ManagedAssembly::GetTypes() const
 	{
 		return m_LocalTypes;
 	}
@@ -67,7 +56,7 @@ namespace Coral {
 	{
 		auto filepath = String::New(InFilePath);
 
-		auto[idx, result] = m_LoadedAssemblies.EmplaceBack();
+		auto [idx, result] = m_LoadedAssemblies.EmplaceBack();
 		result.m_Host = m_Host;
 		result.m_AssemblyId = s_ManagedFunctions.LoadAssemblyFptr(m_ContextId, filepath);
 		result.m_OwnerContextId = m_ContextId;
@@ -86,24 +75,25 @@ namespace Coral {
 			std::vector<TypeId> typeIds(static_cast<size_t>(typeCount));
 			s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, result.m_AssemblyId, typeIds.data(), &typeCount);
 
+			// reserve to avoid bad references after resizing
+			result.m_LocalTypes.reserve(typeIds.size());
 			for (auto typeId : typeIds)
 			{
+				// global cache
 				Type type;
 				type.m_Id = typeId;
-				result.m_Types.push_back(TypeCache::Get().CacheType(std::move(type)));
-
+				TypeCache::Get().CacheType(std::move(type));
+				// local cache
 				Type type2;
 				type2.m_Id = typeId;
-
-				Type& inserted = result.m_LocalTypes.emplace_back(std::move(type));
-
+				Type& inserted = result.m_LocalTypes.emplace_back(std::move(type2));
 				result.m_LocalTypeIdCache[inserted.GetTypeId()] = &inserted;
 				result.m_LocalTypeNameCache[inserted.GetFullName()] = &inserted;
 			}
 		}
 
 		String::Free(filepath);
-
+		LoadAssemblyTypes(result);
 		return result;
 	}
 
@@ -129,11 +119,29 @@ namespace Coral {
 			{
 				Type type;
 				type.m_Id = typeId;
-				result.m_Types.push_back(TypeCache::Get().CacheType(std::move(type)));
+				TypeCache::Get().CacheType(std::move(type));
 			}
 		}
-
+		LoadAssemblyTypes(result);
 		return result;
 	}
 
+	void AssemblyLoadContext::LoadAssemblyTypes(ManagedAssembly& assembly)
+	{
+		TypeCache::Get().m_ByteType = TypeCache::Get().GetTypeByName("System.Byte");
+		TypeCache::Get().m_SByteType = TypeCache::Get().GetTypeByName("System.SByte");
+		TypeCache::Get().m_ShortType = TypeCache::Get().GetTypeByName("System.Int16");
+		TypeCache::Get().m_UShortType = TypeCache::Get().GetTypeByName("System.UInt16");
+		TypeCache::Get().m_IntType = TypeCache::Get().GetTypeByName("System.Int32");
+		TypeCache::Get().m_UIntType = TypeCache::Get().GetTypeByName("System.UInt32");
+		TypeCache::Get().m_LongType = TypeCache::Get().GetTypeByName("System.Int64");
+		TypeCache::Get().m_ULongType = TypeCache::Get().GetTypeByName("System.UInt64");
+		TypeCache::Get().m_FloatType = TypeCache::Get().GetTypeByName("System.Single");
+		TypeCache::Get().m_DoubleType = TypeCache::Get().GetTypeByName("System.Double");
+		TypeCache::Get().m_BoolType = TypeCache::Get().GetTypeByName("System.Boolean");
+		TypeCache::Get().m_CharType = TypeCache::Get().GetTypeByName("System.Char");
+		TypeCache::Get().m_StringType = TypeCache::Get().GetTypeByName("System.String");
+	}
 }
+
+

@@ -72,7 +72,10 @@
 namespace Coral {
 
 	using Bool32 = uint32_t;
+	using Char = char16_t; // C# strings are UTF16
+
 	static_assert(sizeof(Bool32) == 4);
+	static_assert(sizeof(Char) == 2);
 
 	enum class TypeAccessibility
 	{

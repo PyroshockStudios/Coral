@@ -60,6 +60,9 @@ internal static class TypeInterface
 		{ typeof(double), ManagedType.Double },
 		{ typeof(Bool32), ManagedType.Bool },
 		{ typeof(bool), ManagedType.Bool },
+		{ typeof(char), ManagedType.Char },
+		{ typeof(object), ManagedType.Object },
+		{ typeof(Array), ManagedType.Array },
 		{ typeof(NativeString), ManagedType.String },
 		{ typeof(string), ManagedType.String },
 	};
@@ -97,6 +100,14 @@ internal static class TypeInterface
 				if (methodParams[i].ParameterType.IsPointer || methodParams[i].ParameterType == typeof(IntPtr))
 				{
 					paramType = ManagedType.Pointer;
+				} 
+				else if (methodParams[i].ParameterType.IsArray)
+				{
+					paramType = ManagedType.Array;
+				}
+				else if (methodParams[i].ParameterType.IsClass || methodParams[i].ParameterType == typeof(object))
+				{
+					paramType = ManagedType.Object;
 				}
 				else if (!s_TypeConverters.TryGetValue(methodParams[i].ParameterType, out paramType))
 				{
@@ -164,6 +175,40 @@ internal static class TypeInterface
 				return NativeString.Null();
 
 			return type.FullName;
+		}
+		catch (Exception e)
+		{
+			HandleException(e);
+			return NativeString.Null();
+		}
+	}
+	
+	[UnmanagedCallersOnly]
+	internal static unsafe NativeString GetTypeName(int InType)
+	{
+		try
+		{
+			if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
+				return NativeString.Null();
+
+			return type.Namespace;
+		}
+		catch (Exception e)
+		{
+			HandleException(e);
+			return NativeString.Null();
+		}
+	}
+	
+	[UnmanagedCallersOnly]
+	internal static unsafe NativeString GetTypeNamespace(int InType)
+	{
+		try
+		{
+			if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
+				return NativeString.Null();
+
+			return type.Name;
 		}
 		catch (Exception e)
 		{
@@ -538,16 +583,17 @@ internal static class TypeInterface
 
 
     [UnmanagedCallersOnly]
-    internal static unsafe int GetMethodInfoByName(int InType, NativeString InMethodName, int InParamCount, uint InBindingFlags)
+    internal static unsafe int GetMethodInfoByName(int InType, NativeString InMethodName, uint InBindingFlags)
     {
         try
         {
             if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
                 return -1;
 			BindingFlags flags = (BindingFlags)InBindingFlags;
-            var methodInfo = type.GetMethods(flags)
-                         .FirstOrDefault(m => m.Name == InMethodName &&
-                                              m.GetParameters().Length == InParamCount);
+            var methodInfo = type.GetMethod(InMethodName, flags);
+			if (methodInfo == null) {
+				return -1;
+			}
             return s_CachedMethods.Add(methodInfo);
         }
         catch (Exception ex)
@@ -556,6 +602,64 @@ internal static class TypeInterface
 			return -1;
         }
     }
+
+	[UnmanagedCallersOnly]
+    internal static unsafe int GetMethodInfoByNameParamCount(int InType, NativeString InMethodName, int InParamCount, uint InBindingFlags)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
+                return -1;
+			BindingFlags flags = (BindingFlags)InBindingFlags;
+            var methodInfo = type.GetMethods(flags)
+                         .FirstOrDefault(m => m.Name == InMethodName &&
+                                              m.GetParameters().Length == InParamCount);  
+			if (methodInfo == null) {
+				return -1;
+			}
+            return s_CachedMethods.Add(methodInfo);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+			return -1;
+        }
+    }
+
+	[UnmanagedCallersOnly]
+    internal static unsafe int GetMethodInfoByNameParamTypes(int InType, NativeString InMethodName, int InParamCount, int* InParameterTypes, uint InBindingFlags)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
+                return -1;
+			BindingFlags flags = (BindingFlags)InBindingFlags;
+			Type[] parameterTypes = new Type[InParamCount];
+			for (int i = 0; i < InParamCount; ++i) 
+			{
+				if (!s_CachedTypes.TryGetValue(InParameterTypes[i], out var paramType) || paramType == null)
+                	return -1;
+				parameterTypes[i] = paramType;
+			}
+            var methodInfo = type.GetMethod(
+				InMethodName,
+				flags, 
+				binder: null,
+				types: parameterTypes,
+				modifiers: null
+        	);
+			if (methodInfo == null) {
+				return -1;
+			}
+            return s_CachedMethods.Add(methodInfo);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+			return -1;
+        }
+    }
+
 
     // TODO(Peter): Refactor this to GetMemberInfoName (should work for all types of members)
     [UnmanagedCallersOnly]
@@ -715,6 +819,9 @@ internal static class TypeInterface
                 return -1;
             BindingFlags flags = (BindingFlags)InBindingFlags;
 			var fieldInfo = type.GetField(InFieldName, flags);
+			if (fieldInfo == null) {
+				return -1;
+			}
             return s_CachedFields.Add(fieldInfo);
         }
         catch (Exception ex)
@@ -810,12 +917,16 @@ internal static class TypeInterface
     [UnmanagedCallersOnly]
     internal static unsafe int GetPropertyInfoByName(int InType, NativeString InPropertyName, uint InBindingFlags)
     {
+				Console.WriteLine(InPropertyName);
         try
         {
             if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
                 return -1;
             BindingFlags flags = (BindingFlags)InBindingFlags;
             var propertyInfo = type.GetProperty(InPropertyName, flags);
+			if (propertyInfo == null) {
+				return -1;
+			}
             return s_CachedProperties.Add(propertyInfo);
         }
         catch (Exception ex)

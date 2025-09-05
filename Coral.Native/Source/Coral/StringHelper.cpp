@@ -29,4 +29,12 @@ namespace Coral {
 		return std::string(InString);
 #endif
 	}
+	std::string StringHelper::UCCharToString(const UCChar* InString)
+	{
+#ifdef CORAL_WIDE_CHARS
+		return ConvertWideToUtf8(InString);
+#else
+		return std::string(InString);
+#endif
+	}
 }

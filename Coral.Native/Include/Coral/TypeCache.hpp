@@ -4,30 +4,62 @@
 #include "StableVector.hpp"
 
 namespace Coral {
-	class Type;
+    class Type;
 
-	class [[deprecated(CORAL_GLOBAL_ALC_MSG)]] TypeCache
-	{
-	public:
-		[[deprecated(CORAL_GLOBAL_ALC_MSG)]]
-		static TypeCache& Get();
+    class TypeCache
+    {
+    public:
+        static TypeCache& Get();
 
-		[[deprecated(CORAL_GLOBAL_ALC_MSG)]]
-		Type* CacheType(Type&& InType);
+        Type* CacheType(Type&& InType);
 
-		[[deprecated(CORAL_GLOBAL_ALC_MSG_P(ManagedAssembly::GetLocalType))]]
-		Type* GetTypeByName(std::string_view InName) const;
+        Type* GetTypeByName(std::string_view InName) const;
 
-		[[deprecated(CORAL_GLOBAL_ALC_MSG)]]
-		Type* GetTypeByID(TypeId InTypeID) const;
+        Type* GetTypeByID(TypeId InTypeID) const;
 
-		[[deprecated(CORAL_GLOBAL_ALC_MSG)]]
-		void Clear();
 
-	private:
-		StableVector<Type> m_Types;
-		std::unordered_map<std::string, Type*> m_NameCache;
-		std::unordered_map<TypeId, Type*> m_IDCache;
-	};
+        static Type* GetType(std::string_view InName) {
+            return Get().GetTypeByName(InName);
+        }
+        static Type* GetType(TypeId InTypeID) {
+            return Get().GetTypeByID(InTypeID);
+        }
+
+        void Clear();
+
+        static Type* ByteType() { return Get().m_ByteType; }
+        static Type* SByteType() { return Get().m_SByteType; }
+        static Type* ShortType() { return Get().m_ShortType; }
+        static Type* UShortType() { return Get().m_UShortType; }
+        static Type* IntType() { return Get().m_IntType; }
+        static Type* UIntType() { return Get().m_UIntType; }
+        static Type* LongType() { return Get().m_LongType; }
+        static Type* ULongType() { return Get().m_ULongType; }
+        static Type* FloatType() { return Get().m_FloatType; }
+        static Type* DoubleType() { return Get().m_DoubleType; }
+        static Type* BoolType() { return Get().m_BoolType; }
+        static Type* CharType() { return Get().m_CharType; }
+        static Type* StringType() { return Get().m_StringType; }
+    private:
+        friend class AssemblyLoadContext;
+
+        StableVector<Type> m_Types;
+        std::unordered_map<std::string, Type*> m_NameCache;
+        std::unordered_map<TypeId, Type*> m_IDCache;
+
+        Type* m_ByteType = {};
+        Type* m_SByteType = {};
+        Type* m_ShortType = {};
+        Type* m_UShortType = {};
+        Type* m_IntType = {};
+        Type* m_UIntType = {};
+        Type* m_LongType = {};
+        Type* m_ULongType = {};
+        Type* m_FloatType = {};
+        Type* m_DoubleType = {};
+        Type* m_BoolType = {};
+        Type* m_CharType = {};
+        Type* m_StringType = {};
+    };
 
 }

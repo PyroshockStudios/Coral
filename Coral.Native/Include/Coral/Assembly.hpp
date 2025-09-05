@@ -28,16 +28,10 @@ namespace Coral {
 		void AddInternalCall(std::string_view InClassName, std::string_view InVariableName, void* InFunctionPtr);
 		void UploadInternalCalls();
 
-		[[deprecated(CORAL_GLOBAL_ALC_MSG)]]
 		Type& GetType(std::string_view InClassName) const;
+		Type& GetType(TypeId InTypeId) const;
 
-		Type& GetLocalType(std::string_view InClassName) const;
-		Type& GetLocalType(TypeId InTypeId) const;
-
-		[[deprecated(CORAL_GLOBAL_ALC_MSG)]]
-		const std::vector<Type*>& GetTypes() const;
-
-		const std::vector<Type>& GetLocalTypes() const;
+		const std::vector<Type>& GetTypes() const;
 
 	private:
 		HostInstance* m_Host = nullptr;
@@ -50,15 +44,15 @@ namespace Coral {
 
 		std::vector<InternalCall> m_InternalCalls;
 
-		std::vector<Type*> m_Types;
-
-		// NOTE(Emily): Doesn't need to be a `StableVector` since it's static post-init.
 		std::vector<Type> m_LocalTypes;
 		std::unordered_map<std::string, Type*> m_LocalTypeNameCache;
 		std::unordered_map<TypeId, Type*> m_LocalTypeIdCache;
 
+
 		friend class HostInstance;
 		friend class AssemblyLoadContext;
+
+
 	};
 
 	class AssemblyLoadContext
@@ -69,6 +63,8 @@ namespace Coral {
 		const StableVector<ManagedAssembly>& GetLoadedAssemblies() const { return m_LoadedAssemblies; }
 
 	private:
+		static void LoadAssemblyTypes(ManagedAssembly& assembly);
+
 		int32_t m_ContextId;
 		StableVector<ManagedAssembly> m_LoadedAssemblies;
 

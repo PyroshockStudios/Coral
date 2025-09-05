@@ -11,6 +11,16 @@ namespace Coral {
 		return s_ManagedFunctions.GetFullTypeNameFptr(m_Id);
 	}
 
+	String Type::GetName() const
+	{
+		return s_ManagedFunctions.GetTypeNameFptr(m_Id);
+	}
+
+	String Type::GetNamespace() const
+	{
+		return s_ManagedFunctions.GetTypeNamespaceFptr(m_Id);
+	}
+
 	String Type::GetAssemblyQualifiedName() const
 	{
 		return s_ManagedFunctions.GetAssemblyQualifiedNameFptr(m_Id);
@@ -115,22 +125,57 @@ namespace Coral {
 		return properties;
 	}
 
-	MethodInfo Type::GetMethodByName(std::string_view MethodName, int32_t InParamCount, BindingFlags InBindingFlags) const
+	MethodInfo Type::GetMethod(std::string_view MethodName, bool InStatic) const
 	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
 		ScopedString string = ScopedString(MethodName);
-		MethodInfo method {};
-		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, InParamCount, InBindingFlags);
+		MethodInfo method{};
+		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, flags);
+		return method;
+	}
+	MethodInfo Type::GetMethod(std::string_view MethodName, int32_t InParamCount, bool InStatic) const
+	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(MethodName);
+		MethodInfo method{};
+		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
+		return method;
+	}
+	MethodInfo Type::GetMethod(std::string_view MethodName, const std::vector<const Type*>& InParamTypes, bool InStatic) const
+	{
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(MethodName);
+		MethodInfo method{};
+		std::vector<TypeId>  typeIds = {};
+		typeIds.reserve(InParamTypes.size());
+		for (const Type* type : InParamTypes) {
+			typeIds.push_back(type->GetTypeId());
+		}
+		method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamTypesFptr(m_Id, string, static_cast<int32_t>(typeIds.size()), typeIds.data(), flags);
 		return method;
 	}
 
-	FieldInfo Type::GetFieldByName(std::string_view FieldName, BindingFlags InBindingFlags) const
+	FieldInfo Type::GetField(std::string_view FieldName, bool InStatic) const
 	{
-		return FieldInfo();
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(FieldName);
+		FieldInfo field{};
+		field.m_Handle = s_ManagedFunctions.GetFieldInfoByNameFptr(m_Id, string, flags);
+		return field;
 	}
 
-	PropertyInfo Type::GetPropertyByName(std::string_view PropertyName, BindingFlags InBindingFlags) const
+	PropertyInfo Type::GetProperty(std::string_view PropertyName, bool InStatic) const
 	{
-		return PropertyInfo();
+		BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
+		flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
+		ScopedString string = ScopedString(PropertyName);
+		PropertyInfo property{};
+		property.m_Handle = s_ManagedFunctions.GetPropertyInfoByNameFptr(m_Id, string, flags);
+		return property;
 	}
 
 

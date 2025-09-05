@@ -12,7 +12,7 @@ namespace Coral.Managed;
 
 using static ManagedHost;
 
-internal enum ManagedType
+internal enum ManagedType : uint
 {
     Unknown,
 
@@ -30,8 +30,12 @@ internal enum ManagedType
 
     Bool,
 
-    String,
+    Char,
 
+    String,
+    Array,
+    Object,
+    
     Pointer
 };
 
@@ -361,7 +365,6 @@ internal static class ManagedObject
                 return;
             }
 
-            var targetType = target.GetType();
 
             if (fieldInfo.FieldType == typeof(string))
             {
@@ -369,6 +372,7 @@ internal static class ManagedObject
 
                 if (fieldValue == null)
                 {
+                    var targetType = target.GetType();
                     LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{targetType.FullName}'.", MessageLevel.Error);
                     return;
                 }
@@ -409,18 +413,16 @@ internal static class ManagedObject
         {
             if (!TypeInterface.s_CachedFields.TryGetValue(InField, out var fieldInfo) || fieldInfo == null)
             {
-                LogMessage($"Cannot get field id={InField} as it does not exist.", MessageLevel.Error);
+                LogMessage($"Cannot get property id={InField} as it does not exist.", MessageLevel.Error);
                 return;
             }
             var target = GCHandle.FromIntPtr(InTarget).Target;
 
             if (target == null)
             {
-                LogMessage($"Cannot set value of field {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
+                LogMessage($"Cannot set value of property {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
                 return;
             }
-
-            var targetType = target.GetType();
 
             // Handles strings gracefully internally.
             Marshalling.MarshalReturnValue(target, fieldInfo.GetValue(target), fieldInfo, OutValue);
@@ -432,27 +434,25 @@ internal static class ManagedObject
     }
 
     [UnmanagedCallersOnly]
-    internal static unsafe void SetPropertyValue(IntPtr InTarget, NativeString InPropertyName, IntPtr InValue, IntPtr* exception)
+    internal static unsafe void SetPropertyValue(IntPtr InTarget, int InProperty, IntPtr InValue, IntPtr* exception)
     {
         if (exception != null) *exception = IntPtr.Zero;
         try
         {
+             if (!TypeInterface.s_CachedFields.TryGetValue(InField, out var fieldInfo) || fieldInfo == null)
+            {
+                LogMessage($"Cannot get field id={InField} as it does not exist.", MessageLevel.Error);
+                return;
+            }
             var target = GCHandle.FromIntPtr(InTarget).Target;
 
             if (target == null)
             {
-                LogMessage($"Cannot set value of property {InPropertyName} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
+                LogMessage($"Cannot set value of field {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
                 return;
             }
 
-            var targetType = target.GetType();
-            var propertyInfo = targetType.GetProperty(InPropertyName!, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-            if (propertyInfo == null)
-            {
-                LogMessage($"Failed to find property '{InPropertyName}' in type '{targetType.FullName}'", MessageLevel.Error);
-                return;
-            }
 
             if (propertyInfo.SetMethod == null)
             {
@@ -482,7 +482,7 @@ internal static class ManagedObject
     }
 
     [UnmanagedCallersOnly]
-    internal static unsafe void GetPropertyValue(IntPtr InTarget, NativeString InPropertyName, IntPtr OutValue, IntPtr* exception)
+    internal static unsafe void GetPropertyValue(IntPtr InTarget, int InProperty, IntPtr OutValue, IntPtr* exception)
     {
         if (exception != null) *exception = IntPtr.Zero;
         try
