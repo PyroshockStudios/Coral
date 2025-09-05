@@ -7,7 +7,7 @@ namespace Coral {
 
 	class Type;
 	class Attribute;
-	class ManagedObject;
+	class Object;
 
 	class MethodInfo
 	{
@@ -31,7 +31,7 @@ namespace Coral {
 		std::vector<Type*> m_ParameterTypes;
 
 		friend class Type;
-		friend class ManagedObject;
+		friend class Object;
 	};
 
 }

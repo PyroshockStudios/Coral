@@ -1,4 +1,4 @@
-﻿#include "Coral/ManagedObject.hpp"
+﻿#include "Coral/Object.hpp"
 #include "Coral/Assembly.hpp"
 #include "Coral/String.hpp"
 #include "Coral/StringHelper.hpp"
@@ -9,7 +9,7 @@
 
 namespace Coral {
 
-	ManagedObject::ManagedObject(const ManagedObject& InOther)
+	Object::Object(const Object& InOther)
 	{
 		if (InOther.m_Handle)
 		{
@@ -18,18 +18,18 @@ namespace Coral {
 		}
 	}
 
-	ManagedObject::ManagedObject(ManagedObject&& InOther) noexcept : m_Handle(InOther.m_Handle), m_Type(InOther.m_Type)
+	Object::Object(Object&& InOther) noexcept : m_Handle(InOther.m_Handle), m_Type(InOther.m_Type)
 	{
 		InOther.m_Handle = nullptr;
 		InOther.m_Type = nullptr;
 	}
 
-	ManagedObject::~ManagedObject()
+	Object::~Object()
 	{
 		Destroy();
 	}
 
-	ManagedObject& ManagedObject::operator=(ManagedObject&& InOther) noexcept
+	Object& Object::operator=(Object&& InOther) noexcept
 	{
 		if (this != &InOther)
 		{
@@ -42,7 +42,7 @@ namespace Coral {
 		return *this;
 	}
 
-	ManagedObject& ManagedObject::operator=(const ManagedObject& InOther)
+	Object& Object::operator=(const Object& InOther)
 	{
 		if (this != &InOther)
 		{
@@ -57,7 +57,7 @@ namespace Coral {
 		return *this;
 	}
 
-	void ManagedObject::InvokeMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	void Object::InvokeMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
 		// NOTE(Peter): If you get an exception in this function it's most likely because you're using a Native only debugger type in Visual Studio
 		//				and it's catching a C# exception even though it shouldn't. I recommend switching the debugger type to Mixed (.NET Core)
@@ -67,55 +67,77 @@ namespace Coral {
 		s_ManagedFunctions.InvokeMethodFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
 		if (OutException)
 		{
-			*OutException = ManagedObject();
+			*OutException = Object();
 			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	void ManagedObject::InvokeMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+	void Object::InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
 	{
 		void* exceptionResult = nullptr;
 		s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, OutException ? &exceptionResult : nullptr);
 		if (OutException)
 		{
-			*OutException = ManagedObject();
+			*OutException = Object();
 			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	void ManagedObject::SetFieldValueRaw(const FieldInfo& InField , void* InValue) const
+	void Object::InvokeDelegateInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	{
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeDelegateFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
+		if (OutException)
+		{
+			*OutException = Object();
+			OutException->m_Handle = exceptionResult;
+		}
+	}
+
+	void Object::InvokeDelegateRetInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+	{
+		void* exceptionResult = nullptr;
+		s_ManagedFunctions.InvokeDelegateRetFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, OutException ? &exceptionResult : nullptr);
+		if (OutException)
+		{
+			*OutException = Object();
+			OutException->m_Handle = exceptionResult;
+		}
+	}
+
+	void Object::SetFieldValueRaw(const FieldInfo& InField, void* InValue) const
 	{
 		s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, InValue);
 	}
 
-	void ManagedObject::GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const
+	void Object::GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const
 	{
 		s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, OutValue);
 	}
 
-	void ManagedObject::SetPropertyValueRaw(const PropertyInfo& InProperty, void* InValue, ManagedObject* OutException) const
+	void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, void* InValue, Object* OutException) const
 	{
 		void* exceptionResult = nullptr;
 		s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, InValue, OutException ? &exceptionResult : nullptr);
 		if (OutException)
 		{
-			*OutException = ManagedObject();
+			*OutException = Object();
 			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	void ManagedObject::GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, ManagedObject* OutException) const
+	void Object::GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, Object* OutException) const
 	{
 		void* exceptionResult = nullptr;
 		s_ManagedFunctions.GetPropertyValueFptr(m_Handle, InProperty.m_Handle, OutValue, OutException ? &exceptionResult : nullptr);
 		if (OutException)
 		{
-			*OutException = ManagedObject();
+			*OutException = Object();
 			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	const Type& ManagedObject::GetType()
+	const Type& Object::GetType()
 	{
 		if (!m_Type)
 		{
@@ -127,7 +149,7 @@ namespace Coral {
 		return *m_Type;
 	}
 
-	void ManagedObject::Destroy()
+	void Object::Destroy()
 	{
 		if (!m_Handle)
 			return;

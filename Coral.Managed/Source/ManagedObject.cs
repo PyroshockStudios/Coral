@@ -41,6 +41,15 @@ internal enum ManagedType : uint
     Pointer
 };
 
+
+[StructLayout(LayoutKind.Explicit, Pack = 1)]
+internal struct ManagedObjectData
+{
+    [FieldOffset(0)]
+    internal IntPtr m_Handle;
+    [FieldOffset(8)]
+    internal unsafe void* m_Type;
+}
 internal static class ManagedObject
 {
 
@@ -281,6 +290,7 @@ internal static class ManagedObject
                 LogMessage($"Cannot invoke method {methodInfo.Name} on a null type.", MessageLevel.Error);
                 return;
             }
+
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
 
             methodInfo.Invoke(target, parameters);
@@ -322,7 +332,6 @@ internal static class ManagedObject
                 LogMessage($"Cannot invoke method {methodInfo.Name} on a null type.", MessageLevel.Error);
                 return;
             }
-
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
             object? value = methodInfo.Invoke(target, parameters);
 
@@ -348,6 +357,85 @@ internal static class ManagedObject
             }
         }
     }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe void InvokeDelegate(IntPtr InObjectHandle, IntPtr InParameters,
+       ManagedType* InParameterTypes, int InParameterCount, IntPtr* exception)
+    {
+        if (exception != null) *exception = IntPtr.Zero;
+        try
+        {
+            var target = GCHandle.FromIntPtr(InObjectHandle).Target;
+            if (target == null)
+            {
+                LogMessage($"Cannot invoke null delegate! Ignoring...", MessageLevel.Error);
+                return;
+            }
+            Delegate @delegate = (Delegate)target;
+            MethodInfo methodInfo = @delegate.Method;
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            @delegate.DynamicInvoke(parameters);
+        }
+        catch (Exception ex)
+        {
+            if (exception != null)
+            {
+                var handle = GCHandle.Alloc(ex, GCHandleType.Normal);
+#if DEBUG
+                AssemblyLoader.RegisterHandle(ex.GetType().Assembly, handle);
+#endif
+                *exception = GCHandle.ToIntPtr(handle);
+            }
+            else
+            {
+
+                HandleException(ex);
+            }
+        }
+    }
+
+
+    [UnmanagedCallersOnly]
+    internal static unsafe void InvokeDelegateRet(IntPtr InObjectHandle, IntPtr InParameters,
+        ManagedType* InParameterTypes, int InParameterCount, IntPtr InResultStorage, IntPtr* exception)
+    {
+        if (exception != null) *exception = IntPtr.Zero;
+        try
+        {
+            var target = GCHandle.FromIntPtr(InObjectHandle).Target;
+            if (target == null)
+            {
+                LogMessage($"Cannot invoke null delegate! Ignoring...", MessageLevel.Error);
+                return;
+            }
+            Delegate @delegate = (Delegate)target;
+            MethodInfo methodInfo = @delegate.Method;
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            object? value = @delegate.DynamicInvoke(parameters);
+
+            if (value == null)
+                return;
+
+            Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+        }
+        catch (Exception ex)
+        {
+            if (exception != null)
+            {
+                var handle = GCHandle.Alloc(ex, GCHandleType.Normal);
+#if DEBUG
+                AssemblyLoader.RegisterHandle(ex.GetType().Assembly, handle);
+#endif
+                *exception = GCHandle.ToIntPtr(handle);
+            }
+            else
+            {
+
+                HandleException(ex);
+            }
+        }
+    }
+
 
     [UnmanagedCallersOnly]
     internal static void SetFieldValue(IntPtr InTarget, int InField, IntPtr InValue)

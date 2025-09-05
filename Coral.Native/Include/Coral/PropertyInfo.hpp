@@ -6,7 +6,7 @@
 namespace Coral {
 
 	class Type;
-	class ManagedObject;
+	class Object;
 	class Attribute;
 
 	class PropertyInfo
@@ -26,7 +26,7 @@ namespace Coral {
 		Type* m_Type = nullptr;
 
 		friend class Type;
-		friend class ManagedObject;
+		friend class Object;
 	};
 	
 }

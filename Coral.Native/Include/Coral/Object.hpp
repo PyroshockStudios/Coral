@@ -13,19 +13,19 @@ namespace Coral {
     class ManagedAssembly;
     class Type;
 
-    class alignas(8) ManagedObject
+    class alignas(8) Object
     {
     public:
-        ManagedObject() = default;
-        ManagedObject(const ManagedObject& InOther);
-        ManagedObject(ManagedObject&& InOther) noexcept;
-        ~ManagedObject();
+        Object() = default;
+        Object(const Object& InOther);
+        Object(Object&& InOther) noexcept;
+        ~Object();
 
-        ManagedObject& operator=(const ManagedObject& InOther);
-        ManagedObject& operator=(ManagedObject&& InOther) noexcept;
+        Object& operator=(const Object& InOther);
+        Object& operator=(Object&& InOther) noexcept;
 
         template <typename TReturn = void, typename... TArgs>
-        auto InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
+        auto InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
             constexpr size_t paramCount = sizeof...(TArgs);
 
@@ -54,6 +54,38 @@ namespace Coral {
                 return result;
             }
         }
+
+         template <typename TReturn = void, typename... TArgs>
+		auto InvokeDelegate(MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
+		{
+			constexpr size_t paramCount = sizeof...(TArgs);
+
+			if constexpr (std::is_void_v<TReturn>)
+			{
+				if (InParameters.paramCount > 0)
+				{
+					InvokeDelegateInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
+				}
+				else
+				{
+					InvokeDelegateInternal(OutException, nullptr, nullptr, 0);
+				}
+			}
+			else
+			{
+				TReturn result {};
+				if (InParameters.paramCount > 0)
+				{
+					InvokeDelegateRetInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, &result);
+				}
+				else
+				{
+					InvokeDelegateRetInternal(OutException, nullptr, nullptr, 0, &result);
+				}
+				return result;
+			}
+		}
+
 
         template <typename TValue>
         void SetFieldValue(const FieldInfo& InField, TValue InValue) const
@@ -85,8 +117,8 @@ namespace Coral {
 
         void SetFieldValueRaw(const FieldInfo& InField, void* InValue) const;
         void GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const;
-        void SetPropertyValueRaw(const PropertyInfo& InProperty, void* InValue, ManagedObject* OutException = nullptr) const;
-        void GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, ManagedObject* OutException = nullptr) const;
+        void SetPropertyValueRaw(const PropertyInfo& InProperty, void* InValue, Object* OutException = nullptr) const;
+        void GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, Object* OutException = nullptr) const;
 
         const Type& GetType();
 
@@ -95,8 +127,11 @@ namespace Coral {
         bool IsValid() const { return m_Handle != nullptr && m_Type != nullptr; }
 
     private:
-        void InvokeMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+		void InvokeMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+		void InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+
+		void InvokeDelegateInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+		void InvokeDelegateRetInternal(Object* OutException,  const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
 
     public:
         alignas(8) void* m_Handle = nullptr;
@@ -107,12 +142,12 @@ namespace Coral {
         friend class Type;
     };
 
-    static_assert(offsetof(ManagedObject, m_Handle) == 0);
-    static_assert(offsetof(ManagedObject, m_Type) == 8);
-    static_assert(sizeof(ManagedObject) == 16);
+    static_assert(offsetof(Object, m_Handle) == 0);
+    static_assert(offsetof(Object, m_Type) == 8);
+    static_assert(sizeof(Object) == 16);
 
     template <>
-    inline void ManagedObject::SetFieldValue(const FieldInfo& InField, std::string InValue) const
+    inline void Object::SetFieldValue(const FieldInfo& InField, std::string InValue) const
     {
         String s = String::New(InValue);
 		SetFieldValueRaw(InField, &s);
@@ -120,14 +155,14 @@ namespace Coral {
     }
 
     template <>
-    inline void ManagedObject::SetFieldValue(const FieldInfo& InField, bool InValue) const
+    inline void Object::SetFieldValue(const FieldInfo& InField, bool InValue) const
     {
         Bool32 s = InValue;
         SetFieldValueRaw(InField, &s);
     }
 
     template <>
-    inline std::string ManagedObject::GetFieldValue(const FieldInfo& InField) const
+    inline std::string Object::GetFieldValue(const FieldInfo& InField) const
     {
         String result;
         GetFieldValueRaw(InField, &result);
@@ -137,7 +172,7 @@ namespace Coral {
     }
 
     template <>
-    inline bool ManagedObject::GetFieldValue(const FieldInfo& InField) const
+    inline bool Object::GetFieldValue(const FieldInfo& InField) const
     {
         Bool32 result;
         GetFieldValueRaw(InField, &result);

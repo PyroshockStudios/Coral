@@ -225,38 +225,38 @@ namespace Coral {
 		return m_Id == InOther.m_Id;
 	}
 
-	ManagedObject Type::CreateInstanceInternal(ManagedObject* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	Object Type::CreateInstanceInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
 		void* exceptionResult = nullptr;
-		ManagedObject result;
+		Object result;
 		result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
 		result.m_Type = this;
 		if (OutException)
 		{
-			*OutException = ManagedObject();
+			*OutException = Object();
 			OutException->m_Handle = exceptionResult;
 		}
 		return result;
 	}
 
-	void Type::InvokeStaticMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+	void Type::InvokeStaticMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
 	{
 		void* exceptionResult = nullptr;
 		s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
 		if (OutException)
 		{
-			*OutException = ManagedObject();
+			*OutException = Object();
 			OutException->m_Handle = exceptionResult;
 		}
 	}
 
-	void Type::InvokeStaticMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+	void Type::InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
 	{
 		void* exceptionResult = nullptr;
 		s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, &exceptionResult);
 		if (OutException)
 		{
-			*OutException = ManagedObject();
+			*OutException = Object();
 			OutException->m_Handle = exceptionResult;
 		}
 	}

@@ -7,7 +7,7 @@ namespace Coral {
 
     struct UnmanagedArray;
     enum class AssemblyLoadStatus;
-    class ManagedObject;
+    class Object;
     enum class GCCollectionMode;
     enum class ManagedType : uint32_t;
     class ManagedField;
@@ -86,6 +86,8 @@ namespace Coral {
     using CopyObjectFn = void* (*)(void*);
     using InvokeMethodFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void**);
     using InvokeMethodRetFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
+    using InvokeDelegateFn = void (*)(void*, const void**, const ManagedType*, int32_t, void**);
+    using InvokeDelegateRetFn = void (*)(void*, const void**, const ManagedType*, int32_t, void*, void**);
     using InvokeStaticMethodFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void**);
     using InvokeStaticMethodRetFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
     using SetFieldValueFn = void (*)(void*, ManagedHandle, void*);
@@ -171,9 +173,11 @@ namespace Coral {
         CreateObjectFn CreateObjectFptr = nullptr;
         CopyObjectFn CopyObjectFptr = nullptr;
         CreateAssemblyLoadContextFn CreateAssemblyLoadContextFptr = nullptr;
-        InvokeMethodFn InvokeMethodFptr = nullptr;
-        InvokeMethodRetFn InvokeMethodRetFptr = nullptr;
-        InvokeStaticMethodFn InvokeStaticMethodFptr = nullptr;
+		InvokeMethodFn InvokeMethodFptr = nullptr;
+		InvokeMethodRetFn InvokeMethodRetFptr = nullptr;
+		InvokeDelegateFn InvokeDelegateFptr = nullptr;
+		InvokeDelegateRetFn InvokeDelegateRetFptr = nullptr;
+		InvokeStaticMethodFn InvokeStaticMethodFptr = nullptr;
         InvokeStaticMethodRetFn InvokeStaticMethodRetFptr = nullptr;
         SetFieldValueFn SetFieldValueFptr = nullptr;
         GetFieldValueFn GetFieldValueFptr = nullptr;

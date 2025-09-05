@@ -10,173 +10,180 @@ namespace Coral.Managed;
 public static class Marshalling
 {
 #pragma warning disable 0649
-	// This needs to map to Coral::Array, hence the unused ArrayHandle
-	struct ValueArrayContainer
-	{
-		public IntPtr Data;
-		public IntPtr ArrayHandle;
-		public int Length;
-	};
+    // This needs to map to Coral::Array, hence the unused ArrayHandle
+    struct ValueArrayContainer
+    {
+        public IntPtr Data;
+        public IntPtr ArrayHandle;
+        public int Length;
+    };
 
-	// This needs to map to Coral::Array, hence the unused ArrayHandle
-	struct ObjectArrayContainer
-	{
-		public IntPtr Data;
-		public IntPtr ArrayHandle;
-		public int Length;
-	};
+    // This needs to map to Coral::Array, hence the unused ArrayHandle
+    struct ObjectArrayContainer
+    {
+        public IntPtr Data;
+        public IntPtr ArrayHandle;
+        public int Length;
+    };
 
-	private struct ArrayObject
-	{
-		public IntPtr Handle;
-		public IntPtr Padding;
-	}
+    private struct ArrayObject
+    {
+        public IntPtr Handle;
+        public IntPtr Padding;
+    }
 #pragma warning restore 0649
 
-	public static void MarshalReturnValue(object? InTarget, object? InValue, MemberInfo? InMemberInfo, IntPtr OutValue)
-	{
-		if (InMemberInfo == null)
-			return;
+    public static void MarshalReturnValue(object? InTarget, object? InValue, MemberInfo? InMemberInfo, IntPtr OutValue)
+    {
+        if (InMemberInfo == null)
+            return;
 
-		Type? type = null;
+        Type? type = null;
 
-		if (InMemberInfo is FieldInfo fieldInfo)
-		{
-			type = fieldInfo.FieldType;
-		}
-		else if (InMemberInfo is PropertyInfo propertyInfo)
-		{
-			type = propertyInfo.PropertyType;
-		}
-		else if (InMemberInfo is MethodInfo methodInfo)
-		{
-			type = methodInfo.ReturnType;
-		}
+        if (InMemberInfo is FieldInfo fieldInfo)
+        {
+            type = fieldInfo.FieldType;
+        }
+        else if (InMemberInfo is PropertyInfo propertyInfo)
+        {
+            type = propertyInfo.PropertyType;
+        }
+        else if (InMemberInfo is MethodInfo methodInfo)
+        {
+            type = methodInfo.ReturnType;
+        }
 
-		if (type != null && type.IsSZArray)
-		{
-			var fieldArray = ArrayStorage.GetFieldArray(InTarget, InValue, InMemberInfo);
+        if (type != null && type.IsSZArray)
+        {
+            var fieldArray = ArrayStorage.GetFieldArray(InTarget, InValue, InMemberInfo);
 
-			if (fieldArray != null)
-			{
-				Marshal.WriteIntPtr(OutValue, fieldArray.Value.AddrOfPinnedObject());
-			}
-			else
-			{
-				Marshal.WriteIntPtr(OutValue, IntPtr.Zero);
-			}
-		}
-		else if (type == typeof(string) && InValue != null)
-		{
-			NativeString nativeString = (NativeString) (string) InValue;
-			Marshal.StructureToPtr(nativeString, OutValue, false);
-		}
-		else if (type == typeof(bool) && InValue != null)
-		{
-			Bool32 value = (Bool32) (bool) InValue;
-			Marshal.StructureToPtr(value, OutValue, false);
-		}
-		else if (type == typeof(NativeString) && InValue != null)
-		{
-			NativeString nativeString = (NativeString) InValue;
-			Marshal.StructureToPtr((NativeString) InValue, OutValue, false);
-		}
-		else if (type != null && type.IsPointer)
-		{
-			unsafe
-			{
-				if (InValue == null)
-				{
-					Marshal.WriteIntPtr(OutValue, IntPtr.Zero);
-				}
-				else
-				{
-					void* valuePointer = Pointer.Unbox(InValue);
-					Buffer.MemoryCopy(&valuePointer, OutValue.ToPointer(), IntPtr.Size, IntPtr.Size);
-				}
-			}
-		}
-		else if (type != null)
-		{
-			int valueSize = type.IsEnum ? Marshal.SizeOf(Enum.GetUnderlyingType(type)) : Marshal.SizeOf(type);
-			var handle = GCHandle.Alloc(InValue, GCHandleType.Pinned);
+            if (fieldArray != null)
+            {
+                Marshal.WriteIntPtr(OutValue, fieldArray.Value.AddrOfPinnedObject());
+            }
+            else
+            {
+                Marshal.WriteIntPtr(OutValue, IntPtr.Zero);
+            }
+        }
+        else if (type == typeof(string) && InValue != null)
+        {
+            NativeString nativeString = (NativeString)(string)InValue;
+            Marshal.StructureToPtr(nativeString, OutValue, false);
+        }
+        else if (type == typeof(bool) && InValue != null)
+        {
+            Bool32 value = (Bool32)(bool)InValue;
+            Marshal.StructureToPtr(value, OutValue, false);
+        }
+        else if (type == typeof(NativeString) && InValue != null)
+        {
+            NativeString nativeString = (NativeString)InValue;
+            Marshal.StructureToPtr((NativeString)InValue, OutValue, false);
+        }
+        else if (type != null && type.IsPointer)
+        {
+            unsafe
+            {
+                if (InValue == null)
+                {
+                    Marshal.WriteIntPtr(OutValue, IntPtr.Zero);
+                }
+                else
+                {
+                    void* valuePointer = Pointer.Unbox(InValue);
+                    Buffer.MemoryCopy(&valuePointer, OutValue.ToPointer(), IntPtr.Size, IntPtr.Size);
+                }
+            }
+        }
+        else if (type != null && type.IsClass)
+        {
+             unsafe {
+                ((ManagedObjectData*)OutValue.ToPointer())->m_Handle =
+                    GCHandle.ToIntPtr(GCHandle.Alloc(InValue, GCHandleType.Normal));
+            }
+        }
+        else if (type != null)
+        {
+            int valueSize = type.IsEnum ? Marshal.SizeOf(Enum.GetUnderlyingType(type)) : Marshal.SizeOf(type);
+            var handle = GCHandle.Alloc(InValue, GCHandleType.Pinned);
 
-			unsafe
-			{
-				Buffer.MemoryCopy(handle.AddrOfPinnedObject().ToPointer(), OutValue.ToPointer(), valueSize, valueSize);
-			}
+            unsafe
+            {
+                Buffer.MemoryCopy(handle.AddrOfPinnedObject().ToPointer(), OutValue.ToPointer(), valueSize, valueSize);
+            }
 
-			handle.Free();
-		}
-		else throw new ArgumentNullException("InMemberInfo:Type");
-	}
+            handle.Free();
+        }
+        else throw new ArgumentNullException("InMemberInfo:Type");
+    }
 
-	public static object? MarshalArray(IntPtr InArray, Type? InElementType)
-	{
-		if (InElementType == null)
-			return null;
+    public static object? MarshalArray(IntPtr InArray, Type? InElementType)
+    {
+        if (InElementType == null)
+            return null;
 
-		Array? result;
+        Array? result;
 
-		if (InElementType.IsValueType)
-		{
-			var arrayContainer = MarshalPointer<ValueArrayContainer>(InArray);
+        if (InElementType.IsValueType)
+        {
+            var arrayContainer = MarshalPointer<ValueArrayContainer>(InArray);
 
-			if (ArrayStorage.HasFieldArray(null, null))
-			{
-				var fieldArray = ArrayStorage.GetFieldArray(null, null, null);
+            if (ArrayStorage.HasFieldArray(null, null))
+            {
+                var fieldArray = ArrayStorage.GetFieldArray(null, null, null);
 
-				if (arrayContainer.Data == fieldArray!.Value.AddrOfPinnedObject())
-				{
-					return fieldArray.Value.Target;
-				}
-			}
+                if (arrayContainer.Data == fieldArray!.Value.AddrOfPinnedObject())
+                {
+                    return fieldArray.Value.Target;
+                }
+            }
 
-			result = Array.CreateInstance(InElementType, arrayContainer.Length);
+            result = Array.CreateInstance(InElementType, arrayContainer.Length);
 
-			int elementSize = Marshal.SizeOf(InElementType);
+            int elementSize = Marshal.SizeOf(InElementType);
 
-			unsafe
-			{
-				for (int i = 0; i < arrayContainer.Length; i++)
-				{
-					IntPtr source = (IntPtr)(((byte*)arrayContainer.Data.ToPointer()) + (i * elementSize));
-					result.SetValue(Marshal.PtrToStructure(source, InElementType), i);
-				}
-			}
-		}
-		else
-		{
-			var arrayContainer = MarshalPointer<ObjectArrayContainer>(InArray);
+            unsafe
+            {
+                for (int i = 0; i < arrayContainer.Length; i++)
+                {
+                    IntPtr source = (IntPtr)(((byte*)arrayContainer.Data.ToPointer()) + (i * elementSize));
+                    result.SetValue(Marshal.PtrToStructure(source, InElementType), i);
+                }
+            }
+        }
+        else
+        {
+            var arrayContainer = MarshalPointer<ObjectArrayContainer>(InArray);
 
-			if (ArrayStorage.HasFieldArray(null, null))
-			{
-				var fieldArray = ArrayStorage.GetFieldArray(null, null, null);
+            if (ArrayStorage.HasFieldArray(null, null))
+            {
+                var fieldArray = ArrayStorage.GetFieldArray(null, null, null);
 
-				if (arrayContainer.Data == fieldArray!.Value.AddrOfPinnedObject())
-				{
-					return fieldArray.Value.Target;
-				}
-			}
+                if (arrayContainer.Data == fieldArray!.Value.AddrOfPinnedObject())
+                {
+                    return fieldArray.Value.Target;
+                }
+            }
 
-			result = Array.CreateInstance(InElementType, arrayContainer.Length);
-			
-			unsafe
-			{
-				for (int i = 0; i < arrayContainer.Length; i++)
-				{
-					IntPtr source = (IntPtr)(((byte*)arrayContainer.Data.ToPointer()) + (i * Marshal.SizeOf<ArrayObject>()));
-					var managedObject = MarshalPointer<ArrayObject>(source);
-					var target = GCHandle.FromIntPtr(managedObject.Handle).Target;
-					result.SetValue(target, i);
-				}
-			}
-		}
+            result = Array.CreateInstance(InElementType, arrayContainer.Length);
 
-		return result;
-	}
+            unsafe
+            {
+                for (int i = 0; i < arrayContainer.Length; i++)
+                {
+                    IntPtr source = (IntPtr)(((byte*)arrayContainer.Data.ToPointer()) + (i * Marshal.SizeOf<ArrayObject>()));
+                    var managedObject = MarshalPointer<ArrayObject>(source);
+                    var target = GCHandle.FromIntPtr(managedObject.Handle).Target;
+                    result.SetValue(target, i);
+                }
+            }
+        }
 
-	/*public static void CopyArrayToBuffer(GCHandle InArrayHandle, Array? InArray, Type? InElementType)
+        return result;
+    }
+
+    /*public static void CopyArrayToBuffer(GCHandle InArrayHandle, Array? InArray, Type? InElementType)
 	{
 		if (InArray == null || InElementType == null)
 			return;
@@ -216,90 +223,91 @@ public static class Marshalling
 		handle.Free();
 	}*/
 
-	public static object? MarshalPointer(IntPtr InValue, Type InType)
-	{
-		if (InType.IsPointer || InType == typeof(IntPtr))
-			return InValue;
+    public static object? MarshalPointer(IntPtr InValue, Type InType)
+    {
+        if (InType.IsPointer || InType == typeof(IntPtr))
+            return InValue;
 
-		// NOTE(Peter): Marshal.PtrToStructure<bool> doesn't seem to work
-		//				instead we have to read it as a single byte and check the raw value
-		if (InType == typeof(bool))
-			return Marshal.PtrToStructure<byte>(InValue) > 0;
+        // NOTE(Peter): Marshal.PtrToStructure<bool> doesn't seem to work
+        //				instead we have to read it as a single byte and check the raw value
+        if (InType == typeof(bool))
+            return Marshal.PtrToStructure<byte>(InValue) > 0;
 
-		if (InType == typeof(string))
-		{
-			var nativeString = Marshal.PtrToStructure<NativeString>(InValue);
-			return nativeString.ToString();
-		}
-		else if (InType == typeof(NativeString))
-		{
-			return Marshal.PtrToStructure<NativeString>(InValue);
-		}
+        if (InType == typeof(string))
+        {
+            var nativeString = Marshal.PtrToStructure<NativeString>(InValue);
+            return nativeString.ToString();
+        }
+        else if (InType == typeof(NativeString))
+        {
+            return Marshal.PtrToStructure<NativeString>(InValue);
+        }
 
-		if (InType.IsSZArray)
-			return MarshalArray(InValue, InType.GetElementType());
+        if (InType.IsSZArray)
+            return MarshalArray(InValue, InType.GetElementType());
 
-		if (InType.IsGenericType)
-		{
-			if (InType == typeof(NativeArray<>).MakeGenericType(InType.GetGenericArguments().First()))
-			{
-				var elements = Marshal.ReadIntPtr(InValue, 0);
-				var elementCount = Marshal.ReadInt32(InValue, Marshal.SizeOf<IntPtr>());
-				var genericType = typeof(NativeArray<>).MakeGenericType(InType.GetGenericArguments().First());
-				return TypeInterface.CreateInstance(genericType, elements, elementCount);
-			}
-		}
+        if (InType.IsGenericType)
+        {
+            if (InType == typeof(NativeArray<>).MakeGenericType(InType.GetGenericArguments().First()))
+            {
+                var elements = Marshal.ReadIntPtr(InValue, 0);
+                var elementCount = Marshal.ReadInt32(InValue, Marshal.SizeOf<IntPtr>());
+                var genericType = typeof(NativeArray<>).MakeGenericType(InType.GetGenericArguments().First());
+                return TypeInterface.CreateInstance(genericType, elements, elementCount);
+            }
+        }
 
-		if (InType.IsClass)
-		{
-			var handlePtr = Marshal.ReadIntPtr(InValue);
-			var handle = GCHandle.FromIntPtr(handlePtr);
-			return handle.Target;
-		}
+        if (InType.IsValueType)
+        {
+            // Handle primitive/struct/etc.
+            return Marshal.PtrToStructure(InValue, InType);
+        }
 
-		return Marshal.PtrToStructure(InValue, InType);	
-	}
-	public static T? MarshalPointer<T>(IntPtr InValue) => Marshal.PtrToStructure<T>(InValue);
+        // Everything else is a reference type: class, interface, delegate, string, array
+        // Use GCHandle to get the real object
+        return GCHandle.FromIntPtr(Marshal.ReadIntPtr(InValue)).Target;
+    }
+    public static T? MarshalPointer<T>(IntPtr InValue) => Marshal.PtrToStructure<T>(InValue);
 
-	public static IntPtr[] NativeArrayToIntPtrArray(IntPtr InNativeArray, int InLength)
-	{
-		try
-		{
-			if (InNativeArray == IntPtr.Zero || InLength == 0)
-				return [];
+    public static IntPtr[] NativeArrayToIntPtrArray(IntPtr InNativeArray, int InLength)
+    {
+        try
+        {
+            if (InNativeArray == IntPtr.Zero || InLength == 0)
+                return [];
 
-			IntPtr[] result = new IntPtr[InLength];
+            IntPtr[] result = new IntPtr[InLength];
 
-			for (int i = 0; i < InLength; i++)
-				result[i] = Marshal.ReadIntPtr(InNativeArray, i * Marshal.SizeOf<nint>());
+            for (int i = 0; i < InLength; i++)
+                result[i] = Marshal.ReadIntPtr(InNativeArray, i * Marshal.SizeOf<nint>());
 
-			return result;
-		}
-		catch (Exception ex)
-		{
-			ManagedHost.HandleException(ex);
-			return [];
-		}
-	}
+            return result;
+        }
+        catch (Exception ex)
+        {
+            ManagedHost.HandleException(ex);
+            return [];
+        }
+    }
 
-	public static object?[]? MarshalParameterArray(IntPtr InNativeArray, int InLength, MethodBase? InMethodInfo)
-	{
-		if (InMethodInfo == null)
-			return null;
+    public static object?[]? MarshalParameterArray(IntPtr InNativeArray, int InLength, MethodBase? InMethodInfo)
+    {
+        if (InMethodInfo == null)
+            return null;
 
-		if (InNativeArray == IntPtr.Zero || InLength == 0)
-			return null;
+        if (InNativeArray == IntPtr.Zero || InLength == 0)
+            return null;
 
-		var parameterInfos = InMethodInfo.GetParameters();
-		var parameterPointers = NativeArrayToIntPtrArray(InNativeArray, InLength);
-		var result = new object?[parameterPointers.Length];
+        var parameterInfos = InMethodInfo.GetParameters();
+        var parameterPointers = NativeArrayToIntPtrArray(InNativeArray, InLength);
+        var result = new object?[parameterPointers.Length];
 
-		for (int i = 0; i < parameterPointers.Length; i++)
-		{
-			result[i] = MarshalPointer(parameterPointers[i], parameterInfos[i].ParameterType);
-		}
+        for (int i = 0; i < parameterPointers.Length; i++)
+        {
+            result[i] = MarshalPointer(parameterPointers[i], parameterInfos[i].ParameterType);
+        }
 
-		return result;
-	}
-	
+        return result;
+    }
+
 }

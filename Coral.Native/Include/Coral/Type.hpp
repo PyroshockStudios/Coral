@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 #include "String.hpp"
-#include "ManagedObject.hpp"
+#include "Object.hpp"
 #include "MethodInfo.hpp"
 #include "FieldInfo.hpp"
 #include "PropertyInfo.hpp"
@@ -54,7 +54,7 @@ namespace Coral {
 
     public:
         template <typename... TArgs>
-        ManagedObject CreateInstance(MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
+        Object CreateInstance(MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
             if (InParameters.paramCount > 0)
             {
@@ -67,7 +67,7 @@ namespace Coral {
         }
         
         template <typename TReturn = void, typename... TArgs>
-        auto InvokeStaticMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, ManagedObject* OutException = nullptr) const
+        auto InvokeStaticMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
             if constexpr (std::is_void_v<TReturn>)
             {
@@ -96,9 +96,9 @@ namespace Coral {
         }
 
     private:
-        ManagedObject CreateInstanceInternal(ManagedObject* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeStaticMethodInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeStaticMethodRetInternal(ManagedObject* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+        Object CreateInstanceInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+        void InvokeStaticMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
+        void InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
 
     private:
         TypeId m_Id = -1;
@@ -114,7 +114,7 @@ namespace Coral {
         friend class PropertyInfo;
         friend class Attribute;
         friend class ReflectionType;
-        friend class ManagedObject;
+        friend class Object;
     };
 
     class ReflectionType

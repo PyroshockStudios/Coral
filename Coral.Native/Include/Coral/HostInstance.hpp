@@ -3,7 +3,7 @@
 #include "Core.hpp"
 #include "MessageLevel.hpp"
 #include "Assembly.hpp"
-#include "ManagedObject.hpp"
+#include "Object.hpp"
 
 #include <functional>
 
