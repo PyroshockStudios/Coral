@@ -34,7 +34,11 @@ namespace Coral {
         if (buffer != nullptr)
         {
             memset(buffer, 0xCE, size);
-            wcscpy(buffer, InString.data());
+    #if CORAL_WIDE_CHARS
+            wcsncpy(buffer, InString.data(), InString.size());
+    #else
+            strncpy(buffer, InString.data(), InString.size());
+    #endif
         }
 #else
         UCChar* buffer;
