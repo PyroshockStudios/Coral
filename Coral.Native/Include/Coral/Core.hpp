@@ -145,7 +145,7 @@ namespace Coral {
 
     using TypeId = int32_t;
     using ManagedHandle = int32_t;
-    using MetadataToken = uint32_t;
+    using MetadataToken = int32_t;
 
     struct InternalCall
     {

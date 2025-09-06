@@ -22,15 +22,11 @@ namespace Coral {
 
         std::vector<Attribute> GetAttributes() const;
         Attribute GetAttribute(const Type& InAttributeType) const;
+        MetadataToken GetMetadataToken() const;
 
         constexpr inline operator bool()
         {
             return m_Handle != -1;
-        }
-
-        MetadataToken GetMetadataToken() const
-        {
-            return static_cast<MetadataToken>(m_Handle);
         }
 
     private:
@@ -41,6 +37,7 @@ namespace Coral {
         friend class Type;
         friend class Object;
         friend class PropertyInfo;
+        friend class Assembly;
     };
 
 }

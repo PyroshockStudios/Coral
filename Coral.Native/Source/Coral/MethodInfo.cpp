@@ -83,4 +83,8 @@ namespace Coral {
         return {};
     }
 
+    MetadataToken MethodInfo::GetMetadataToken() const
+    {
+        return s_ManagedFunctions.GetMethodInfoTokenFptr(m_Handle);
+    }
 }

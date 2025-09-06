@@ -1,4 +1,3 @@
-#include "Type.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/TypeCache.hpp"
 #include "Coral/Attribute.hpp"

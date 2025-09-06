@@ -33,6 +33,8 @@ namespace Coral {
 
         const std::vector<Type*>& GetTypes() const;
 
+        MethodInfo GetMethodFromToken(MetadataToken InToken) const;
+        FieldInfo GetFieldFromToken(MetadataToken InToken) const;
     private:
         HostInstance* m_Host = nullptr;
         int32_t m_AssemblyId = -1;

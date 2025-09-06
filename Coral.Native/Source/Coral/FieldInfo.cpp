@@ -1,5 +1,3 @@
-#include "FieldInfo.hpp"
-#include "FieldInfo.hpp"
 #include "Coral/FieldInfo.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
@@ -64,5 +62,10 @@ namespace Coral {
             if (attr.GetType() == InAttributeType) return attr;
         }
         return {};
+    }
+
+    MetadataToken FieldInfo::GetMetadataToken() const
+    {
+        return s_ManagedFunctions.GetFieldInfoTokenFptr(m_Handle);
     }
 }

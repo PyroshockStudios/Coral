@@ -1,4 +1,5 @@
 #include "Coral/PropertyInfo.hpp"
+#include "Coral/MethodInfo.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
 #include "Coral/TypeCache.hpp"

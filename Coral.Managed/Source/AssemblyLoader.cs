@@ -379,6 +379,40 @@ public static class AssemblyLoader
         }
     }
 
+    [UnmanagedCallersOnly]
+    internal static int GetMethodInfoFromToken(int InContextId, int InAssemblyId, int InToken)
+    {
+        if (!s_AssemblyCache[InContextId].TryGetValue(InAssemblyId, out var assembly))
+        {
+            LogMessage($"Couldn't get method info of assembly '{InAssemblyId}', assembly not in dictionary.", MessageLevel.Error);
+            return -1;
+        }
+
+        MethodInfo? info = assembly.ManifestModule.ResolveMethod(InToken) as MethodInfo;
+        if (info != null)
+        {
+            return TypeInterface.s_CachedMethods.Add(info);
+        }
+        return -1;
+    }
+    [UnmanagedCallersOnly]
+    internal static int GetFieldInfoFromToken(int InContextId, int InAssemblyId, int InToken)
+    {
+        if (!s_AssemblyCache[InContextId].TryGetValue(InAssemblyId, out var assembly))
+        {
+            LogMessage($"Couldn't get method info of assembly '{InAssemblyId}', assembly not in dictionary.", MessageLevel.Error);
+            return -1;
+        }
+
+        FieldInfo? info = assembly.ManifestModule.ResolveField(InToken) ;
+        if (info != null)
+        {
+            return TypeInterface.s_CachedFields.Add(info);
+        }
+        return -1;
+    }
+
+
 #if DEBUG
     // In DEBUG builds, we track all GCHandles that are allocated by the managed code,
     // so that we can check that they've all been freed when the assembly is unloaded.

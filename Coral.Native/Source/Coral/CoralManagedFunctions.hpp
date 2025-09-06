@@ -20,6 +20,8 @@ namespace Coral {
     using GetLastLoadStatusFn = AssemblyLoadStatus(*)();
     using GetAssemblyNameFn = String(*)(int32_t, int32_t);
     using GetSystemAssemblyFn = int32_t(*)(int32_t);
+    using GetMethodInfoFromTokenFn = ManagedHandle(*)(int32_t, int32_t, MetadataToken);
+    using GetFieldInfoFromTokenFn = ManagedHandle(*)(int32_t, int32_t, MetadataToken);
 
 #pragma region DotnetServices
     using RunMSBuildFn = void (*)(String, Bool32, Bool32*);
@@ -63,6 +65,7 @@ namespace Coral {
     using GetMethodInfoAccessibilityFn = TypeAccessibility(*)(ManagedHandle);
     using GetMethodInfoIsStaticFn = Bool32(*)(ManagedHandle);
     using GetMethodInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
+    using GetMethodInfoTokenFn = MetadataToken(*)(ManagedHandle);
 #pragma endregion
 
 #pragma region FieldInfo
@@ -73,6 +76,7 @@ namespace Coral {
     using GetFieldInfoIsStaticFn = Bool32(*)(ManagedHandle);
     using GetFieldInfoIsLiteralFn = Bool32(*)(ManagedHandle);
     using GetFieldInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
+    using GetFieldInfoTokenFn = MetadataToken(*)(ManagedHandle);
 #pragma endregion
 
 #pragma region PropertyInfo
@@ -116,6 +120,8 @@ namespace Coral {
         GetLastLoadStatusFn GetLastLoadStatusFptr = nullptr;
         GetAssemblyNameFn GetAssemblyNameFptr = nullptr;
         GetSystemAssemblyFn GetSystemAssemblyFptr = nullptr;
+        GetMethodInfoFromTokenFn GetMethodInfoFromTokenFptr = nullptr;
+        GetFieldInfoFromTokenFn GetFieldInfoFromTokenFptr = nullptr;
 
 #pragma region DotnetServices
         RunMSBuildFn RunMSBuildFptr = nullptr;
@@ -158,6 +164,7 @@ namespace Coral {
         GetMethodInfoAccessibilityFn GetMethodInfoAccessibilityFptr = nullptr;
         GetMethodInfoIsStaticFn GetMethodInfoIsStaticFptr = nullptr;
         GetMethodInfoAttributesFn GetMethodInfoAttributesFptr = nullptr;
+        GetMethodInfoTokenFn GetMethodInfoTokenFptr = nullptr;
 #pragma endregion
 
 #pragma region FieldInfo
@@ -168,6 +175,7 @@ namespace Coral {
         GetFieldInfoIsStaticFn GetFieldInfoIsStaticFptr = nullptr;
         GetFieldInfoIsLiteralFn GetFieldInfoIsLiteralFptr = nullptr;
         GetFieldInfoAttributesFn GetFieldInfoAttributesFptr = nullptr;
+        GetFieldInfoTokenFn GetFieldInfoTokenFptr = nullptr;
 #pragma endregion
 
 #pragma region PropertyInfo

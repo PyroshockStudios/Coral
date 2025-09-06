@@ -51,6 +51,20 @@ namespace Coral {
         return m_LocalTypeRefs;
     }
 
+    MethodInfo Assembly::GetMethodFromToken(MetadataToken InToken) const
+    {
+        MethodInfo info{};
+        info.m_Handle = s_ManagedFunctions.GetMethodInfoFromTokenFptr(m_OwnerContextId, m_AssemblyId, InToken);
+        return info;
+    }
+
+    FieldInfo Assembly::GetFieldFromToken(MetadataToken InToken) const
+    {
+        FieldInfo info{};
+        info.m_Handle = s_ManagedFunctions.GetFieldInfoFromTokenFptr(m_OwnerContextId, m_AssemblyId, InToken);
+        return info;
+    }
+
     // TODO(Emily): Massive de-dup needed between `LoadAssembly` and `LoadAssemblyFromMemory`.
     Assembly& AssemblyLoadContext::LoadAssembly(std::string_view InFilePath)
     {

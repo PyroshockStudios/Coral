@@ -21,7 +21,7 @@ internal static class TypeInterface
     internal readonly static UniqueIdList<MethodInfo> s_CachedMethods = new(Util.GetStableHash);
     internal readonly static UniqueIdList<FieldInfo> s_CachedFields = new(Util.GetStableHash);
     internal readonly static UniqueIdList<PropertyInfo> s_CachedProperties = new(Util.GetStableHash);
-    internal readonly static UniqueIdList<Attribute> s_CachedAttributes = new();
+    internal readonly static UniqueIdList<Attribute> s_CachedAttributes = new(Util.GetStableHash);
 
     internal static Type? FindType(int InAssemblyLoadContextId, string? InTypeName)
     {
@@ -809,6 +809,21 @@ internal static class TypeInterface
             HandleException(ex);
         }
     }
+    [UnmanagedCallersOnly]
+    internal static int GetMethodInfoToken(int InMethodInfo)
+    {
+        try
+        {
+            if (!s_CachedMethods.TryGetValue(InMethodInfo, out var methodInfo) || methodInfo == null)
+                return -1;
+            return methodInfo.MetadataToken;
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return -1;
+        }
+    }
 
 
     [UnmanagedCallersOnly]
@@ -944,6 +959,21 @@ internal static class TypeInterface
             HandleException(ex);
         }
     }
+    [UnmanagedCallersOnly]
+    internal static int GetFieldInfoToken(int InFieldInfo)
+    {
+        try
+        {
+            if (!s_CachedFields.TryGetValue(InFieldInfo, out var fieldInfo) || fieldInfo == null)
+                return -1;
+            return fieldInfo.MetadataToken;
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return -1;
+        }
+    }
 
 
     [UnmanagedCallersOnly]
@@ -1075,7 +1105,6 @@ internal static class TypeInterface
 
             var targetType = attribute.GetType();
             var fieldInfo = targetType.GetField(InFieldName!, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
             if (fieldInfo == null)
             {
                 LogMessage($"Failed to find field with name '{InFieldName}' in attribute {targetType.FullName}.", MessageLevel.Error);

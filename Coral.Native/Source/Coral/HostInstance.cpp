@@ -307,6 +307,8 @@ namespace Coral {
         s_ManagedFunctions.GetLastLoadStatusFptr = LoadCoralManagedFunctionPtr<GetLastLoadStatusFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetLastLoadStatus"));
         s_ManagedFunctions.GetAssemblyNameFptr = LoadCoralManagedFunctionPtr<GetAssemblyNameFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetAssemblyName"));
         s_ManagedFunctions.GetSystemAssemblyFptr = LoadCoralManagedFunctionPtr<GetSystemAssemblyFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetSystemAssembly"));
+        s_ManagedFunctions.GetMethodInfoFromTokenFptr = LoadCoralManagedFunctionPtr<GetMethodInfoFromTokenFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetMethodInfoFromToken"));
+        s_ManagedFunctions.GetFieldInfoFromTokenFptr = LoadCoralManagedFunctionPtr<GetFieldInfoFromTokenFn>(CORAL_STR("Coral.Managed.AssemblyLoader, Coral.Managed"), CORAL_STR("GetFieldInfoFromToken"));
 
         s_ManagedFunctions.RunMSBuildFptr = LoadCoralManagedFunctionPtr<RunMSBuildFn>(CORAL_STR("Coral.Managed.MSBuildRunner, Coral.Managed"), CORAL_STR("Run"));
 
@@ -345,6 +347,7 @@ namespace Coral {
         s_ManagedFunctions.GetMethodInfoAccessibilityFptr = LoadCoralManagedFunctionPtr<GetMethodInfoAccessibilityFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetMethodInfoAccessibility"));
         s_ManagedFunctions.GetMethodInfoIsStaticFptr = LoadCoralManagedFunctionPtr<GetMethodInfoIsStaticFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetMethodInfoIsStatic"));
         s_ManagedFunctions.GetMethodInfoAttributesFptr = LoadCoralManagedFunctionPtr<GetMethodInfoAttributesFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetMethodInfoAttributes"));
+        s_ManagedFunctions.GetMethodInfoTokenFptr = LoadCoralManagedFunctionPtr<GetMethodInfoTokenFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetMethodInfoToken"));
 
         s_ManagedFunctions.GetFieldInfoByNameFptr = LoadCoralManagedFunctionPtr<GetFieldInfoByNameFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetFieldInfoByName"));
         s_ManagedFunctions.GetFieldInfoNameFptr = LoadCoralManagedFunctionPtr<GetFieldInfoNameFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetFieldInfoName"));
@@ -353,6 +356,7 @@ namespace Coral {
         s_ManagedFunctions.GetFieldInfoIsStaticFptr = LoadCoralManagedFunctionPtr<GetFieldInfoIsStaticFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetFieldInfoIsStatic"));
         s_ManagedFunctions.GetFieldInfoIsLiteralFptr = LoadCoralManagedFunctionPtr<GetFieldInfoIsLiteralFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetFieldInfoIsLiteral"));
         s_ManagedFunctions.GetFieldInfoAttributesFptr = LoadCoralManagedFunctionPtr<GetFieldInfoAttributesFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetFieldInfoAttributes"));
+        s_ManagedFunctions.GetFieldInfoTokenFptr = LoadCoralManagedFunctionPtr<GetFieldInfoTokenFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetFieldInfoToken"));
 
         s_ManagedFunctions.GetPropertyInfoByNameFptr = LoadCoralManagedFunctionPtr<GetPropertyInfoByNameFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetPropertyInfoByName"));
         s_ManagedFunctions.GetPropertyInfoNameFptr = LoadCoralManagedFunctionPtr<GetPropertyInfoNameFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetPropertyInfoName"));
