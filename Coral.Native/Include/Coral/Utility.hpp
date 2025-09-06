@@ -93,6 +93,11 @@ namespace Coral {
             return ManagedType::Unknown;
     }
 
+    constexpr bool IsManagedTypeValueType(ManagedType type)
+    {
+        return type != ManagedType::Void && type != ManagedType::Object && type != ManagedType::Array && type != ManagedType::String && type != ManagedType::Unknown;
+    }
+
     template <typename TArg, size_t TIndex>
     inline void AddToArrayI(const void** InArgumentsArr, ManagedType* InParameterTypes, TArg&& InArg)
     {

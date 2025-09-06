@@ -98,7 +98,8 @@ public static class Marshalling
         }
         else if (type != null && type.IsClass)
         {
-             unsafe {
+            unsafe
+            {
                 ((ManagedObjectData*)OutValue.ToPointer())->m_Handle =
                     GCHandle.ToIntPtr(GCHandle.Alloc(InValue, GCHandleType.Normal));
             }
@@ -290,7 +291,7 @@ public static class Marshalling
         }
     }
 
-    public static object?[]? MarshalParameterArray(IntPtr InNativeArray, int InLength, MethodBase? InMethodInfo)
+    public static unsafe object?[]? MarshalParameterArray(IntPtr InNativeArray, int InLength, ManagedType* InParameterTypes, MethodBase? InMethodInfo)
     {
         if (InMethodInfo == null)
             return null;
@@ -304,10 +305,42 @@ public static class Marshalling
 
         for (int i = 0; i < parameterPointers.Length; i++)
         {
-            result[i] = MarshalPointer(parameterPointers[i], parameterInfos[i].ParameterType);
+            result[i] = InParameterTypes[i] == ManagedType.Object ?
+                GCHandle.FromIntPtr(Marshal.ReadIntPtr(parameterPointers[i])).Target :
+                MarshalPointer(parameterPointers[i], parameterInfos[i].ParameterType);
         }
 
         return result;
     }
 
+    internal static IntPtr MarhsalBoxValue(IntPtr InValue, Type InType)
+    {
+        // Copy unmanaged bytes into managed struct
+        object boxed = Marshal.PtrToStructure(InValue, InType)!;
+
+        // Create a GCHandle so C++ can hold onto the object
+        GCHandle handle = GCHandle.Alloc(boxed, GCHandleType.Normal);
+        return GCHandle.ToIntPtr(handle);
+    }
+
+    internal static void MarshalUnboxValue(object InValue, Type InValueType, IntPtr OutValue)
+    {
+        int size = Marshal.SizeOf(InValueType);
+
+        // Pin the boxed object to get a stable pointer
+        GCHandle pinned = GCHandle.Alloc(InValue, GCHandleType.Pinned);
+        unsafe
+        {
+            try
+            {
+                void* srcPtr = pinned.AddrOfPinnedObject().ToPointer();
+                void* dstPtr = OutValue.ToPointer();
+                Buffer.MemoryCopy(srcPtr, dstPtr, size, size);
+            }
+            finally
+            {
+                pinned.Free();
+            }
+        }
+    }
 }

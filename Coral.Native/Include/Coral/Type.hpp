@@ -89,11 +89,11 @@ namespace Coral {
                 TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeStaticMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, &result);
+                    InvokeStaticMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result);
                 }
                 else
                 {
-                    InvokeStaticMethodRetInternal(OutException, InMethod, nullptr, nullptr, 0, &result);
+                    InvokeStaticMethodRetInternal(OutException, InMethod, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result);
                 }
                 return result;
             }
@@ -102,7 +102,7 @@ namespace Coral {
     private:
         Object CreateInstanceInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
         void InvokeStaticMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const;
+        void InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const;
 
     private:
         TypeId m_Id = -1;

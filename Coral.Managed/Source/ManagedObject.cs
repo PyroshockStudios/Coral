@@ -12,10 +12,10 @@ namespace Coral.Managed;
 
 using static ManagedHost;
 
-internal enum ManagedType : uint
+public enum ManagedType : uint
 {
     Unknown,
-    
+
     Void,
 
     SByte,
@@ -37,7 +37,7 @@ internal enum ManagedType : uint
     String,
     Array,
     Object,
-    
+
     Pointer
 };
 
@@ -87,7 +87,7 @@ internal static class ManagedObject
                 return IntPtr.Zero;
             }
 
-            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, constructor);
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, constructor);
 
             object? result = null;
 
@@ -204,7 +204,7 @@ internal static class ManagedObject
                 LogMessage($"Cannot invoke method {methodInfo.Name} on a null type.", MessageLevel.Error);
                 return;
             }
-            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
             methodInfo.Invoke(null, parameters);
         }
         catch (Exception ex)
@@ -227,7 +227,7 @@ internal static class ManagedObject
 
     [UnmanagedCallersOnly]
     internal static unsafe void InvokeStaticMethodRet(int InType, int InMethod, IntPtr InParameters,
-        ManagedType* InParameterTypes, int InParameterCount, IntPtr InResultStorage, IntPtr* exception)
+        ManagedType* InParameterTypes, int InParameterCount, IntPtr InResultStorage, Bool32 InRetIsObject, IntPtr* exception)
     {
         if (exception != null) *exception = IntPtr.Zero;
         try
@@ -244,14 +244,21 @@ internal static class ManagedObject
             }
 
 
-            var methodParameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            var methodParameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
 
             object? value = methodInfo.Invoke(null, methodParameters);
 
             if (value == null)
                 return;
 
-            Marshalling.MarshalReturnValue(null, value, methodInfo, InResultStorage);
+            if (InRetIsObject)
+            {
+                Marshal.WriteIntPtr(InResultStorage, GCHandle.ToIntPtr(GCHandle.Alloc(value)));
+            }
+            else
+            {
+                Marshalling.MarshalReturnValue(null, value, methodInfo, InResultStorage);
+            }
         }
         catch (Exception ex)
         {
@@ -291,7 +298,7 @@ internal static class ManagedObject
                 return;
             }
 
-            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
 
             methodInfo.Invoke(target, parameters);
         }
@@ -315,7 +322,7 @@ internal static class ManagedObject
 
     [UnmanagedCallersOnly]
     internal static unsafe void InvokeMethodRet(IntPtr InObjectHandle, int InMethod, IntPtr InParameters,
-        ManagedType* InParameterTypes, int InParameterCount, IntPtr InResultStorage, IntPtr* exception)
+        ManagedType* InParameterTypes, int InParameterCount, IntPtr InResultStorage, Bool32 InRetIsObject, IntPtr* exception)
     {
         if (exception != null) *exception = IntPtr.Zero;
         try
@@ -332,13 +339,20 @@ internal static class ManagedObject
                 LogMessage($"Cannot invoke method {methodInfo.Name} on a null type.", MessageLevel.Error);
                 return;
             }
-            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
             object? value = methodInfo.Invoke(target, parameters);
 
             if (value == null)
                 return;
 
-            Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+            if (InRetIsObject)
+            {
+                Marshal.WriteIntPtr(InResultStorage, GCHandle.ToIntPtr(GCHandle.Alloc(value)));
+            }
+            else
+            {
+                Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+            }
         }
         catch (Exception ex)
         {
@@ -373,7 +387,7 @@ internal static class ManagedObject
             }
             Delegate @delegate = (Delegate)target;
             MethodInfo methodInfo = @delegate.Method;
-            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
             @delegate.DynamicInvoke(parameters);
         }
         catch (Exception ex)
@@ -397,7 +411,7 @@ internal static class ManagedObject
 
     [UnmanagedCallersOnly]
     internal static unsafe void InvokeDelegateRet(IntPtr InObjectHandle, IntPtr InParameters,
-        ManagedType* InParameterTypes, int InParameterCount, IntPtr InResultStorage, IntPtr* exception)
+        ManagedType* InParameterTypes, int InParameterCount, IntPtr InResultStorage, Bool32 InRetIsObject, IntPtr* exception)
     {
         if (exception != null) *exception = IntPtr.Zero;
         try
@@ -410,13 +424,19 @@ internal static class ManagedObject
             }
             Delegate @delegate = (Delegate)target;
             MethodInfo methodInfo = @delegate.Method;
-            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, methodInfo);
+            var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
             object? value = @delegate.DynamicInvoke(parameters);
 
             if (value == null)
                 return;
-
-            Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+            if (InRetIsObject)
+            {
+                Marshal.WriteIntPtr(InResultStorage, GCHandle.ToIntPtr(GCHandle.Alloc(value)));
+            }
+            else
+            {
+                Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+            }
         }
         catch (Exception ex)
         {
@@ -438,7 +458,7 @@ internal static class ManagedObject
 
 
     [UnmanagedCallersOnly]
-    internal static void SetFieldValue(IntPtr InTarget, int InField, IntPtr InValue)
+    internal static void SetFieldValue(IntPtr InTarget, int InField, IntPtr InValue, Bool32 InIsObject)
     {
         try
         {
@@ -455,14 +475,17 @@ internal static class ManagedObject
                 return;
             }
 
-
-            if (fieldInfo.FieldType == typeof(string))
+            if (InIsObject)
+            {
+                fieldInfo.SetValue(target, GCHandle.FromIntPtr(Marshal.ReadIntPtr(InValue)).Target);
+            }
+            else if (fieldInfo.FieldType == typeof(string))
             {
                 object? fieldValue = Marshalling.MarshalPointer(InValue, typeof(NativeString));
 
                 if (fieldValue == null)
                 {
-                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
+                    LogMessage($"Failed to set field '{fieldInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
                     return;
                 }
 
@@ -475,7 +498,7 @@ internal static class ManagedObject
 
                 if (fieldValue == null)
                 {
-                    LogMessage($"Failed to get field '{fieldInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
+                    LogMessage($"Failed to set field '{fieldInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
                     return;
                 }
 
@@ -496,25 +519,33 @@ internal static class ManagedObject
     }
 
     [UnmanagedCallersOnly]
-    internal static void GetFieldValue(IntPtr InTarget, int InField, IntPtr OutValue)
+    internal static void GetFieldValue(IntPtr InTarget, int InField, IntPtr OutValue, Bool32 InIsObject)
     {
         try
         {
             if (!TypeInterface.s_CachedFields.TryGetValue(InField, out var fieldInfo) || fieldInfo == null)
             {
-                LogMessage($"Cannot get property id={InField} as it does not exist.", MessageLevel.Error);
+                LogMessage($"Cannot get field id={InField} as it does not exist.", MessageLevel.Error);
                 return;
             }
             var target = GCHandle.FromIntPtr(InTarget).Target;
 
             if (target == null)
             {
-                LogMessage($"Cannot set value of property {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
+                LogMessage($"Cannot get value of field {fieldInfo.Name} on object with handle {InTarget}. Target was null.", MessageLevel.Error);
                 return;
             }
 
-            // Handles strings gracefully internally.
-            Marshalling.MarshalReturnValue(target, fieldInfo.GetValue(target), fieldInfo, OutValue);
+            object? value = fieldInfo.GetValue(target);
+            if (value == null) return;
+            if (InIsObject)
+            {
+                Marshal.WriteIntPtr(OutValue, GCHandle.ToIntPtr(GCHandle.Alloc(target)));
+            }
+            else
+            {
+                Marshalling.MarshalReturnValue(target, target, fieldInfo, OutValue);
+            }
         }
         catch (Exception ex)
         {
@@ -523,14 +554,14 @@ internal static class ManagedObject
     }
 
     [UnmanagedCallersOnly]
-    internal static unsafe void SetPropertyValue(IntPtr InTarget, int InProperty, IntPtr InValue, IntPtr* exception)
+    internal static unsafe void SetPropertyValue(IntPtr InTarget, int InProperty, IntPtr InValue, Bool32 InIsObject, IntPtr* exception)
     {
         if (exception != null) *exception = IntPtr.Zero;
         try
         {
             if (!TypeInterface.s_CachedProperties.TryGetValue(InProperty, out var propertyInfo) || propertyInfo == null)
             {
-                LogMessage($"Cannot get property id={InProperty} as it does not exist.", MessageLevel.Error);
+                LogMessage($"Cannot set property id={InProperty} as it does not exist.", MessageLevel.Error);
                 return;
             }
             var target = GCHandle.FromIntPtr(InTarget).Target;
@@ -546,9 +577,42 @@ internal static class ManagedObject
                 LogMessage($"Cannot set value of property '{propertyInfo.Name}'. No setter was found.", MessageLevel.Error);
                 return;
             }
+            if (InIsObject)
+            {
+                propertyInfo.SetValue(target, GCHandle.FromIntPtr(Marshal.ReadIntPtr(InValue)).Target);
+            }
+            else if (propertyInfo.PropertyType == typeof(string))
+            {
+                object? fieldValue = Marshalling.MarshalPointer(InValue, typeof(NativeString));
 
-            object? value = Marshalling.MarshalPointer(InValue, propertyInfo.PropertyType);
-            propertyInfo.SetValue(target, value);
+                if (fieldValue == null)
+                {
+                    LogMessage($"Failed to set property '{propertyInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
+                    return;
+                }
+
+                NativeString value = (NativeString)fieldValue;
+                propertyInfo.SetValue(target, value.ToString());
+            }
+            else if (propertyInfo.PropertyType == typeof(bool))
+            {
+                object? fieldValue = Marshalling.MarshalPointer(InValue, typeof(Bool32));
+
+                if (fieldValue == null)
+                {
+                    LogMessage($"Failed to set property '{propertyInfo.Name}' value in type '{target.GetType().FullName}'.", MessageLevel.Error);
+                    return;
+                }
+
+                Bool32 value = (Bool32)fieldValue;
+                propertyInfo.SetValue(target, (bool)value);
+            }
+            else
+            {
+                object? value = Marshalling.MarshalPointer(InValue, propertyInfo.PropertyType);
+
+                propertyInfo.SetValue(target, value);
+            }
         }
         catch (Exception ex)
         {
@@ -569,7 +633,7 @@ internal static class ManagedObject
     }
 
     [UnmanagedCallersOnly]
-    internal static unsafe void GetPropertyValue(IntPtr InTarget, int InProperty, IntPtr OutValue, IntPtr* exception)
+    internal static unsafe void GetPropertyValue(IntPtr InTarget, int InProperty, IntPtr OutValue, Bool32 InIsObject, IntPtr* exception)
     {
         if (exception != null) *exception = IntPtr.Zero;
         try
@@ -593,7 +657,16 @@ internal static class ManagedObject
                 return;
             }
 
-            Marshalling.MarshalReturnValue(target, propertyInfo.GetValue(target), propertyInfo, OutValue);
+            object? value = propertyInfo.GetValue(target);
+            if (value == null) return;
+            if (InIsObject)
+            {
+                Marshal.WriteIntPtr(OutValue, GCHandle.ToIntPtr(GCHandle.Alloc(target)));
+            }
+            else
+            {
+                Marshalling.MarshalReturnValue(target, target, propertyInfo, OutValue);
+            }
         }
         catch (Exception ex)
         {
@@ -633,4 +706,65 @@ internal static class ManagedObject
             HandleException(ex);
         }
     }
+
+    [UnmanagedCallersOnly]
+    internal static IntPtr GetObjectBoxedValue(IntPtr InValue, int InValueSize, int InTypeID)
+    {
+        try
+        {
+            if (!TypeInterface.s_CachedTypes.TryGetValue(InTypeID, out var type) || type == null)
+            {
+                LogMessage($"Failed to find type with id '{InTypeID}'.", MessageLevel.Error);
+                return IntPtr.Zero;
+            }
+            if (!type.IsValueType)
+            {
+                LogMessage($"Cannot box non-value type: {type.FullName}", MessageLevel.Error);
+                return IntPtr.Zero;
+            }
+            int expectedSize = Marshal.SizeOf(type);
+            if (expectedSize != InValueSize)
+            {
+                LogMessage($"Size mismatch: expected={expectedSize}, got={InValueSize}", MessageLevel.Error);
+                return IntPtr.Zero;
+            }
+            return Marshalling.MarhsalBoxValue(InValue, type);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+            return IntPtr.Zero;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static void GetObjectUnboxedValue(IntPtr InTarget, IntPtr OutValue)
+    {
+        try
+        {
+            var target = GCHandle.FromIntPtr(InTarget).Target;
+
+            if (target == null)
+            {
+                LogMessage($"Cannot get unboxed value of object. Target was null.", MessageLevel.Error);
+                return;
+            }
+
+            Type targetType = target.GetType();
+
+            // Only handle blittable value types
+            if (!targetType.IsValueType)
+            {
+                LogMessage($"Target is not a value type. Type: {targetType.FullName}", MessageLevel.Error);
+                return;
+            }
+
+            Marshalling.MarshalUnboxValue(target, targetType, OutValue);
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex);
+        }
+    }
+
 }

@@ -57,6 +57,18 @@ namespace Coral {
         return *this;
     }
 
+    Object Object::BoxRaw(const void* InValue, int32_t InSize, const Type& InType)
+    {
+        Object result = {};
+        result.m_Handle = s_ManagedFunctions.GetObjectBoxedValueFptr(InValue, InSize, InType.m_Id);
+        return result;
+    }
+
+    void Object::UnboxRaw(void* OutValue) const
+    {
+        s_ManagedFunctions.GetObjectUnboxedValueFptr(m_Handle, OutValue);
+    }
+
     void Object::InvokeMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
     {
         // NOTE(Peter): If you get an exception in this function it's most likely because you're using a Native only debugger type in Visual Studio
@@ -72,10 +84,10 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+    void Object::InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const
     {
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, OutException ? &exceptionResult : nullptr);
+        s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();
@@ -94,10 +106,10 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeDelegateRetInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+    void Object::InvokeDelegateRetInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const
     {
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.InvokeDelegateRetFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, OutException ? &exceptionResult : nullptr);
+        s_ManagedFunctions.InvokeDelegateRetFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();
@@ -105,20 +117,32 @@ namespace Coral {
         }
     }
 
-    void Object::SetFieldValueRaw(const FieldInfo& InField, void* InValue) const
+    void Object::SetFieldValueRaw(const FieldInfo& InField, const void* InValue) const
     {
-        s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, InValue);
+        s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, InValue, false);
     }
 
     void Object::GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const
     {
-        s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, OutValue);
+        s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, OutValue, false);
     }
 
-    void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, void* InValue, Object* OutException) const
+    void Object::SetFieldValueObject(const FieldInfo& InField, const Object& InObject) const
+    {
+        s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, &InObject.m_Handle, true);
+    }
+
+    Object Object::GetFieldValueObject(const FieldInfo& InField) const
+    {
+        Object result = {};
+        s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, &result.m_Handle, true);
+        return result;
+    }
+
+    void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException) const
     {
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, InValue, OutException ? &exceptionResult : nullptr);
+        s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, InValue, false, OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();
@@ -129,12 +153,36 @@ namespace Coral {
     void Object::GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, Object* OutException) const
     {
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.GetPropertyValueFptr(m_Handle, InProperty.m_Handle, OutValue, OutException ? &exceptionResult : nullptr);
+        s_ManagedFunctions.GetPropertyValueFptr(m_Handle, InProperty.m_Handle, OutValue, false, OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();
             OutException->m_Handle = exceptionResult;
         }
+    }
+
+    void Object::SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException) const
+    {
+        void* exceptionResult = nullptr;
+        s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, &InObject.m_Handle, true, OutException ? &exceptionResult : nullptr);
+        if (OutException)
+        {
+            *OutException = Object();
+            OutException->m_Handle = exceptionResult;
+        }
+    }
+
+    Object Object::GetPropertyValueObject(const PropertyInfo& InProperty, Object* OutException) const
+    {
+        Object result = {};
+        void* exceptionResult = nullptr;
+        s_ManagedFunctions.GetPropertyValueFptr(m_Handle, InProperty.m_Handle, &result.m_Handle, true, OutException ? &exceptionResult : nullptr);
+        if (OutException)
+        {
+            *OutException = Object();
+            OutException->m_Handle = exceptionResult;
+        }
+        return result;
     }
 
     const Type& Object::GetType()

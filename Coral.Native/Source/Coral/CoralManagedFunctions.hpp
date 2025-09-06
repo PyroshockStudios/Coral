@@ -96,17 +96,19 @@ namespace Coral {
     using CreateObjectFn = void* (*)(TypeId, Bool32, const void**, const ManagedType*, int32_t, void**);
     using CopyObjectFn = void* (*)(void*);
     using InvokeMethodFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void**);
-    using InvokeMethodRetFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
+    using InvokeMethodRetFn = void (*)(void*, ManagedHandle, const void**, const ManagedType*, int32_t, void*, Bool32, void**);
     using InvokeDelegateFn = void (*)(void*, const void**, const ManagedType*, int32_t, void**);
-    using InvokeDelegateRetFn = void (*)(void*, const void**, const ManagedType*, int32_t, void*, void**);
+    using InvokeDelegateRetFn = void (*)(void*, const void**, const ManagedType*, int32_t, void*, Bool32, void**);
     using InvokeStaticMethodFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void**);
-    using InvokeStaticMethodRetFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void*, void**);
-    using SetFieldValueFn = void (*)(void*, ManagedHandle, void*);
-    using GetFieldValueFn = void (*)(void*, ManagedHandle, void*);
-    using SetPropertyValueFn = void (*)(void*, ManagedHandle, void*, void**);
-    using GetPropertyValueFn = void (*)(void*, ManagedHandle, void*, void**);
+    using InvokeStaticMethodRetFn = void (*)(TypeId, ManagedHandle, const void**, const ManagedType*, int32_t, void*, Bool32, void**);
+    using SetFieldValueFn = void (*)(void*, ManagedHandle, const void*, Bool32);
+    using GetFieldValueFn = void (*)(void*, ManagedHandle, void*, Bool32);
+    using SetPropertyValueFn = void (*)(void*, ManagedHandle, const void*, Bool32, void**);
+    using GetPropertyValueFn = void (*)(void*, ManagedHandle, void*, Bool32, void**);
     using DestroyObjectFn = void (*)(void*);
     using GetObjectTypeIdFn = void (*)(void*, int32_t*);
+    using GetObjectBoxedValueFn = void* (*)(const void*, int32_t, TypeId);
+    using GetObjectUnboxedValueFn = void (*)(void*, void*);
 
     using CollectGarbageFn = void (*)(int32_t, GCCollectionMode, Bool32, Bool32);
     using WaitForPendingFinalizersFn = void (*)();
@@ -207,6 +209,8 @@ namespace Coral {
         GetPropertyValueFn GetPropertyValueFptr = nullptr;
         DestroyObjectFn DestroyObjectFptr = nullptr;
         GetObjectTypeIdFn GetObjectTypeIdFptr = nullptr;
+        GetObjectBoxedValueFn GetObjectBoxedValueFptr = nullptr;
+        GetObjectUnboxedValueFn GetObjectUnboxedValueFptr = nullptr;
 
         CollectGarbageFn CollectGarbageFptr = nullptr;
         WaitForPendingFinalizersFn WaitForPendingFinalizersFptr = nullptr;

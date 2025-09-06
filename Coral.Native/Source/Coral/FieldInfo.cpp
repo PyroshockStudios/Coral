@@ -41,7 +41,7 @@ namespace Coral {
         return s_ManagedFunctions.GetFieldInfoIsLiteralFptr(m_Handle);
     }
 
-    bool PropertyInfo::HasAttribute(const Type& InAttributeType) const
+    bool FieldInfo::HasAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         return GetAttribute(InAttributeType);

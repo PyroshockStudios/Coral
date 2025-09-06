@@ -520,15 +520,15 @@ static void RegisterDelegateTests(Coral::Object& InObject)
     using Coral::MethodParams;
 
     RegisterTest("CallDelegate", [&InObject]() mutable
-    {
-        Coral::Object fooDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetFooDelegate", true));
-        auto attributes = fooDelegate.GetType().GetAttributes();
-        if (attributes.empty()) return false;
-        if (attributes[0].GetFieldValue<int32_t>("SomeValue") != 2) return false;
-        Coral::Object myDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetMyDelegate", true), MethodParams { 81 });
-        Coral::ScopedString str = myDelegate.InvokeDelegate<Coral::String>(MethodParams { fooDelegate });
-        return str == (std::string_view) "Knock Knock... Hello 81";
-    });
+        {
+            Coral::Object fooDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetFooDelegate", true));
+            auto attributes = fooDelegate.GetType().GetAttributes();
+            if (attributes.empty()) return false;
+            if (attributes[0].GetFieldValue<int32_t>("SomeValue") != 2) return false;
+            Coral::Object myDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetMyDelegate", true), MethodParams{ 81 });
+            Coral::ScopedString str = myDelegate.InvokeDelegate<Coral::String>(MethodParams{ fooDelegate });
+            return str == (std::string_view)"Knock Knock... Hello 81";
+        });
 }
 
 static void RunTests()

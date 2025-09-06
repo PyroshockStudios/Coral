@@ -135,7 +135,7 @@ namespace Coral {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedString string = ScopedString(MethodName);
-        MethodInfo method {};
+        MethodInfo method{};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, flags);
         return method;
     }
@@ -144,7 +144,7 @@ namespace Coral {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedString string = ScopedString(MethodName);
-        MethodInfo method {};
+        MethodInfo method{};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
         return method;
     }
@@ -153,7 +153,7 @@ namespace Coral {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedString string = ScopedString(MethodName);
-        MethodInfo method {};
+        MethodInfo method{};
         std::vector<TypeId> typeIds = {};
         typeIds.reserve(InParamTypes.size());
         for (const Type* type : InParamTypes)
@@ -169,7 +169,7 @@ namespace Coral {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedString string = ScopedString(FieldName);
-        FieldInfo field {};
+        FieldInfo field{};
         field.m_Handle = s_ManagedFunctions.GetFieldInfoByNameFptr(m_Id, string, flags);
         return field;
     }
@@ -179,7 +179,7 @@ namespace Coral {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedString string = ScopedString(PropertyName);
-        PropertyInfo property {};
+        PropertyInfo property{};
         property.m_Handle = s_ManagedFunctions.GetPropertyInfoByNameFptr(m_Id, string, flags);
         return property;
     }
@@ -255,7 +255,7 @@ namespace Coral {
     {
         void* exceptionResult = nullptr;
         Object result;
-        result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
+        result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
         result.m_Type = this;
         if (OutException)
         {
@@ -268,7 +268,7 @@ namespace Coral {
     void Type::InvokeStaticMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
     {
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), &exceptionResult);
+        s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();
@@ -276,10 +276,10 @@ namespace Coral {
         }
     }
 
-    void Type::InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, void* InResultStorage) const
+    void Type::InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const
     {
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, &exceptionResult);
+        s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();
@@ -287,7 +287,7 @@ namespace Coral {
         }
     }
 
-    ReflectionType::operator Type&() const
+    ReflectionType::operator Type& () const
     {
         static Type s_NullType;
 

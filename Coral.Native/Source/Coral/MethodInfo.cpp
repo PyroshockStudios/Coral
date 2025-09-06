@@ -59,7 +59,7 @@ namespace Coral {
         return s_ManagedFunctions.GetMethodInfoIsStaticFptr(m_Handle);
     }
     
-    bool PropertyInfo::HasAttribute(const Type& InAttributeType) const
+    bool MethodInfo::HasAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         return GetAttribute(InAttributeType);
