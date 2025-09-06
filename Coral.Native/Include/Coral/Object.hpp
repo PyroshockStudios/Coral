@@ -173,7 +173,7 @@ namespace Coral {
     }
 
     template <>
-    inline void Object::SetFieldValue(const FieldInfo& InField, std::string InValue) const
+    inline void Object::SetFieldValue(const FieldInfo& InField, StdString InValue) const
     {
         String s = String::New(InValue);
         SetFieldValueRaw(InField, &s);
@@ -194,11 +194,11 @@ namespace Coral {
     }
 
     template <>
-    inline std::string Object::GetFieldValue(const FieldInfo& InField) const
+    inline StdString Object::GetFieldValue(const FieldInfo& InField) const
     {
         String result;
         GetFieldValueRaw(InField, &result);
-        auto s = result.Data() ? std::string(result) : "";
+        auto s = result.Data() ? StdString(result) : "";
         String::Free(result);
         return s;
     }
@@ -218,7 +218,7 @@ namespace Coral {
     }
 
     template <>
-    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, std::string InValue) const
+    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, StdString InValue) const
     {
         String s = String::New(InValue);
         SetPropertyValueRaw(InProperty, &s);
@@ -239,11 +239,11 @@ namespace Coral {
     }
 
     template <>
-    inline std::string Object::GetPropertyValue(const PropertyInfo& InProperty) const
+    inline StdString Object::GetPropertyValue(const PropertyInfo& InProperty) const
     {
         String result;
         GetPropertyValueRaw(InProperty, &result);
-        auto s = result.Data() ? std::string(result) : "";
+        auto s = result.Data() ? StdString(result) : "";
         String::Free(result);
         return s;
     }

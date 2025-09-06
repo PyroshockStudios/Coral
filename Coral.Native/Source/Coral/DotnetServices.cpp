@@ -3,7 +3,7 @@
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {
-    bool DotnetServices::RunMSBuild(const std::string& InSolutionPath, bool InBuildDebug)
+    bool DotnetServices::RunMSBuild(const StdString& InSolutionPath, bool InBuildDebug)
     {
         String s = String::New(InSolutionPath);
         Bool32 result;

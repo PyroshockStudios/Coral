@@ -7,7 +7,7 @@ namespace Coral {
 
     // TODO(Emily): This class assumes that WC platform is synonymous with Windows.
 
-    UCString StringHelper::ConvertUtf8ToWide(std::string_view InString)
+    UCString StringHelper::ConvertUtf8ToWide(StdStringView InString)
     {
 #ifdef CORAL_WIDE_CHARS
         int length = MultiByteToWideChar(CP_UTF8, 0, InString.data(), static_cast<int>(InString.length()), nullptr, 0);
@@ -19,28 +19,28 @@ namespace Coral {
 #endif
     }
 
-    std::string StringHelper::ConvertWideToUtf8(UCStringView InString)
+    StdString StringHelper::ConvertWideToUtf8(UCStringView InString)
     {
 #ifdef CORAL_WIDE_CHARS
         int requiredLength = WideCharToMultiByte(CP_UTF8, 0, InString.data(), static_cast<int>(InString.length()), nullptr, 0, nullptr, nullptr);
-        std::string result(requiredLength, 0);
+        StdString result(requiredLength, 0);
         (void)WideCharToMultiByte(CP_UTF8, 0, InString.data(), static_cast<int>(InString.length()), result.data(), requiredLength, nullptr, nullptr);
         return result;
 #else
-        return std::string(InString);
+        return StdString(InString);
 #endif
     }
-    std::string StringHelper::UCCharToString(const UCChar* InString)
+    StdString StringHelper::UCCharToString(const UCChar* InString)
     {
 #ifdef CORAL_WIDE_CHARS
         return ConvertWideToUtf8(InString);
 #else
-        return std::string(InString);
+        return StdString(InString);
 #endif
     }
-    std::string StringHelper::ConsumeNativeString(String& InString)
+    StdString StringHelper::ConsumeNativeString(String& InString)
     {
-        std::string str = UCCharToString(InString.Data());
+        StdString str = UCCharToString(InString.Data());
         String::Free(InString);
         return str;
     }

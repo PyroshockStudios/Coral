@@ -13,14 +13,14 @@ namespace Coral {
     class PropertyInfo
     {
     public:
-        std::string GetName() const;
+        StdString GetName() const;
         Type& GetType();
 
         MethodInfo GetGetMethod() const;
         MethodInfo GetSetMethod() const;
 
         bool HasAttribute(const Type& InAttributeType) const;
-        std::vector<Attribute> GetAttributes() const;
+        StdVector<Attribute> GetAttributes() const;
         Attribute GetAttribute(const Type& InAttributeType) const;
 
         constexpr inline operator bool() const { return m_Handle != -1; }

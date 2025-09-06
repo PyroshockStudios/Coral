@@ -1,12 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <array>
-#include <mutex>
-#include <shared_mutex>
-#include <list>
-#include <atomic>
-#include <cstring>
+#include "Coral/Core.hpp"
 
 namespace Coral {
 
@@ -66,7 +60,7 @@ namespace Coral {
 
         size_t GetElementCount() const { return m_ElementCount; }
 
-        std::pair<uint32_t, TElement&> Insert(TElement&& InElement)
+        StdPair<uint32_t, TElement&> Insert(TElement&& InElement)
         {
             size_t pageIndex = m_ElementCount / PageSize;
 
@@ -99,7 +93,7 @@ namespace Coral {
             return { index, m_PageTable[pageIndex]->Elements[index - (pageIndex * PageSize)] };
         }
 
-        std::pair<uint32_t, TElement&> InsertNoLock(TElement&& InElement)
+        StdPair<uint32_t, TElement&> InsertNoLock(TElement&& InElement)
         {
             size_t pageIndex = m_ElementCount / PageSize;
 
@@ -132,7 +126,7 @@ namespace Coral {
             return { index, m_PageTable[pageIndex]->Elements[index - (pageIndex * PageSize)] };
         }
 
-        std::pair<uint32_t, TElement&> EmplaceBack()
+        StdPair<uint32_t, TElement&> EmplaceBack()
         {
             size_t pageIndex = m_ElementCount / PageSize;
 
@@ -159,7 +153,7 @@ namespace Coral {
             return { index, m_PageTable[pageIndex]->Elements[index - (pageIndex * PageSize)] };
         }
 
-        std::pair<uint32_t, TElement&> EmplaceBackNoLock()
+        StdPair<uint32_t, TElement&> EmplaceBackNoLock()
         {
             size_t pageIndex = m_ElementCount / PageSize;
 
@@ -203,15 +197,15 @@ namespace Coral {
     private:
         struct Page
         {
-            std::array<TElement, PageSize> Elements;
+            StdArray<TElement, PageSize> Elements;
         };
 
-        std::shared_mutex m_Mutex;
-        std::list<std::unique_ptr<Page*[]>> m_PageTables;
+        StdSharedMutex m_Mutex;
+        StdList<StdUniquePtr<Page*[]>> m_PageTables;
 
-        std::atomic<Page**> m_PageTable;
-        std::atomic<uint32_t> m_ElementCount = 0;
-        std::atomic<uint32_t> m_Capacity = 0;
+        StdAtomic<Page**> m_PageTable;
+        StdAtomic<uint32_t> m_ElementCount = 0;
+        StdAtomic<uint32_t> m_Capacity = 0;
         uint64_t m_PageCount = 0;
     };
 

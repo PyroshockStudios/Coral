@@ -7,10 +7,10 @@ namespace Coral {
     class StringHelper
     {
     public:
-        static UCString ConvertUtf8ToWide(std::string_view InString);
-        static std::string ConvertWideToUtf8(UCStringView InString);
-        static std::string UCCharToString(const UCChar* InString);
-        static std::string ConsumeNativeString(String& InString);
+        static UCString ConvertUtf8ToWide(StdStringView InString);
+        static StdString ConvertWideToUtf8(UCStringView InString);
+        static StdString UCCharToString(const UCChar* InString);
+        static StdString ConsumeNativeString(String& InString);
     };
 
 }

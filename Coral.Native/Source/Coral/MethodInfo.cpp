@@ -8,7 +8,7 @@
 
 namespace Coral {
 
-    std::string MethodInfo::GetName() const
+    StdString MethodInfo::GetName() const
     {
         String str = s_ManagedFunctions.GetMethodInfoNameFptr(m_Handle);
         return StringHelper::ConsumeNativeString(str);
@@ -26,14 +26,14 @@ namespace Coral {
         return *m_ReturnType;
     }
 
-    const std::vector<Type*>& MethodInfo::GetParameterTypes()
+    const StdVector<Type*>& MethodInfo::GetParameterTypes()
     {
         if (m_ParameterTypes.empty())
         {
             int32_t parameterCount;
             s_ManagedFunctions.GetMethodInfoParameterTypesFptr(m_Handle, nullptr, &parameterCount);
 
-            std::vector<TypeId> parameterTypes(static_cast<size_t>(parameterCount));
+            StdVector<TypeId> parameterTypes(static_cast<size_t>(parameterCount));
             s_ManagedFunctions.GetMethodInfoParameterTypesFptr(m_Handle, parameterTypes.data(), &parameterCount);
 
             m_ParameterTypes.resize(parameterTypes.size());
@@ -65,15 +65,15 @@ namespace Coral {
         return GetAttribute(InAttributeType);
     }
 
-    std::vector<Attribute> MethodInfo::GetAttributes() const
+    StdVector<Attribute> MethodInfo::GetAttributes() const
     {
         int32_t attributeCount;
         s_ManagedFunctions.GetMethodInfoAttributesFptr(m_Handle, nullptr, &attributeCount);
 
-        std::vector<ManagedHandle> attributeHandles(static_cast<size_t>(attributeCount));
+        StdVector<ManagedHandle> attributeHandles(static_cast<size_t>(attributeCount));
         s_ManagedFunctions.GetMethodInfoAttributesFptr(m_Handle, attributeHandles.data(), &attributeCount);
 
-        std::vector<Attribute> result(attributeHandles.size());
+        StdVector<Attribute> result(attributeHandles.size());
         for (size_t i = 0; i < attributeHandles.size(); i++)
             result[i].m_Handle = attributeHandles[i];
 

@@ -29,25 +29,25 @@ namespace Coral {
     Type& Type::ExceptionType() { return *TypeCache::Get().m_ExceptionType; }
     Type& Type::ArrayType() { return *TypeCache::Get().m_ArrayType; }
 
-    std::string Type::GetFullName() const
+    StdString Type::GetFullName() const
     {
         String str = s_ManagedFunctions.GetFullTypeNameFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
     }
 
-    std::string Type::GetName() const
+    StdString Type::GetName() const
     {
         String str = s_ManagedFunctions.GetTypeNameFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
     }
 
-    std::string Type::GetNamespace() const
+    StdString Type::GetNamespace() const
     {
         String str = s_ManagedFunctions.GetTypeNamespaceFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
     }
 
-    std::string Type::GetAssemblyQualifiedName() const
+    StdString Type::GetAssemblyQualifiedName() const
     {
         String str = s_ManagedFunctions.GetAssemblyQualifiedNameFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
@@ -65,18 +65,18 @@ namespace Coral {
         return *m_BaseType;
     }
 
-    std::vector<Type*>& Type::GetInterfaceTypes()
+    StdVector<Type*>& Type::GetInterfaceTypes()
     {
         if (!m_InterfaceTypes)
         {
             int count;
             s_ManagedFunctions.GetInterfaceTypeCountFptr(m_Id, &count);
 
-            std::vector<TypeId> typeIds;
+            StdVector<TypeId> typeIds;
             typeIds.resize(static_cast<size_t>(count));
             s_ManagedFunctions.GetInterfaceTypesFptr(m_Id, typeIds.data());
 
-            m_InterfaceTypes = std::vector<Type*>();
+            m_InterfaceTypes = StdVector<Type*>();
             m_InterfaceTypes->reserve(static_cast<size_t>(count));
 
             for (auto id : typeIds)
@@ -110,49 +110,49 @@ namespace Coral {
         return s_ManagedFunctions.IsTypeAssignableFromFptr(m_Id, InOther.m_Id);
     }
 
-    std::vector<MethodInfo> Type::GetMethods() const
+    StdVector<MethodInfo> Type::GetMethods() const
     {
         int32_t methodCount = 0;
         s_ManagedFunctions.GetTypeMethodsFptr(m_Id, nullptr, &methodCount);
-        std::vector<ManagedHandle> handles(static_cast<size_t>(methodCount));
+        StdVector<ManagedHandle> handles(static_cast<size_t>(methodCount));
         s_ManagedFunctions.GetTypeMethodsFptr(m_Id, handles.data(), &methodCount);
 
-        std::vector<MethodInfo> methods(handles.size());
+        StdVector<MethodInfo> methods(handles.size());
         for (size_t i = 0; i < handles.size(); i++)
             methods[i].m_Handle = handles[i];
 
         return methods;
     }
 
-    std::vector<FieldInfo> Type::GetFields() const
+    StdVector<FieldInfo> Type::GetFields() const
     {
         int32_t fieldCount = 0;
         s_ManagedFunctions.GetTypeFieldsFptr(m_Id, nullptr, &fieldCount);
-        std::vector<ManagedHandle> handles(static_cast<size_t>(fieldCount));
+        StdVector<ManagedHandle> handles(static_cast<size_t>(fieldCount));
         s_ManagedFunctions.GetTypeFieldsFptr(m_Id, handles.data(), &fieldCount);
 
-        std::vector<FieldInfo> fields(handles.size());
+        StdVector<FieldInfo> fields(handles.size());
         for (size_t i = 0; i < handles.size(); i++)
             fields[i].m_Handle = handles[i];
 
         return fields;
     }
 
-    std::vector<PropertyInfo> Type::GetProperties() const
+    StdVector<PropertyInfo> Type::GetProperties() const
     {
         int32_t propertyCount = 0;
         s_ManagedFunctions.GetTypePropertiesFptr(m_Id, nullptr, &propertyCount);
-        std::vector<ManagedHandle> handles(static_cast<size_t>(propertyCount));
+        StdVector<ManagedHandle> handles(static_cast<size_t>(propertyCount));
         s_ManagedFunctions.GetTypePropertiesFptr(m_Id, handles.data(), &propertyCount);
 
-        std::vector<PropertyInfo> properties(handles.size());
+        StdVector<PropertyInfo> properties(handles.size());
         for (size_t i = 0; i < handles.size(); i++)
             properties[i].m_Handle = handles[i];
 
         return properties;
     }
 
-    MethodInfo Type::GetMethod(std::string_view MethodName, bool InStatic) const
+    MethodInfo Type::GetMethod(StdStringView MethodName, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
@@ -161,7 +161,7 @@ namespace Coral {
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, flags);
         return method;
     }
-    MethodInfo Type::GetMethod(std::string_view MethodName, int32_t InParamCount, bool InStatic) const
+    MethodInfo Type::GetMethod(StdStringView MethodName, int32_t InParamCount, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
@@ -170,13 +170,13 @@ namespace Coral {
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
         return method;
     }
-    MethodInfo Type::GetMethodByParamTypes(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic) const
+    MethodInfo Type::GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type*>& InParamTypes, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedString string = ScopedString(MethodName);
         MethodInfo method{};
-        std::vector<TypeId> typeIds = {};
+        StdVector<TypeId> typeIds = {};
         typeIds.reserve(InParamTypes.size());
         for (const Type* type : InParamTypes)
         {
@@ -186,7 +186,7 @@ namespace Coral {
         return method;
     }
 
-    FieldInfo Type::GetField(std::string_view FieldName, bool InStatic) const
+    FieldInfo Type::GetField(StdStringView FieldName, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
@@ -196,7 +196,7 @@ namespace Coral {
         return field;
     }
 
-    PropertyInfo Type::GetProperty(std::string_view PropertyName, bool InStatic) const
+    PropertyInfo Type::GetProperty(StdStringView PropertyName, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
@@ -211,14 +211,14 @@ namespace Coral {
         return s_ManagedFunctions.HasTypeAttributeFptr(m_Id, InAttributeType.m_Id);
     }
 
-    std::vector<Attribute> Type::GetAttributes() const
+    StdVector<Attribute> Type::GetAttributes() const
     {
         int32_t attributeCount;
         s_ManagedFunctions.GetTypeAttributesFptr(m_Id, nullptr, &attributeCount);
-        std::vector<ManagedHandle> attributeHandles(static_cast<size_t>(attributeCount));
+        StdVector<ManagedHandle> attributeHandles(static_cast<size_t>(attributeCount));
         s_ManagedFunctions.GetTypeAttributesFptr(m_Id, attributeHandles.data(), &attributeCount);
 
-        std::vector<Attribute> result(attributeHandles.size());
+        StdVector<Attribute> result(attributeHandles.size());
         for (size_t i = 0; i < attributeHandles.size(); i++)
             result[i].m_Handle = attributeHandles[i];
 

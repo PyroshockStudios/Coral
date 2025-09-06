@@ -12,16 +12,16 @@ namespace Coral {
     class MethodInfo
     {
     public:
-        std::string GetName() const;
+        StdString GetName() const;
 
         Type& GetReturnType();
-        const std::vector<Type*>& GetParameterTypes();
+        const StdVector<Type*>& GetParameterTypes();
 
         TypeAccessibility GetAccessibility() const;
         bool IsStatic() const;
 
         bool HasAttribute(const Type& InAttributeType) const;
-        std::vector<Attribute> GetAttributes() const;
+        StdVector<Attribute> GetAttributes() const;
         Attribute GetAttribute(const Type& InAttributeType) const;
 
         MetadataToken GetMetadataToken() const;
@@ -31,7 +31,7 @@ namespace Coral {
     private:
         ManagedHandle m_Handle = -1;
         Type* m_ReturnType = nullptr;
-        std::vector<Type*> m_ParameterTypes;
+        StdVector<Type*> m_ParameterTypes;
 
         friend class Type;
         friend class Object;

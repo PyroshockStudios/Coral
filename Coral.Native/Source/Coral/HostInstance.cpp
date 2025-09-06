@@ -30,7 +30,7 @@ namespace Coral {
     static MessageLevel MessageFilter;
     static ExceptionCallbackFn ExceptionCallback = nullptr;
 
-    static void DefaultMessageCallback(std::string_view InMessage, MessageLevel InLevel)
+    static void DefaultMessageCallback(StdStringView InMessage, MessageLevel InLevel)
     {
         const char* level = "";
 
@@ -78,7 +78,7 @@ namespace Coral {
             MessageCallback(message, MessageLevel::Error);
         });
 
-        m_CoralManagedAssemblyPath = std::filesystem::path(m_Settings.CoralDirectory) / "Coral.Managed.dll";
+        m_CoralManagedAssemblyPath = (std::filesystem::path(m_Settings.CoralDirectory) / "Coral.Managed.dll").c_str();
 
         if (!std::filesystem::exists(m_CoralManagedAssemblyPath))
         {
@@ -99,7 +99,7 @@ namespace Coral {
         s_CoreCLRFunctions.CloseHostFXR(m_HostFXRContext);
     }
 
-    AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(std::string_view InName)
+    AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName)
     {
         ScopedString name = String::New(InName);
         ScopedString dllPath = String::New("");
@@ -110,7 +110,7 @@ namespace Coral {
         return alc;
     }
 
-    AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(std::string_view InName, std::string_view InDllPath)
+    AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName, StdStringView InDllPath)
     {
         ScopedString name = String::New(InName);
         ScopedString dllPath = String::New(InDllPath);
@@ -146,7 +146,7 @@ namespace Coral {
     }
 #endif
 
-    static std::filesystem::path GetHostFXRPath(const std::vector<const char*>& supportedTargets)
+    static std::filesystem::path GetHostFXRPath(const StdVector<const char*>& supportedTargets)
     {
         assert(supportedTargets.size() > 0 && "at least one supported target must be defined!");
 #ifdef CORAL_WINDOWS
@@ -163,11 +163,11 @@ namespace Coral {
         basePath = pf;
         basePath /= "dotnet/host/fxr/";
 
-        auto searchPaths = std::array {
+        auto searchPaths = StdArray {
             basePath
         };
 #else
-        auto searchPaths = std::array {
+        auto searchPaths = StdArray {
             std::filesystem::path("/usr/local/lib/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/lib64/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/share/dotnet/host/fxr/"),
@@ -277,12 +277,12 @@ namespace Coral {
         {
             if (MessageFilter & InLevel)
             {
-                std::string message = InMessage;
+                StdString message = InMessage;
                 MessageCallback(message, InLevel);
             }
         }, [](String InMessage)
         {
-            std::string message = InMessage;
+            StdString message = InMessage;
             if (!ExceptionCallback)
             {
                 MessageCallback(message, MessageLevel::Error);
@@ -388,14 +388,14 @@ namespace Coral {
         s_ManagedFunctions.WaitForPendingFinalizersFptr = LoadCoralManagedFunctionPtr<WaitForPendingFinalizersFn>(CORAL_STR("Coral.Managed.GarbageCollector, Coral.Managed"), CORAL_STR("WaitForPendingFinalizers"));
     }
 
-    void* HostInstance::LoadCoralManagedFunctionPtr(const std::filesystem::path& InAssemblyPath, const UCChar* InTypeName, const UCChar* InMethodName, const UCChar* InDelegateType) const
+    void* HostInstance::LoadCoralManagedFunctionPtr(UCStringView InAssemblyPath, const UCChar* InTypeName, const UCChar* InMethodName, const UCChar* InDelegateType) const
     {
         void* funcPtr = nullptr;
 
-        int status = s_CoreCLRFunctions.GetManagedFunctionPtr(InAssemblyPath.c_str(), InTypeName, InMethodName, InDelegateType, nullptr, &funcPtr);
+        int status = s_CoreCLRFunctions.GetManagedFunctionPtr(InAssemblyPath.data(), InTypeName, InMethodName, InDelegateType, nullptr, &funcPtr);
         if (status != StatusCode::Success || !funcPtr)
         {
-            std::cerr << "Failed to retrieve managed function pointer `" << StringHelper::UCCharToString(InTypeName) << "`::`" << StringHelper::UCCharToString(InMethodName) << "` from `" << InAssemblyPath << "`" << std::endl;
+            std::cerr << "Failed to retrieve managed function pointer `" << StringHelper::UCCharToString(InTypeName) << "`::`" << StringHelper::UCCharToString(InMethodName) << "` from `" << StringHelper::ConvertWideToUtf8(InAssemblyPath) << "`" << std::endl;
             CORAL_VERIFY(false);
         }
 

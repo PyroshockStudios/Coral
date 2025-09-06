@@ -12,7 +12,7 @@ namespace Coral {
     class FieldInfo
     {
     public:
-        std::string GetName() const;
+        StdString GetName() const;
         Type& GetType();
 
         TypeAccessibility GetAccessibility() const;
@@ -20,7 +20,7 @@ namespace Coral {
         bool IsLiteral() const;
 
         bool HasAttribute(const Type& InAttributeType) const;
-        std::vector<Attribute> GetAttributes() const;
+        StdVector<Attribute> GetAttributes() const;
         Attribute GetAttribute(const Type& InAttributeType) const;
 
         MetadataToken GetMetadataToken() const;

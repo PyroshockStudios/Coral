@@ -6,6 +6,6 @@ namespace Coral {
     class DotnetServices
     {
     public:
-        static bool RunMSBuild(const std::string& InSolutionPath, bool InBuildDebug = true);
+        static bool RunMSBuild(const StdString& InSolutionPath, bool InBuildDebug = true);
     };
 }

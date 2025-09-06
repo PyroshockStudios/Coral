@@ -13,11 +13,11 @@ namespace Coral {
 
         Type* CacheType(Type&& InType);
 
-        Type* GetTypeByName(std::string_view InName) const;
+        Type* GetTypeByName(StdStringView InName) const;
 
         Type* GetTypeByID(TypeId InTypeID) const;
 
-        static Type* GetType(std::string_view InName)
+        static Type* GetType(StdStringView InName)
         {
             return Get().GetTypeByName(InName);
         }
@@ -31,8 +31,8 @@ namespace Coral {
         friend class AssemblyLoadContext;
 
         StableVector<Type> m_Types;
-        std::unordered_map<std::string, Type*> m_NameCache;
-        std::unordered_map<TypeId, Type*> m_IDCache;
+        StdUnorderedMap<StdString, Type*> m_NameCache;
+        StdUnorderedMap<TypeId, Type*> m_IDCache;
 
         Type* m_VoidType = {};
         Type* m_ByteType = {};

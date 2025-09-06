@@ -85,7 +85,7 @@ namespace Coral {
             return ManagedType::Object;
         else if constexpr (is_specialization_of_v<Coral::Array, TArg>)
             return ManagedType::Array;
-        else if constexpr (std::same_as<TArg, std::string> || std::same_as<TArg, Coral::String>)
+        else if constexpr (std::same_as<TArg, StdString> || std::same_as<TArg, Coral::String>)
             return ManagedType::String;
         else if constexpr (std::same_as<TArg, void>)
             return ManagedType::Void;
@@ -115,7 +115,7 @@ namespace Coral {
     }
 
     /*
-     * TODO(Emily): Work out a way to allow method invoke to use C++-y types (i.e. `std::string` instead of `Coral::String`).
+     * TODO(Emily): Work out a way to allow method invoke to use C++-y types (i.e. `StdString` instead of `Coral::String`).
      * 				See Testing/Main.cpp:StringTest/BoolTest.
      */
     template <typename... TArgs>

@@ -17,9 +17,9 @@ namespace Coral {
         return type;
     }
 
-    Type* TypeCache::GetTypeByName(std::string_view InName) const
+    Type* TypeCache::GetTypeByName(StdStringView InName) const
     {
-        auto name = std::string(InName);
+        auto name = StdString(InName);
         return m_NameCache.contains(name) ? m_NameCache.at(name) : nullptr;
     }
 

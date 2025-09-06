@@ -37,13 +37,13 @@ namespace Coral {
         static Type& ArrayType();
 
     public:
-        std::string GetFullName() const;
-        std::string GetName() const;
-        std::string GetNamespace() const;
-        std::string GetAssemblyQualifiedName() const;
+        StdString GetFullName() const;
+        StdString GetName() const;
+        StdString GetNamespace() const;
+        StdString GetAssemblyQualifiedName() const;
 
         Type& GetBaseType();
-        std::vector<Type*>& GetInterfaceTypes();
+        StdVector<Type*>& GetInterfaceTypes();
 
         int32_t GetSize() const;
 
@@ -51,18 +51,18 @@ namespace Coral {
         bool IsAssignableTo(const Type& InOther) const;
         bool IsAssignableFrom(const Type& InOther) const;
 
-        std::vector<MethodInfo> GetMethods() const;
-        std::vector<FieldInfo> GetFields() const;
-        std::vector<PropertyInfo> GetProperties() const;
+        StdVector<MethodInfo> GetMethods() const;
+        StdVector<FieldInfo> GetFields() const;
+        StdVector<PropertyInfo> GetProperties() const;
 
-        MethodInfo GetMethod(std::string_view MethodName, bool InStatic = false) const;
-        MethodInfo GetMethod(std::string_view MethodName, int32_t InParamCount, bool InStatic = false) const;
-        MethodInfo GetMethodByParamTypes(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic = false) const;
-        FieldInfo GetField(std::string_view FieldName, bool InStatic = false) const;
-        PropertyInfo GetProperty(std::string_view PropertyName, bool InStatic = false) const;
+        MethodInfo GetMethod(StdStringView MethodName, bool InStatic = false) const;
+        MethodInfo GetMethod(StdStringView MethodName, int32_t InParamCount, bool InStatic = false) const;
+        MethodInfo GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type*>& InParamTypes, bool InStatic = false) const;
+        FieldInfo GetField(StdStringView FieldName, bool InStatic = false) const;
+        PropertyInfo GetProperty(StdStringView PropertyName, bool InStatic = false) const;
 
         bool HasAttribute(const Type& InAttributeType) const;
-        std::vector<Attribute> GetAttributes() const;
+        StdVector<Attribute> GetAttributes() const;
         Attribute GetAttribute(const Type& InAttributeType) const;
 
         ManagedType GetManagedType() const;
@@ -128,7 +128,7 @@ namespace Coral {
     private:
         TypeId m_Id = -1;
         Type* m_BaseType = nullptr;
-        std::optional<std::vector<Type*>> m_InterfaceTypes = std::nullopt;
+        StdOptional<StdVector<Type*>> m_InterfaceTypes = std::nullopt;
         Type* m_ElementType = nullptr;
 
         friend class HostInstance;

@@ -38,6 +38,6 @@ namespace Coral {
         return (InLHS = (InLHS | InRHS));
     }
 
-    using MessageCallbackFn = std::function<void(std::string_view, MessageLevel)>;
+    using MessageCallbackFn = StdFunction<void(StdStringView, MessageLevel)>;
 
 }

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string_view>
-#include <string>
+#ifndef CORAL_NATIVE_COMPILE_SRC
+// already included by the PCH
+#include "Config.hpp"
+#endif
 
 #include <cstdint>
 #include <cwchar>
@@ -41,31 +43,25 @@
 #ifdef CORAL_WIDE_CHARS
     #define CORAL_STR(s) L##s
 
-using CharType [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCChar))]] = wchar_t;
-using StringView [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCStringView))]] = std::wstring_view;
-
 namespace Coral {
     using UCChar = wchar_t;
-    using UCStringView = std::wstring_view;
-    using UCString = std::wstring;
+    using UCStringView = StdWStringView;
+    using UCString = StdWString;
 }
+
 #else
     #define CORAL_STR(s) s
 
-using CharType [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCChar))]] = char;
-using StringView [[deprecated(CORAL_LEAK_UC_TYPES_MSG_P(Coral::UCStringView))]] = std::string_view;
-
 namespace Coral {
     using UCChar = char;
-    using UCStringView = std::string_view;
-    using UCString = std::string;
+    using UCStringView = StdStringView;
+    using UCString = StdString;
 }
 #endif
 
-#define CORAL_UNMANAGED_CALLERS_ONLY (std::bit_cast<const UCChar*>(-1ULL))
+#define CORAL_UNMANAGED_CALLERS_ONLY ((const UCChar*)(-1ULL))
 
 namespace Coral {
-
     using Bool32 = uint32_t;
     using Char = char16_t; // C# strings are UTF16
     static_assert(sizeof(Bool32) == 4);

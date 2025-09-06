@@ -13,7 +13,7 @@ namespace Coral {
         Type& GetType();
 
         template <typename TReturn>
-        TReturn GetFieldValue(std::string_view InFieldName)
+        TReturn GetFieldValue(StdStringView InFieldName)
         {
             TReturn result;
             GetFieldValueInternal(InFieldName, &result);
@@ -26,7 +26,7 @@ namespace Coral {
         }
 
     private:
-        void GetFieldValueInternal(std::string_view InFieldName, void* OutValue) const;
+        void GetFieldValueInternal(StdStringView InFieldName, void* OutValue) const;
 
     private:
         ManagedHandle m_Handle = -1;

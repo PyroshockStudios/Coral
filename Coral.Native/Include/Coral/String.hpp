@@ -9,15 +9,15 @@ namespace Coral {
     {
     public:
         static String New(const char* InString);
-        static String New(std::string_view InString);
+        static String New(StdStringView InString);
         static void Free(String& InString);
 
-        void Assign(std::string_view InString);
+        void Assign(StdStringView InString);
 
-        operator std::string() const;
+        operator StdString() const;
 
         bool operator==(const String& InOther) const;
-        bool operator==(std::string_view InOther) const;
+        bool operator==(StdStringView InOther) const;
 
         UCChar* Data() { return m_String; }
         const UCChar* Data() const { return m_String; }
@@ -37,7 +37,7 @@ namespace Coral {
             : m_String(InString) {}
         ScopedString(const char* InString)
             : m_String(String::New(InString)) {}
-        ScopedString(std::string_view InString)
+        ScopedString(StdStringView InString)
             : m_String(String::New(InString)) {}
 
         ScopedString& operator=(String InOther)
@@ -59,7 +59,7 @@ namespace Coral {
             String::Free(m_String);
         }
 
-        operator std::string() const { return m_String; }
+        operator StdString() const { return m_String; }
         operator String() const { return m_String; }
 
         bool operator==(const ScopedString& InOther) const
@@ -67,7 +67,7 @@ namespace Coral {
             return m_String == InOther.m_String;
         }
 
-        bool operator==(std::string_view InOther) const
+        bool operator==(StdStringView InOther) const
         {
             return m_String == InOther;
         }

@@ -20,22 +20,22 @@ namespace Coral {
     }
 
     template <>
-    std::string Attribute::GetFieldValue(std::string_view InFieldName)
+    StdString Attribute::GetFieldValue(StdStringView InFieldName)
     {
         String result;
         GetFieldValueInternal(InFieldName, &result);
-        return std::string(result);
+        return StdString(result);
     }
 
     template <>
-    bool Attribute::GetFieldValue(std::string_view InFieldName)
+    bool Attribute::GetFieldValue(StdStringView InFieldName)
     {
         Bool32 result;
         GetFieldValueInternal(InFieldName, &result);
         return result;
     }
 
-    void Attribute::GetFieldValueInternal(std::string_view InFieldName, void* OutValue) const
+    void Attribute::GetFieldValueInternal(StdStringView InFieldName, void* OutValue) const
     {
         auto fieldName = String::New(InFieldName);
         s_ManagedFunctions.GetAttributeFieldValueFptr(m_Handle, fieldName, OutValue);

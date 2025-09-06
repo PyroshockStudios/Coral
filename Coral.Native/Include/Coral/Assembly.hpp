@@ -23,15 +23,15 @@ namespace Coral {
     public:
         int32_t GetAssemblyID() const { return m_AssemblyId; }
         AssemblyLoadStatus GetLoadStatus() const { return m_LoadStatus; }
-        std::string_view GetName() const { return m_Name; }
+        StdStringView GetName() const { return m_Name; }
 
-        void AddInternalCall(std::string_view InClassName, std::string_view InVariableName, void* InFunctionPtr);
+        void AddInternalCall(StdStringView InClassName, StdStringView InVariableName, void* InFunctionPtr);
         void UploadInternalCalls();
 
-        Type& GetType(std::string_view InClassName) const;
+        Type& GetType(StdStringView InClassName) const;
         Type& GetType(TypeId InTypeId) const;
 
-        const std::vector<Type*>& GetTypes() const;
+        const StdVector<Type*>& GetTypes() const;
 
         MethodInfo GetMethodFromToken(MetadataToken InToken) const;
         FieldInfo GetFieldFromToken(MetadataToken InToken) const;
@@ -40,16 +40,16 @@ namespace Coral {
         int32_t m_AssemblyId = -1;
         int32_t m_OwnerContextId = 0;
         AssemblyLoadStatus m_LoadStatus = AssemblyLoadStatus::UnknownError;
-        std::string m_Name;
+        StdString m_Name;
 
-        std::vector<UCString> m_InternalCallNameStorage;
+        StdVector<UCString> m_InternalCallNameStorage;
 
-        std::vector<InternalCall> m_InternalCalls;
+        StdVector<InternalCall> m_InternalCalls;
 
-        std::vector<Type> m_LocalTypes;
-        std::vector<Type*> m_LocalTypeRefs;
-        std::unordered_map<std::string, Type*> m_LocalTypeNameCache;
-        std::unordered_map<TypeId, Type*> m_LocalTypeIdCache;
+        StdVector<Type> m_LocalTypes;
+        StdVector<Type*> m_LocalTypeRefs;
+        StdUnorderedMap<StdString, Type*> m_LocalTypeNameCache;
+        StdUnorderedMap<TypeId, Type*> m_LocalTypeIdCache;
 
         friend class HostInstance;
         friend class AssemblyLoadContext;
@@ -58,7 +58,7 @@ namespace Coral {
     class AssemblyLoadContext
     {
     public:
-        Assembly& LoadAssembly(std::string_view InFilePath);
+        Assembly& LoadAssembly(StdStringView InFilePath);
         Assembly& LoadAssemblyFromMemory(const std::byte* data, int64_t dataLength);
         const StableVector<Assembly>& GetLoadedAssemblies() const { return m_LoadedAssemblies; }
 

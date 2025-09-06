@@ -18,7 +18,7 @@ namespace Coral {
             return result;
         }
 
-        static Array New(const std::vector<TValue>& InValues)
+        static Array New(const StdVector<TValue>& InValues)
         {
             Array<TValue> result;
 
@@ -46,7 +46,7 @@ namespace Coral {
             return result;
         }
 
-        static Array New(std::initializer_list<TValue> InValues)
+        static Array New(StdInitializerList<TValue> InValues)
         {
             Array result;
 

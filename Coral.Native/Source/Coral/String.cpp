@@ -13,7 +13,7 @@ namespace Coral {
         return result;
     }
 
-    String String::New(std::string_view InString)
+    String String::New(StdStringView InString)
     {
         String result;
         result.Assign(InString);
@@ -29,7 +29,7 @@ namespace Coral {
         InString.m_String = nullptr;
     }
 
-    void String::Assign(std::string_view InString)
+    void String::Assign(StdStringView InString)
     {
         if (m_String != nullptr)
             Memory::FreeCoTaskMem(m_String);
@@ -37,7 +37,7 @@ namespace Coral {
         m_String = Memory::StringToCoTaskMemAuto(StringHelper::ConvertUtf8ToWide(InString));
     }
 
-    String::operator std::string() const
+    String::operator StdString() const
     {
         UCStringView string(m_String);
 
@@ -63,7 +63,7 @@ namespace Coral {
 #endif
     }
 
-    bool String::operator==(std::string_view InOther) const
+    bool String::operator==(StdStringView InOther) const
     {
         if (m_String == nullptr && InOther.empty())
         {

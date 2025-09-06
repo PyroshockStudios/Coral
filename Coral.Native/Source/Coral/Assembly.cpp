@@ -8,11 +8,11 @@
 
 namespace Coral {
 
-    void Assembly::AddInternalCall(std::string_view InClassName, std::string_view InVariableName, void* InFunctionPtr)
+    void Assembly::AddInternalCall(StdStringView InClassName, StdStringView InVariableName, void* InFunctionPtr)
     {
         CORAL_VERIFY(InFunctionPtr != nullptr);
 
-        std::string assemblyQualifiedName(InClassName);
+        StdString assemblyQualifiedName(InClassName);
         assemblyQualifiedName += "+";
         assemblyQualifiedName += InVariableName;
         assemblyQualifiedName += ", ";
@@ -34,9 +34,9 @@ namespace Coral {
 
     static Type s_NullType;
 
-    Type& Assembly::GetType(std::string_view InClassName) const
+    Type& Assembly::GetType(StdStringView InClassName) const
     {
-        auto it = m_LocalTypeNameCache.find(std::string(InClassName));
+        auto it = m_LocalTypeNameCache.find(StdString(InClassName));
         return it == m_LocalTypeNameCache.end() ? s_NullType : *it->second;
     }
 
@@ -46,7 +46,7 @@ namespace Coral {
         return it == m_LocalTypeIdCache.end() ? s_NullType : *it->second;
     }
 
-    const std::vector<Type*>& Assembly::GetTypes() const
+    const StdVector<Type*>& Assembly::GetTypes() const
     {
         return m_LocalTypeRefs;
     }
@@ -66,7 +66,7 @@ namespace Coral {
     }
 
     // TODO(Emily): Massive de-dup needed between `LoadAssembly` and `LoadAssemblyFromMemory`.
-    Assembly& AssemblyLoadContext::LoadAssembly(std::string_view InFilePath)
+    Assembly& AssemblyLoadContext::LoadAssembly(StdStringView InFilePath)
     {
         auto filepath = String::New(InFilePath);
 
@@ -140,7 +140,7 @@ namespace Coral {
             int32_t typeCount = 0;
             s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, assembly.m_AssemblyId, nullptr, &typeCount);
 
-            std::vector<TypeId> typeIds(static_cast<size_t>(typeCount));
+            StdVector<TypeId> typeIds(static_cast<size_t>(typeCount));
             s_ManagedFunctions.GetAssemblyTypesFptr(m_ContextId, assembly.m_AssemblyId, typeIds.data(), &typeCount);
 
             // reserve to avoid bad references after resizing
