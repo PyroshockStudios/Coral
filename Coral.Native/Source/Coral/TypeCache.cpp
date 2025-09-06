@@ -1,4 +1,4 @@
-#include "Coral/TypeCache.hpp"
+#include "TypeCache.hpp"
 #include "Coral/Type.hpp"
 
 namespace Coral {

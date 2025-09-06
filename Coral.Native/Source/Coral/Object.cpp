@@ -3,8 +3,8 @@
 #include "Coral/String.hpp"
 #include "Coral/StringHelper.hpp"
 #include "Coral/Type.hpp"
-#include "Coral/TypeCache.hpp"
 
+#include "TypeCache.hpp"
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {

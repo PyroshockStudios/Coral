@@ -1,8 +1,8 @@
 #include "Coral/Attribute.hpp"
 #include "Coral/Type.hpp"
-#include "Coral/TypeCache.hpp"
 #include "Coral/String.hpp"
 
+#include "TypeCache.hpp"
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {

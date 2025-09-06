@@ -1,8 +1,8 @@
 #include "Coral/Assembly.hpp"
 #include "Coral/HostInstance.hpp"
 #include "Coral/StringHelper.hpp"
-#include "Coral/TypeCache.hpp"
 
+#include "TypeCache.hpp"
 #include "CoralManagedFunctions.hpp"
 #include "Verify.hpp"
 

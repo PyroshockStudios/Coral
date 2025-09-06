@@ -14,6 +14,29 @@ namespace Coral {
     class Type
     {
     public:
+        static Type& VoidType();
+        static Type& ByteType();
+        static Type& SByteType();
+        static Type& ShortType();
+        static Type& UShortType();
+        static Type& IntType();
+        static Type& UIntType();
+        static Type& LongType();
+        static Type& ULongType();
+        static Type& FloatType();
+        static Type& DoubleType();
+        static Type& BoolType();
+        static Type& CharType();
+        static Type& StringType();
+        static Type& ObjectType();
+        static Type& IntPtrType();
+        static Type& UIntPtrType();
+        static Type& DecimalType();
+        static Type& DateTimeType();
+        static Type& ExceptionType();
+        static Type& ArrayType();
+
+    public:
         std::string GetFullName() const;
         std::string GetName() const;
         std::string GetNamespace() const;
@@ -34,7 +57,7 @@ namespace Coral {
 
         MethodInfo GetMethod(std::string_view MethodName, bool InStatic = false) const;
         MethodInfo GetMethod(std::string_view MethodName, int32_t InParamCount, bool InStatic = false) const;
-        MethodInfo GetMethod(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic = false) const;
+        MethodInfo GetMethodByParamTypes(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic = false) const;
         FieldInfo GetField(std::string_view FieldName, bool InStatic = false) const;
         PropertyInfo GetProperty(std::string_view PropertyName, bool InStatic = false) const;
 

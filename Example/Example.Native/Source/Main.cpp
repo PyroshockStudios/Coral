@@ -10,7 +10,6 @@
 #include <Coral/GC.hpp>
 #include <Coral/Array.hpp>
 #include <Coral/Attribute.hpp>
-#include <Coral/TypeCache.hpp>
 
 static void ExceptionCallback(std::string_view InMessage)
 {
@@ -77,7 +76,7 @@ int main([[maybe_unused]] int argc, char** argv)
     assembly.UploadInternalCalls();
 
     // Get a reference to the ExampleClass type
-    auto exampleType = *Coral::TypeCache::GetType("Example.Managed.ExampleClass");
+    auto exampleType = assembly.GetType("Example.Managed.ExampleClass");
 
     // Call the static method "StaticMethod" with value 50
     exampleType.InvokeStaticMethod(exampleType.GetMethod("StaticMethod", 1, true), MethodParams { 50.0f });

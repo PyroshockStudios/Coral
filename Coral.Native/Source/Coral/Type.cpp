@@ -1,11 +1,33 @@
 #include "Coral/Type.hpp"
-#include "Coral/TypeCache.hpp"
 #include "Coral/Attribute.hpp"
 #include "Coral/StringHelper.hpp"
 
+#include "TypeCache.hpp"
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {
+
+    Type& Type::VoidType() { return *TypeCache::Get().m_VoidType; }
+    Type& Type::ByteType() { return *TypeCache::Get().m_ByteType; }
+    Type& Type::SByteType() { return *TypeCache::Get().m_SByteType; }
+    Type& Type::ShortType() { return *TypeCache::Get().m_ShortType; }
+    Type& Type::UShortType() { return *TypeCache::Get().m_UShortType; }
+    Type& Type::IntType() { return *TypeCache::Get().m_IntType; }
+    Type& Type::UIntType() { return *TypeCache::Get().m_UIntType; }
+    Type& Type::LongType() { return *TypeCache::Get().m_LongType; }
+    Type& Type::ULongType() { return *TypeCache::Get().m_ULongType; }
+    Type& Type::FloatType() { return *TypeCache::Get().m_FloatType; }
+    Type& Type::DoubleType() { return *TypeCache::Get().m_DoubleType; }
+    Type& Type::BoolType() { return *TypeCache::Get().m_BoolType; }
+    Type& Type::CharType() { return *TypeCache::Get().m_CharType; }
+    Type& Type::StringType() { return *TypeCache::Get().m_StringType; }
+    Type& Type::ObjectType() { return *TypeCache::Get().m_ObjectType; }
+    Type& Type::IntPtrType() { return *TypeCache::Get().m_IntPtrType; }
+    Type& Type::UIntPtrType() { return *TypeCache::Get().m_UIntPtrType; }
+    Type& Type::DecimalType() { return *TypeCache::Get().m_DecimalType; }
+    Type& Type::DateTimeType() { return *TypeCache::Get().m_DateTimeType; }
+    Type& Type::ExceptionType() { return *TypeCache::Get().m_ExceptionType; }
+    Type& Type::ArrayType() { return *TypeCache::Get().m_ArrayType; }
 
     std::string Type::GetFullName() const
     {
@@ -148,7 +170,7 @@ namespace Coral {
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
         return method;
     }
-    MethodInfo Type::GetMethod(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic) const
+    MethodInfo Type::GetMethodByParamTypes(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;

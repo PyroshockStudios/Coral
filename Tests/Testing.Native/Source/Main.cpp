@@ -11,7 +11,6 @@
 #include <Coral/GC.hpp>
 #include <Coral/Array.hpp>
 #include <Coral/Attribute.hpp>
-#include <Coral/TypeCache.hpp>
 
 static Coral::Type g_TestsType;
 
@@ -171,8 +170,8 @@ static void RegisterMemberMethodTests(Coral::Object& InObject)
     ObjectTest_Fn = InObject.GetType().GetMethod("ObjectTest");
     DummyStructTest_Fn = InObject.GetType().GetMethod("DummyStructTest");
     DummyStructPtrTest_Fn = InObject.GetType().GetMethod("DummyStructPtrTest");
-    OverloadIntTest_Fn = InObject.GetType().GetMethod("OverloadTest", { Coral::TypeCache::IntType() }, false);
-    OverloadFloatTest_Fn = InObject.GetType().GetMethod("OverloadTest", { Coral::TypeCache::FloatType() }, false);
+    OverloadIntTest_Fn = InObject.GetType().GetMethodByParamTypes("OverloadTest", { &Coral::Type::IntType() });
+    OverloadFloatTest_Fn = InObject.GetType().GetMethodByParamTypes("OverloadTest", { &Coral::Type::FloatType() });
 
     RegisterTest("SByteTest", [&InObject]() mutable
     {
@@ -576,8 +575,8 @@ int main([[maybe_unused]] int argc, char** argv)
 
     auto& testsType = assembly.GetType("Testing.Managed.Tests");
     g_TestsType = testsType;
-    auto staticMethodTest0 = testsType.GetMethod("StaticMethodTest", { Coral::TypeCache::FloatType() }, true);
-    auto staticMethodTest1 = testsType.GetMethod("StaticMethodTest", { Coral::TypeCache::IntType() }, true);
+    auto staticMethodTest0 = testsType.GetMethodByParamTypes("StaticMethodTest", { &Coral::Type::FloatType() }, true);
+    auto staticMethodTest1 = testsType.GetMethodByParamTypes("StaticMethodTest", { &Coral::Type::IntType() }, true);
     testsType.InvokeStaticMethod(staticMethodTest0, MethodParams { 50.0f });
     testsType.InvokeStaticMethod(staticMethodTest1, MethodParams { 1000 });
 

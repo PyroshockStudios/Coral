@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.hpp"
-#include "StableVector.hpp"
+#include "Coral/Core.hpp"
+#include "Coral/StableVector.hpp"
 
 namespace Coral {
     class Type;
@@ -27,29 +27,6 @@ namespace Coral {
         }
 
         void Clear();
-
-        static Type* VoidType() { return Get().m_VoidType; }
-        static Type* ByteType() { return Get().m_ByteType; }
-        static Type* SByteType() { return Get().m_SByteType; }
-        static Type* ShortType() { return Get().m_ShortType; }
-        static Type* UShortType() { return Get().m_UShortType; }
-        static Type* IntType() { return Get().m_IntType; }
-        static Type* UIntType() { return Get().m_UIntType; }
-        static Type* LongType() { return Get().m_LongType; }
-        static Type* ULongType() { return Get().m_ULongType; }
-        static Type* FloatType() { return Get().m_FloatType; }
-        static Type* DoubleType() { return Get().m_DoubleType; }
-        static Type* BoolType() { return Get().m_BoolType; }
-        static Type* CharType() { return Get().m_CharType; }
-        static Type* StringType() { return Get().m_StringType; }
-        static Type* ObjectType() { return Get().m_ObjectType; }
-        static Type* IntPtrType() { return Get().m_IntPtrType; }
-        static Type* UIntPtrType() { return Get().m_UIntPtrType; }
-        static Type* DecimalType() { return Get().m_DecimalType; }
-        static Type* DateTimeType() { return Get().m_DateTimeType; }
-        static Type* ExceptionType() { return Get().m_ExceptionType; }
-        static Type* ArrayType() { return Get().m_ArrayType; }
-
     private:
         friend class AssemblyLoadContext;
 
@@ -78,6 +55,8 @@ namespace Coral {
         Type* m_DateTimeType = {};
         Type* m_ExceptionType = {};
         Type* m_ArrayType = {};
+
+        friend class Type;
     };
 
 }

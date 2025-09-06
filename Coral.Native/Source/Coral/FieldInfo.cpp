@@ -1,9 +1,9 @@
 #include "Coral/FieldInfo.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
-#include "Coral/TypeCache.hpp"
 #include "Coral/StringHelper.hpp"
 
+#include "TypeCache.hpp"
 #include "CoralManagedFunctions.hpp"
 
 namespace Coral {
