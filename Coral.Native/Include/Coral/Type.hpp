@@ -128,7 +128,7 @@ namespace Coral {
     private:
         TypeId m_Id = -1;
         Type* m_BaseType = nullptr;
-        StdOptional<StdVector<Type*>> m_InterfaceTypes = std::nullopt;
+        StdOptional<StdVector<Type*>> m_InterfaceTypes = StdNullOpt;
         Type* m_ElementType = nullptr;
 
         friend class HostInstance;
