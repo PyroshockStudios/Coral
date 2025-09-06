@@ -14,7 +14,7 @@ namespace Coral {
 
         StdString assemblyQualifiedName(InClassName);
         assemblyQualifiedName += "+";
-        assemblyQualifiedName += InVariableName;
+        assemblyQualifiedName += InVariableName.data();
         assemblyQualifiedName += ", ";
         assemblyQualifiedName += m_Name;
 

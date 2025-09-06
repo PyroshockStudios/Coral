@@ -51,7 +51,7 @@ namespace Coral {
             break;
         }
 
-        std::cout << "[Coral](" << level << "): " << InMessage << std::endl;
+        std::cout << "[Coral](" << level << "): " << InMessage.data() << std::endl;
     }
 
     CoralInitStatus HostInstance::Initialize(HostSettings InSettings)
@@ -78,9 +78,9 @@ namespace Coral {
             MessageCallback(message, MessageLevel::Error);
         });
 
-        m_CoralManagedAssemblyPath = (std::filesystem::path(m_Settings.CoralDirectory) / "Coral.Managed.dll").c_str();
+        m_CoralManagedAssemblyPath = (std::filesystem::path(m_Settings.CoralDirectory.c_str()) / "Coral.Managed.dll").c_str();
 
-        if (!std::filesystem::exists(m_CoralManagedAssemblyPath))
+        if (!std::filesystem::exists(m_CoralManagedAssemblyPath.c_str()))
         {
             MessageCallback("Failed to find Coral.Managed.dll", MessageLevel::Error);
             return CoralInitStatus::CoralManagedNotFound;
@@ -248,7 +248,7 @@ namespace Coral {
     {
         // Fetch load_assembly_and_get_function_pointer_fn from CoreCLR
         {
-            auto runtimeConfigPath = std::filesystem::path(m_Settings.CoralDirectory) / "Coral.Managed.runtimeconfig.json";
+            auto runtimeConfigPath = std::filesystem::path(m_Settings.CoralDirectory.c_str()) / "Coral.Managed.runtimeconfig.json";
 
             if (!std::filesystem::exists(runtimeConfigPath))
             {
@@ -260,7 +260,7 @@ namespace Coral {
             CORAL_VERIFY(status == StatusCode::Success || status == StatusCode::Success_HostAlreadyInitialized || status == StatusCode::Success_DifferentRuntimeProperties);
             CORAL_VERIFY(m_HostFXRContext != nullptr);
 
-            std::filesystem::path coralDirectoryPath = m_Settings.CoralDirectory;
+            std::filesystem::path coralDirectoryPath = m_Settings.CoralDirectory.c_str();
             s_CoreCLRFunctions.SetRuntimePropertyValue(m_HostFXRContext, CORAL_STR("APP_CONTEXT_BASE_DIRECTORY"), coralDirectoryPath.c_str());
 
             status = s_CoreCLRFunctions.GetRuntimeDelegate(m_HostFXRContext, hdt_load_assembly_and_get_function_pointer, (void**)&s_CoreCLRFunctions.GetManagedFunctionPtr);
@@ -395,7 +395,7 @@ namespace Coral {
         int status = s_CoreCLRFunctions.GetManagedFunctionPtr(InAssemblyPath.data(), InTypeName, InMethodName, InDelegateType, nullptr, &funcPtr);
         if (status != StatusCode::Success || !funcPtr)
         {
-            std::cerr << "Failed to retrieve managed function pointer `" << StringHelper::UCCharToString(InTypeName) << "`::`" << StringHelper::UCCharToString(InMethodName) << "` from `" << StringHelper::ConvertWideToUtf8(InAssemblyPath) << "`" << std::endl;
+            std::cerr << "Failed to retrieve managed function pointer `" << StringHelper::UCCharToString(InTypeName).c_str() << "`::`" << StringHelper::UCCharToString(InMethodName).c_str() << "` from `" << StringHelper::ConvertWideToUtf8(InAssemblyPath).c_str() << "`" << std::endl;
             CORAL_VERIFY(false);
         }
 
