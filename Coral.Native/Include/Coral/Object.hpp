@@ -27,17 +27,15 @@ namespace Coral {
         template <typename TReturn = void, typename... TArgs>
         auto InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
-            constexpr size_t paramCount = sizeof...(TArgs);
-
             if constexpr (std::is_void_v<TReturn>)
             {
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeMethodInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
+                    InvokeMethodRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
                 }
                 else
                 {
-                    InvokeMethodInternal(OutException, InMethod, nullptr, nullptr, 0);
+                    InvokeMethodRaw(InMethod, nullptr, nullptr, 0);
                 }
             }
             else
@@ -45,11 +43,11 @@ namespace Coral {
                 TReturn result{};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result);
+                    InvokeMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result, OutException);
                 }
                 else
                 {
-                    InvokeMethodRetInternal(OutException, InMethod, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result);
+                    InvokeMethodRetRaw(InMethod, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result, OutException);
                 }
                 return result;
             }
@@ -58,17 +56,15 @@ namespace Coral {
         template <typename TReturn = void, typename... TArgs>
         auto InvokeDelegate(MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
-            constexpr size_t paramCount = sizeof...(TArgs);
-
             if constexpr (std::is_void_v<TReturn>)
             {
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeDelegateInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
+                    InvokeDelegateRaw(InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, OutException);
                 }
                 else
                 {
-                    InvokeDelegateInternal(OutException, nullptr, nullptr, 0);
+                    InvokeDelegateRaw(nullptr, nullptr, 0);
                 }
             }
             else
@@ -76,11 +72,11 @@ namespace Coral {
                 TReturn result{};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeDelegateRetInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result);
+                    InvokeDelegateRetRaw(InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result, OutException);
                 }
                 else
                 {
-                    InvokeDelegateRetInternal(OutException, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result);
+                    InvokeDelegateRetRaw(nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result, OutException);
                 }
                 return result;
             }
@@ -149,17 +145,17 @@ namespace Coral {
 
         static Object BoxRaw(const void* InValue, int32_t InSize, const Type& InType);
         void UnboxRaw(void* OutValue) const;
-    private:
-        void InvokeMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const;
 
-        void InvokeDelegateInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeDelegateRetInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const;
+
+        void InvokeMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
+        void InvokeMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
+
+        void InvokeDelegateRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
+        void InvokeDelegateRetRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
 
     public:
         alignas(8) void* m_Handle = nullptr;
         alignas(8) const Type* m_Type = nullptr;
-
     private:
         friend class Assembly;
         friend class Type;

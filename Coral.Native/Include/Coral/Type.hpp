@@ -85,11 +85,11 @@ namespace Coral {
         {
             if (InParameters.paramCount > 0)
             {
-                return CreateInstanceInternal(OutException, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
+                return CreateInstanceRaw(InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, OutException);
             }
             else
             {
-                return CreateInstanceInternal(OutException, nullptr, nullptr, 0);
+                return CreateInstanceRaw(nullptr, nullptr, 0, OutException);
             }
         }
 
@@ -100,33 +100,31 @@ namespace Coral {
             {
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeStaticMethodInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount);
+                    InvokeStaticMethodRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, OutException);
                 }
                 else
                 {
-                    InvokeStaticMethodInternal(OutException, InMethod, nullptr, nullptr, 0);
+                    InvokeStaticMethodRaw(InMethod, nullptr, nullptr, 0, OutException);
                 }
             }
             else
             {
-                TReturn result {};
+                TReturn result{};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeStaticMethodRetInternal(OutException, InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result);
+                    InvokeStaticMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result, OutException);
                 }
                 else
                 {
-                    InvokeStaticMethodRetInternal(OutException, InMethod, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result);
+                    InvokeStaticMethodRetRaw(InMethod, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result, OutException);
                 }
                 return result;
             }
         }
 
-    private:
-        Object CreateInstanceInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeStaticMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const;
-        void InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const;
-
+        Object CreateInstanceRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
+        void InvokeStaticMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
+        void InvokeStaticMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
     private:
         TypeId m_Id = -1;
         Type* m_BaseType = nullptr;
@@ -147,7 +145,7 @@ namespace Coral {
     class ReflectionType
     {
     public:
-        operator Type&() const;
+        operator Type& () const;
 
     public:
         TypeId m_TypeID;

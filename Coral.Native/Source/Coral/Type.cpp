@@ -273,7 +273,7 @@ namespace Coral {
         return m_Id == InOther.m_Id;
     }
 
-    Object Type::CreateInstanceInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+    Object Type::CreateInstanceRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         Object result;
@@ -287,7 +287,7 @@ namespace Coral {
         return result;
     }
 
-    void Type::InvokeStaticMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+    void Type::InvokeStaticMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
@@ -298,7 +298,7 @@ namespace Coral {
         }
     }
 
-    void Type::InvokeStaticMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const
+    void Type::InvokeStaticMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);

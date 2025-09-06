@@ -69,7 +69,7 @@ namespace Coral {
         s_ManagedFunctions.GetObjectUnboxedValueFptr(m_Handle, OutValue);
     }
 
-    void Object::InvokeMethodInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+    void Object::InvokeMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
         // NOTE(Peter): If you get an exception in this function it's most likely because you're using a Native only debugger type in Visual Studio
         //				and it's catching a C# exception even though it shouldn't. I recommend switching the debugger type to Mixed (.NET Core)
@@ -84,7 +84,7 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeMethodRetInternal(Object* OutException, const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const
+    void Object::InvokeMethodRetRaw( const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
@@ -95,7 +95,7 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeDelegateInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength) const
+    void Object::InvokeDelegateRaw( const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeDelegateFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
@@ -106,7 +106,7 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeDelegateRetInternal(Object* OutException, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage) const
+    void Object::InvokeDelegateRetRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeDelegateRetFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
