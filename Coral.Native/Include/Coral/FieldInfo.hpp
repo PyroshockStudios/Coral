@@ -19,14 +19,13 @@ namespace Coral {
         bool IsStatic() const;
         bool IsLiteral() const;
 
+        bool HasAttribute(const Type& InAttributeType) const;
         std::vector<Attribute> GetAttributes() const;
         Attribute GetAttribute(const Type& InAttributeType) const;
+
         MetadataToken GetMetadataToken() const;
 
-        constexpr inline operator bool()
-        {
-            return m_Handle != -1;
-        }
+        constexpr inline operator bool() const { return m_Handle != -1; }
 
     private:
         ManagedHandle m_Handle = -1;

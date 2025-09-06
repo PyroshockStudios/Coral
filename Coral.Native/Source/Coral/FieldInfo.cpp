@@ -41,6 +41,12 @@ namespace Coral {
         return s_ManagedFunctions.GetFieldInfoIsLiteralFptr(m_Handle);
     }
 
+    bool PropertyInfo::HasAttribute(const Type& InAttributeType) const
+    {
+        // TODO: make efficient
+        return GetAttribute(InAttributeType);
+    }
+
     std::vector<Attribute> FieldInfo::GetAttributes() const
     {
         int32_t attributeCount;
@@ -57,6 +63,7 @@ namespace Coral {
 
     Attribute FieldInfo::GetAttribute(const Type& InAttributeType) const
     {
+        // TODO: make efficient
         auto list = GetAttributes();
         for (Attribute& attr : list) {
             if (attr.GetType() == InAttributeType) return attr;

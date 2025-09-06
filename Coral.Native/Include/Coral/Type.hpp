@@ -34,7 +34,7 @@ namespace Coral {
 
         MethodInfo GetMethod(std::string_view MethodName, bool InStatic = false) const;
         MethodInfo GetMethod(std::string_view MethodName, int32_t InParamCount, bool InStatic = false) const;
-        MethodInfo GetMethod(std::string_view MethodName, const std::vector<const Type*>& InParamTypes, bool InStatic = false) const;
+        MethodInfo GetMethod(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic = false) const;
         FieldInfo GetField(std::string_view FieldName, bool InStatic = false) const;
         PropertyInfo GetProperty(std::string_view PropertyName, bool InStatic = false) const;
 

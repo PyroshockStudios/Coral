@@ -148,7 +148,7 @@ namespace Coral {
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
         return method;
     }
-    MethodInfo Type::GetMethod(std::string_view MethodName, const std::vector<const Type*>& InParamTypes, bool InStatic) const
+    MethodInfo Type::GetMethod(std::string_view MethodName, const std::vector<Type*>& InParamTypes, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;

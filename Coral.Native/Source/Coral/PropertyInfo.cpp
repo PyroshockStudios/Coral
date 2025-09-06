@@ -41,6 +41,12 @@ namespace Coral {
         return info;
     }
 
+    bool PropertyInfo::HasAttribute(const Type& InAttributeType) const
+    {
+        // TODO: make efficient
+        return GetAttribute(InAttributeType);
+    }
+
     std::vector<Attribute> PropertyInfo::GetAttributes() const
     {
         int32_t attributeCount;
@@ -58,6 +64,7 @@ namespace Coral {
 
     Attribute PropertyInfo::GetAttribute(const Type& InAttributeType) const
     {
+        // TODO: make efficient
         auto list = GetAttributes();
         for (Attribute& attr : list) {
             if (attr.GetType() == InAttributeType) return attr;
