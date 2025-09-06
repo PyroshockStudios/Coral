@@ -83,8 +83,11 @@ target_compile_features(Coral PUBLIC cxx_std_20)
 target_precompile_headers(Coral PRIVATE ${CORAL_ROOT}/Coral.Native/Source/CoralPCH.hpp)
 target_compile_definitions(Coral PRIVATE CORAL_NATIVE_COMPILE_SRC)
 
-if (NOT "${CORAL_CUSTOM_CONFIGURATION}" STREQUAL "")
-	add_definitions(-DCORAL_CUSTOM_CONFIG_FILE=\"${CORAL_CUSTOM_CONFIGURATION}\")
+if(NOT "${CORAL_CUSTOM_CONFIGURATION}" STREQUAL "")
+    target_compile_definitions(Coral
+        PUBLIC
+        CORAL_CUSTOM_CONFIG_FILE=\"${CORAL_CUSTOM_CONFIGURATION}\"
+    )
 endif()
 
 file(GLOB CORAL_HDR ${CORAL_ROOT}/Coral.Native/Include/Coral/*.hpp)
