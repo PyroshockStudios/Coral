@@ -424,7 +424,8 @@ internal static class TypeInterface
             if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
                 return;
 
-            ReadOnlySpan<MethodInfo> methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            ReadOnlySpan<MethodInfo> methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic |
+                BindingFlags.Public | BindingFlags.DeclaredOnly);
 
             if (methods.Length == 0)
             {
@@ -456,7 +457,8 @@ internal static class TypeInterface
             if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
                 return;
 
-            ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | 
+                BindingFlags.Public |  BindingFlags.DeclaredOnly);
 
             if (fields.Length == 0)
             {
@@ -488,7 +490,8 @@ internal static class TypeInterface
             if (!s_CachedTypes.TryGetValue(InType, out var type) || type == null)
                 return;
 
-            ReadOnlySpan<PropertyInfo> properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            ReadOnlySpan<PropertyInfo> properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic |
+                BindingFlags.Public | BindingFlags.DeclaredOnly);
 
             if (properties.Length == 0)
             {
