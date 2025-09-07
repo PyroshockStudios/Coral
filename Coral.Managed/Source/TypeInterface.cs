@@ -396,6 +396,138 @@ internal static class TypeInterface
     }
 
     [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeArray(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsArray;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeClass(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsClass;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeInterface(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsInterface;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeAbstract(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsAbstract;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeSealed(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsSealed;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeValueType(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsValueType;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
     internal static unsafe void GetElementType(int InTypeID, int* OutElementTypeID)
     {
         try

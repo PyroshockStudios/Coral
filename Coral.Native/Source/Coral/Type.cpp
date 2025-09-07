@@ -257,6 +257,36 @@ namespace Coral {
         return s_ManagedFunctions.IsTypeSZArrayFptr(m_Id);
     }
 
+    bool Type::IsArray() const
+    {
+        return s_ManagedFunctions.IsTypeArrayFptr(m_Id);
+    }
+
+    bool Type::IsClass() const
+    {
+        return s_ManagedFunctions.IsTypeClassFptr(m_Id);
+    }
+
+    bool Type::IsInterface() const
+    {
+        return s_ManagedFunctions.IsTypeInterfaceFptr(m_Id);
+    }
+
+    bool Type::IsAbstract() const
+    {
+        return s_ManagedFunctions.IsTypeAbstractFptr(m_Id);
+    }
+
+    bool Type::IsSealed() const
+    {
+        return s_ManagedFunctions.IsTypeSealedFptr(m_Id);
+    }
+
+    bool Type::IsValueType() const
+    {
+        return s_ManagedFunctions.IsTypeValueTypeFptr(m_Id);
+    }
+
     const Type& Type::GetElementType() const
     {
         if (!m_ElementType)

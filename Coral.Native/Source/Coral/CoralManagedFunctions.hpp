@@ -13,15 +13,15 @@ namespace Coral {
     class ManagedField;
 
     using SetInternalCallsFn = void (*)(int32_t, void*, int32_t);
-    using CreateAssemblyLoadContextFn = int32_t (*)(NativeString, NativeString);
+    using CreateAssemblyLoadContextFn = int32_t(*)(NativeString, NativeString);
     using UnloadAssemblyLoadContextFn = void (*)(int32_t);
-    using LoadAssemblyFn = int32_t (*)(int32_t, NativeString);
-    using LoadAssemblyFromMemoryFn = int32_t (*)(int32_t, const std::byte*, int64_t);
-    using GetLastLoadStatusFn = AssemblyLoadStatus (*)();
-    using GetAssemblyNameFn = NativeString (*)(int32_t, int32_t);
-    using GetSystemAssemblyFn = int32_t (*)(int32_t);
-    using GetMethodInfoFromTokenFn = ManagedHandle (*)(int32_t, int32_t, MetadataToken);
-    using GetFieldInfoFromTokenFn = ManagedHandle (*)(int32_t, int32_t, MetadataToken);
+    using LoadAssemblyFn = int32_t(*)(int32_t, NativeString);
+    using LoadAssemblyFromMemoryFn = int32_t(*)(int32_t, const std::byte*, int64_t);
+    using GetLastLoadStatusFn = AssemblyLoadStatus(*)();
+    using GetAssemblyNameFn = NativeString(*)(int32_t, int32_t);
+    using GetSystemAssemblyFn = int32_t(*)(int32_t);
+    using GetMethodInfoFromTokenFn = ManagedHandle(*)(int32_t, int32_t, MetadataToken);
+    using GetFieldInfoFromTokenFn = ManagedHandle(*)(int32_t, int32_t, MetadataToken);
 
 #pragma region DotnetServices
     using RunMSBuildFn = void (*)(NativeString, Bool32, Bool32*);
@@ -31,60 +31,67 @@ namespace Coral {
 
     using GetAssemblyTypesFn = void (*)(int32_t, int32_t, TypeId*, int32_t*);
     using GetTypeIdFn = void (*)(NativeString, TypeId*);
-    using GetFullTypeNameFn = NativeString (*)(TypeId);
-    using GetTypeNameFn = NativeString (*)(TypeId);
-    using GetTypeNamespaceFn = NativeString (*)(TypeId);
-    using GetAssemblyQualifiedNameFn = NativeString (*)(TypeId);
+    using GetFullTypeNameFn = NativeString(*)(TypeId);
+    using GetTypeNameFn = NativeString(*)(TypeId);
+    using GetTypeNamespaceFn = NativeString(*)(TypeId);
+    using GetAssemblyQualifiedNameFn = NativeString(*)(TypeId);
     using GetBaseTypeFn = void (*)(TypeId, TypeId*);
     using GetInterfaceTypeCountFn = void (*)(TypeId, int32_t*);
     using GetInterfaceTypesFn = void (*)(TypeId, TypeId*);
-    using GetTypeSizeFn = int32_t (*)(TypeId);
-    using IsTypeSubclassOfFn = Bool32 (*)(TypeId, TypeId);
-    using IsTypeAssignableToFn = Bool32 (*)(TypeId, TypeId);
-    using IsTypeAssignableFromFn = Bool32 (*)(TypeId, TypeId);
-    using IsTypeSZArrayFn = Bool32 (*)(TypeId);
+    using GetTypeSizeFn = int32_t(*)(TypeId);
+    using IsTypeSubclassOfFn = Bool32(*)(TypeId, TypeId);
+    using IsTypeAssignableToFn = Bool32(*)(TypeId, TypeId);
+    using IsTypeAssignableFromFn = Bool32(*)(TypeId, TypeId);
+    using IsTypeSZArrayFn = Bool32(*)(TypeId);
+    using IsTypeArrayFn = Bool32(*)(TypeId);
+    using IsTypeClassFn = Bool32(*)(TypeId);
+    using IsTypeInterfaceFn = Bool32(*)(TypeId);
+    using IsTypeAbstractFn = Bool32(*)(TypeId);
+    using IsTypeSealedFn = Bool32(*)(TypeId);
+    using IsTypeValueTypeFn = Bool32(*)(TypeId);
+
     using GetElementTypeFn = void (*)(TypeId, TypeId*);
     using GetTypeMethodsFn = void (*)(TypeId, ManagedHandle*, int32_t*);
     using GetTypeFieldsFn = void (*)(TypeId, ManagedHandle*, int32_t*);
     using GetTypePropertiesFn = void (*)(TypeId, ManagedHandle*, int32_t*);
-    using HasTypeAttributeFn = Bool32 (*)(TypeId, TypeId);
+    using HasTypeAttributeFn = Bool32(*)(TypeId, TypeId);
     using GetTypeAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
-    using GetTypeManagedTypeFn = ManagedType (*)(TypeId);
-    using GetTypeGenericArgumentFn = TypeId (*)(TypeId, int32_t);
-    using GetTypeGenericTypeDefinitionFn = TypeId (*)(TypeId);
+    using GetTypeManagedTypeFn = ManagedType(*)(TypeId);
+    using GetTypeGenericArgumentFn = TypeId(*)(TypeId, int32_t);
+    using GetTypeGenericTypeDefinitionFn = TypeId(*)(TypeId);
 
 #pragma endregion
 
 #pragma region MethodInfo
-    using GetMethodInfoByNameFn = ManagedHandle (*)(TypeId, NativeString, BindingFlags);
-    using GetMethodInfoByNameParamCountFn = ManagedHandle (*)(TypeId, NativeString, int32_t, BindingFlags);
-    using GetMethodInfoByNameParamTypesFn = ManagedHandle (*)(TypeId, NativeString, int32_t, const TypeId*, BindingFlags);
-    using GetMethodInfoNameFn = NativeString (*)(ManagedHandle);
+    using GetMethodInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
+    using GetMethodInfoByNameParamCountFn = ManagedHandle(*)(TypeId, NativeString, int32_t, BindingFlags);
+    using GetMethodInfoByNameParamTypesFn = ManagedHandle(*)(TypeId, NativeString, int32_t, const TypeId*, BindingFlags);
+    using GetMethodInfoNameFn = NativeString(*)(ManagedHandle);
     using GetMethodInfoReturnTypeFn = void (*)(ManagedHandle, TypeId*);
     using GetMethodInfoParameterTypesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
-    using GetMethodInfoAccessibilityFn = TypeAccessibility (*)(ManagedHandle);
-    using GetMethodInfoIsStaticFn = Bool32 (*)(ManagedHandle);
+    using GetMethodInfoAccessibilityFn = TypeAccessibility(*)(ManagedHandle);
+    using GetMethodInfoIsStaticFn = Bool32(*)(ManagedHandle);
     using GetMethodInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
-    using GetMethodInfoTokenFn = MetadataToken (*)(ManagedHandle);
+    using GetMethodInfoTokenFn = MetadataToken(*)(ManagedHandle);
 #pragma endregion
 
 #pragma region FieldInfo
-    using GetFieldInfoByNameFn = ManagedHandle (*)(TypeId, NativeString, BindingFlags);
-    using GetFieldInfoNameFn = NativeString (*)(ManagedHandle);
+    using GetFieldInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
+    using GetFieldInfoNameFn = NativeString(*)(ManagedHandle);
     using GetFieldInfoTypeFn = void (*)(ManagedHandle, TypeId*);
-    using GetFieldInfoAccessibilityFn = TypeAccessibility (*)(ManagedHandle);
-    using GetFieldInfoIsStaticFn = Bool32 (*)(ManagedHandle);
-    using GetFieldInfoIsLiteralFn = Bool32 (*)(ManagedHandle);
+    using GetFieldInfoAccessibilityFn = TypeAccessibility(*)(ManagedHandle);
+    using GetFieldInfoIsStaticFn = Bool32(*)(ManagedHandle);
+    using GetFieldInfoIsLiteralFn = Bool32(*)(ManagedHandle);
     using GetFieldInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
-    using GetFieldInfoTokenFn = MetadataToken (*)(ManagedHandle);
+    using GetFieldInfoTokenFn = MetadataToken(*)(ManagedHandle);
 #pragma endregion
 
 #pragma region PropertyInfo
-    using GetPropertyInfoByNameFn = ManagedHandle (*)(TypeId, NativeString, BindingFlags);
-    using GetPropertyInfoNameFn = NativeString (*)(ManagedHandle);
+    using GetPropertyInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
+    using GetPropertyInfoNameFn = NativeString(*)(ManagedHandle);
     using GetPropertyInfoTypeFn = void (*)(ManagedHandle, TypeId*);
-    using GetPropertyInfoGetMethodFn = ManagedHandle (*)(ManagedHandle);
-    using GetPropertyInfoSetMethodFn = ManagedHandle (*)(ManagedHandle);
+    using GetPropertyInfoGetMethodFn = ManagedHandle(*)(ManagedHandle);
+    using GetPropertyInfoSetMethodFn = ManagedHandle(*)(ManagedHandle);
     using GetPropertyInfoAttributesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
 #pragma endregion
 
@@ -151,6 +158,13 @@ namespace Coral {
         IsTypeAssignableToFn IsTypeAssignableToFptr = nullptr;
         IsTypeAssignableFromFn IsTypeAssignableFromFptr = nullptr;
         IsTypeSZArrayFn IsTypeSZArrayFptr = nullptr;
+        IsTypeArrayFn IsTypeArrayFptr = nullptr;
+        IsTypeClassFn IsTypeClassFptr = nullptr;
+        IsTypeInterfaceFn IsTypeInterfaceFptr = nullptr;
+        IsTypeAbstractFn IsTypeAbstractFptr = nullptr;
+        IsTypeSealedFn IsTypeSealedFptr = nullptr;
+        IsTypeValueTypeFn IsTypeValueTypeFptr = nullptr;
+
         GetElementTypeFn GetElementTypeFptr = nullptr;
         GetTypeMethodsFn GetTypeMethodsFptr = nullptr;
         GetTypeFieldsFn GetTypeFieldsFptr = nullptr;

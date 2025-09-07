@@ -7,9 +7,9 @@
 #include "CoralManagedFunctions.hpp"
 
 #ifdef CORAL_WINDOWS
-    #include <ShlObj_core.h>
+#include <ShlObj_core.h>
 #else
-    #include <dlfcn.h>
+#include <dlfcn.h>
 #endif
 #include <cassert>
 
@@ -73,10 +73,10 @@ namespace Coral {
         MessageFilter = m_Settings.MessageFilter;
 
         s_CoreCLRFunctions.SetHostFXRErrorWriter([](const UCChar* InMessage)
-        {
-            auto message = StringHelper::ConvertUCToUtf8(InMessage);
-            MessageCallback(message, MessageLevel::Error);
-        });
+            {
+                auto message = StringHelper::ConvertUCToUtf8(InMessage);
+                MessageCallback(message, MessageLevel::Error);
+            });
 
         m_CoralManagedAssemblyPath = (std::filesystem::path(m_Settings.CoralDirectory.c_str()) / "Coral.Managed.dll").c_str();
 
@@ -163,11 +163,11 @@ namespace Coral {
         basePath = pf;
         basePath /= "dotnet/host/fxr/";
 
-        auto searchPaths = StdArray {
+        auto searchPaths = StdArray{
             basePath
         };
 #else
-        auto searchPaths = StdArray {
+        auto searchPaths = StdArray{
             std::filesystem::path("/usr/local/lib/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/lib64/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/share/dotnet/host/fxr/"),
@@ -220,11 +220,11 @@ namespace Coral {
         void* libraryHandle = nullptr;
 
 #ifdef CORAL_WINDOWS
-    #ifdef CORAL_WIDE_CHARS
+#ifdef CORAL_WIDE_CHARS
         libraryHandle = LoadLibraryW(hostfxrPath.c_str());
-    #else
+#else
         libraryHandle = LoadLibraryA(hostfxrPath.string().c_str());
-    #endif
+#endif
 #else
         libraryHandle = dlopen(hostfxrPath.string().data(), RTLD_NOW | RTLD_GLOBAL);
 #endif
@@ -274,27 +274,27 @@ namespace Coral {
         LoadCoralFunctions();
 
         coralManagedEntryPoint([](NativeString InMessage, MessageLevel InLevel)
-        {
-            if (MessageFilter & InLevel)
             {
-                StdString message = InMessage;
-                MessageCallback(message, InLevel);
-            }
-        }, [](NativeString InMessage)
-        {
-            StdString message = InMessage;
-            if (!ExceptionCallback)
-            {
-                MessageCallback(message, MessageLevel::Error);
-                return;
-            }
+                if (MessageFilter & InLevel)
+                {
+                    StdString message = InMessage;
+                    MessageCallback(message, InLevel);
+                }
+            }, [](NativeString InMessage)
+                {
+                    StdString message = InMessage;
+                    if (!ExceptionCallback)
+                    {
+                        MessageCallback(message, MessageLevel::Error);
+                        return;
+                    }
 
-            ExceptionCallback(message);
-        });
+                    ExceptionCallback(message);
+                });
 
-        ExceptionCallback = m_Settings.ExceptionCallback;
+            ExceptionCallback = m_Settings.ExceptionCallback;
 
-        return true;
+            return true;
     }
 
     void HostInstance::LoadCoralFunctions()
@@ -325,6 +325,13 @@ namespace Coral {
         s_ManagedFunctions.IsTypeAssignableToFptr = LoadCoralManagedFunctionPtr<IsTypeAssignableToFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeAssignableTo"));
         s_ManagedFunctions.IsTypeAssignableFromFptr = LoadCoralManagedFunctionPtr<IsTypeAssignableFromFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeAssignableFrom"));
         s_ManagedFunctions.IsTypeSZArrayFptr = LoadCoralManagedFunctionPtr<IsTypeSZArrayFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeSZArray"));
+        s_ManagedFunctions.IsTypeArrayFptr = LoadCoralManagedFunctionPtr<IsTypeArrayFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeArray"));
+        s_ManagedFunctions.IsTypeClassFptr = LoadCoralManagedFunctionPtr<IsTypeClassFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeClass"));
+        s_ManagedFunctions.IsTypeInterfaceFptr = LoadCoralManagedFunctionPtr<IsTypeInterfaceFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeInterface"));
+        s_ManagedFunctions.IsTypeAbstractFptr = LoadCoralManagedFunctionPtr<IsTypeAbstractFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeAbstract"));
+        s_ManagedFunctions.IsTypeSealedFptr = LoadCoralManagedFunctionPtr<IsTypeSealedFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeSealed"));
+        s_ManagedFunctions.IsTypeValueTypeFptr = LoadCoralManagedFunctionPtr<IsTypeValueTypeFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("IsTypeValueType"));
+
         s_ManagedFunctions.GetElementTypeFptr = LoadCoralManagedFunctionPtr<GetElementTypeFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetElementType"));
         s_ManagedFunctions.GetTypeMethodsFptr = LoadCoralManagedFunctionPtr<GetTypeMethodsFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetTypeMethods"));
         s_ManagedFunctions.GetTypeFieldsFptr = LoadCoralManagedFunctionPtr<GetTypeFieldsFn>(CORAL_STR("Coral.Managed.TypeInterface, Coral.Managed"), CORAL_STR("GetTypeFields"));

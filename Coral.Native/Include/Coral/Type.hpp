@@ -71,6 +71,13 @@ namespace Coral {
         const Type& GetGenericTypeDefinition() const;
 
         bool IsSZArray() const;
+        bool IsArray() const;
+        bool IsClass() const;
+        bool IsInterface() const;
+        bool IsAbstract() const;
+        bool IsSealed() const;
+        bool IsValueType() const;
+
         const Type& GetElementType() const;
 
         bool operator==(const Type& InOther) const;
