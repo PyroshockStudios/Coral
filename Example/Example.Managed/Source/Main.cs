@@ -29,7 +29,7 @@ namespace Example.Managed {
 		internal static unsafe delegate*<NativeArray<float>> ArrayReturnIcall;
 #pragma warning restore 0649
 
-		private int myPrivateValue;
+        private int myPrivateValue;
 
 		public ExampleClass(int someValue)
 		{

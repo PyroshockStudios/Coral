@@ -1,7 +1,7 @@
 ﻿#include "Coral/String.hpp"
 #include "Coral/StringHelper.hpp"
 #include "CoralManagedFunctions.hpp"
-
+#include <stack>
 namespace Coral {
     String::String(int32_t InLength)
     {

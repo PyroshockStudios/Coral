@@ -51,7 +51,7 @@ static void StringMarshalIcall2(Coral::NativeString InStr)
 }
 static bool TypeMarshalIcall(Coral::ReflectionType InReflectionType)
 {
-    Coral::Type& type = InReflectionType;
+    const Coral::Type& type = InReflectionType;
     return type == g_TestsType;
 }
 
@@ -226,7 +226,7 @@ static void RegisterMemberMethodTests(Coral::Object& InObject)
     });
     RegisterTest("StringTest", [&InObject]() mutable
     {
-        Coral::ScopedString str = InObject.InvokeMethod<Coral::NativeString>(StringTest_Fn, MethodParams { Coral::NativeString::New("Hello") });
+        Coral::ScopedNativeString str = InObject.InvokeMethod<Coral::NativeString>(StringTest_Fn, MethodParams { Coral::NativeString::New("Hello") });
         return str == Coral::StdStringView("Hello, World!");
     });
     RegisterTest("ManagedStringTest", [&InObject]() mutable
@@ -251,7 +251,7 @@ static void RegisterMemberMethodTests(Coral::Object& InObject)
     });
     RegisterTest("ObjectTest", [&InObject]() mutable
     {
-        Coral::ScopedString str = InObject.InvokeMethod<Coral::NativeString>(ObjectTest_Fn, MethodParams { InObject });
+        Coral::ScopedNativeString str = InObject.InvokeMethod<Coral::NativeString>(ObjectTest_Fn, MethodParams { InObject });
         return str == (Coral::StdStringView) "Type:MemberMethodTest";
     });
 
@@ -542,7 +542,7 @@ static void RegisterDelegateTests(Coral::Object& InObject)
             if (attributes.empty()) return false;
             if (attributes[0].GetFieldValue<int32_t>("SomeValue") != 2) return false;
             Coral::Object myDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetMyDelegate", true), MethodParams{ 81 });
-            Coral::ScopedString str = myDelegate.InvokeDelegate<Coral::NativeString>(MethodParams{ fooDelegate });
+            Coral::ScopedNativeString str = myDelegate.InvokeDelegate<Coral::NativeString>(MethodParams{ fooDelegate });
             return str == (Coral::StdStringView)"Knock Knock... Hello 81";
         });
 }

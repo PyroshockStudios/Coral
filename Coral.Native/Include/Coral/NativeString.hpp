@@ -37,30 +37,30 @@ namespace Coral {
         };
     }
 
-    struct ScopedString
+    struct ScopedNativeString
     {
-        ScopedString(NativeString InString)
+        ScopedNativeString(NativeString InString)
             : m_String(InString) {}
-        ScopedString(const char* InString)
+        ScopedNativeString(const char* InString)
             : m_String(NativeString::New(InString)) {}
-        ScopedString(StdStringView InString)
+        ScopedNativeString(StdStringView InString)
             : m_String(NativeString::New(InString)) {}
 
-        ScopedString& operator=(NativeString InOther)
+        ScopedNativeString& operator=(NativeString InOther)
         {
             NativeString::Free(m_String);
             m_String = InOther;
             return *this;
         }
 
-        ScopedString& operator=(const ScopedString& InOther)
+        ScopedNativeString& operator=(const ScopedNativeString& InOther)
         {
             NativeString::Free(m_String);
             m_String = InOther.m_String;
             return *this;
         }
 
-        ~ScopedString()
+        ~ScopedNativeString()
         {
             NativeString::Free(m_String);
         }
@@ -68,7 +68,7 @@ namespace Coral {
         operator StdString() const { return m_String; }
         operator NativeString() const { return m_String; }
 
-        bool operator==(const ScopedString& InOther) const
+        bool operator==(const ScopedNativeString& InOther) const
         {
             return m_String == InOther.m_String;
         }

@@ -156,8 +156,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(MethodName);
-        MethodInfo method{};
+        ScopedNativeString string = ScopedNativeString(MethodName);
+        MethodInfo method {};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, flags);
         return method;
     }
@@ -165,8 +165,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(MethodName);
-        MethodInfo method{};
+        ScopedNativeString string = ScopedNativeString(MethodName);
+        MethodInfo method {};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
         return method;
     }
@@ -174,8 +174,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(MethodName);
-        MethodInfo method{};
+        ScopedNativeString string = ScopedNativeString(MethodName);
+        MethodInfo method {};
         StdVector<TypeId> typeIds = {};
         typeIds.reserve(InParamTypes.size());
         for (const Type& type : InParamTypes)
@@ -190,8 +190,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(FieldName);
-        FieldInfo field{};
+        ScopedNativeString string = ScopedNativeString(FieldName);
+        FieldInfo field {};
         field.m_Handle = s_ManagedFunctions.GetFieldInfoByNameFptr(m_Id, string, flags);
         return field;
     }
@@ -200,8 +200,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(PropertyName);
-        PropertyInfo property{};
+        ScopedNativeString string = ScopedNativeString(PropertyName);
+        PropertyInfo property {};
         property.m_Handle = s_ManagedFunctions.GetPropertyInfoByNameFptr(m_Id, string, flags);
         return property;
     }
@@ -228,7 +228,8 @@ namespace Coral {
     Attribute Type::GetAttribute(const Type& InAttributeType) const
     {
         auto list = GetAttributes();
-        for (Attribute& attr : list) {
+        for (Attribute& attr : list)
+        {
             if (attr.GetType() == InAttributeType) return attr;
         }
         return {};
@@ -239,13 +240,13 @@ namespace Coral {
         return s_ManagedFunctions.GetTypeManagedTypeFptr(m_Id);
     }
 
-    Type& Type::GetGenericArgument(int32_t InArgIndex) const
+    const Type& Type::GetGenericArgument(int32_t InArgIndex) const
     {
         TypeId id = s_ManagedFunctions.GetTypeGenericArgumentFptr(m_Id, InArgIndex);
         return *TypeCache::Get().GetTypeByID(id);
     }
 
-    Type& Type::GetGenericTypeDefinition() const
+    const Type& Type::GetGenericTypeDefinition() const
     {
         TypeId id = s_ManagedFunctions.GetTypeGenericTypeDefinitionFptr(m_Id);
         return *TypeCache::Get().GetTypeByID(id);
@@ -271,6 +272,13 @@ namespace Coral {
     bool Type::operator==(const Type& InOther) const
     {
         return m_Id == InOther.m_Id;
+    }
+
+    Type::operator ReflectionType() const
+    {
+        ReflectionType ret;
+        ret.m_TypeID = m_Id;
+        return ret;
     }
 
     Object Type::CreateInstanceRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
@@ -309,7 +317,7 @@ namespace Coral {
         }
     }
 
-    ReflectionType::operator Type& () const
+    ReflectionType::operator const Type&() const
     {
         static Type s_NullType;
 

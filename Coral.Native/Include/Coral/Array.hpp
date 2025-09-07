@@ -30,6 +30,26 @@ namespace Coral {
         }
 
     private:
+        using Object::Box;
+        using Object::BoxRaw;
+        using Object::GetFieldValue;
+        using Object::GetFieldValueObject;
+        using Object::GetFieldValueRaw;
+        using Object::GetPropertyValue;
+        using Object::GetPropertyValueObject;
+        using Object::GetPropertyValueRaw;
+        using Object::InvokeDelegate;
+        using Object::InvokeDelegateRaw;
+        using Object::InvokeDelegateRetRaw;
+        using Object::SetFieldValue;
+        using Object::SetFieldValueObject;
+        using Object::SetFieldValueRaw;
+        using Object::SetPropertyValue;
+        using Object::SetPropertyValueObject;
+        using Object::SetPropertyValueRaw;
+        using Object::Unbox;
+        using Object::UnboxRaw;
+
         Array(int32_t length, const Type& type);
     };
 

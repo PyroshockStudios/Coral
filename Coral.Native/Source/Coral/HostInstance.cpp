@@ -101,8 +101,8 @@ namespace Coral {
 
     AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName)
     {
-        ScopedString name = NativeString::New(InName);
-        ScopedString dllPath = NativeString::New("");
+        ScopedNativeString name = NativeString::New(InName);
+        ScopedNativeString dllPath = NativeString::New("");
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
         alc.m_Host = this;
@@ -112,8 +112,8 @@ namespace Coral {
 
     AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName, StdStringView InDllPath)
     {
-        ScopedString name = NativeString::New(InName);
-        ScopedString dllPath = NativeString::New(InDllPath);
+        ScopedNativeString name = NativeString::New(InName);
+        ScopedNativeString dllPath = NativeString::New(InDllPath);
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
         alc.m_Host = this;

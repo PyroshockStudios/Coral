@@ -10,7 +10,7 @@
 #include <optional>
 
 namespace Coral {
-
+    class ReflectionType;
     class Type
     {
     public:
@@ -67,8 +67,8 @@ namespace Coral {
 
         ManagedType GetManagedType() const;
 
-        Type& GetGenericArgument(int32_t InArgIndex) const;
-        Type& GetGenericTypeDefinition() const;
+        const Type& GetGenericArgument(int32_t InArgIndex) const;
+        const Type& GetGenericTypeDefinition() const;
 
         bool IsSZArray() const;
         const Type& GetElementType() const;
@@ -78,6 +78,7 @@ namespace Coral {
         operator bool() const { return m_Id != -1; }
 
         TypeId GetTypeId() const { return m_Id; }
+        operator ReflectionType() const;
 
     public:
         template <typename... TArgs>
@@ -146,7 +147,7 @@ namespace Coral {
     class ReflectionType
     {
     public:
-        operator Type&() const;
+        operator const Type&() const;
 
     public:
         TypeId m_TypeID;
