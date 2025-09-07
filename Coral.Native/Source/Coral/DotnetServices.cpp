@@ -5,12 +5,12 @@
 namespace Coral {
     bool DotnetServices::RunMSBuild(const StdString& InSolutionPath, bool InBuildDebug)
     {
-        String s = String::New(InSolutionPath);
+        NativeString s = NativeString::New(InSolutionPath);
         Bool32 result;
 
         s_ManagedFunctions.RunMSBuildFptr(s, InBuildDebug, &result);
 
-        String::Free(s);
+        NativeString::Free(s);
 
         return !!result;
     }

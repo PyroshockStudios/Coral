@@ -1,6 +1,6 @@
 #pragma once
 
-#include "String.hpp"
+#include "NativeString.hpp"
 
 #include <functional>
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
-#include "String.hpp"
+#include "NativeString.hpp"
 #include "Object.hpp"
 #include "MethodInfo.hpp"
 #include "FieldInfo.hpp"
@@ -14,27 +14,27 @@ namespace Coral {
     class Type
     {
     public:
-        static Type& VoidType();
-        static Type& ByteType();
-        static Type& SByteType();
-        static Type& ShortType();
-        static Type& UShortType();
-        static Type& IntType();
-        static Type& UIntType();
-        static Type& LongType();
-        static Type& ULongType();
-        static Type& FloatType();
-        static Type& DoubleType();
-        static Type& BoolType();
-        static Type& CharType();
-        static Type& StringType();
-        static Type& ObjectType();
-        static Type& IntPtrType();
-        static Type& UIntPtrType();
-        static Type& DecimalType();
-        static Type& DateTimeType();
-        static Type& ExceptionType();
-        static Type& ArrayType();
+        static const Type& VoidType();
+        static const Type& ByteType();
+        static const Type& SByteType();
+        static const Type& ShortType();
+        static const Type& UShortType();
+        static const Type& IntType();
+        static const Type& UIntType();
+        static const Type& LongType();
+        static const Type& ULongType();
+        static const Type& FloatType();
+        static const Type& DoubleType();
+        static const Type& BoolType();
+        static const Type& CharType();
+        static const Type& StringType();
+        static const Type& ObjectType();
+        static const Type& IntPtrType();
+        static const Type& UIntPtrType();
+        static const Type& DecimalType();
+        static const Type& DateTimeType();
+        static const Type& ExceptionType();
+        static const Type& ArrayType();
 
     public:
         StdString GetFullName() const;
@@ -42,8 +42,8 @@ namespace Coral {
         StdString GetNamespace() const;
         StdString GetAssemblyQualifiedName() const;
 
-        Type& GetBaseType();
-        StdVector<Type*>& GetInterfaceTypes();
+        const Type& GetBaseType() const;
+        const StdVector<Type>& GetInterfaceTypes() const;
 
         int32_t GetSize() const;
 
@@ -57,7 +57,7 @@ namespace Coral {
 
         MethodInfo GetMethod(StdStringView MethodName, bool InStatic = false) const;
         MethodInfo GetMethod(StdStringView MethodName, int32_t InParamCount, bool InStatic = false) const;
-        MethodInfo GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type*>& InParamTypes, bool InStatic = false) const;
+        MethodInfo GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type>& InParamTypes, bool InStatic = false) const;
         FieldInfo GetField(StdStringView FieldName, bool InStatic = false) const;
         PropertyInfo GetProperty(StdStringView PropertyName, bool InStatic = false) const;
 
@@ -71,7 +71,7 @@ namespace Coral {
         Type& GetGenericTypeDefinition() const;
 
         bool IsSZArray() const;
-        Type& GetElementType();
+        const Type& GetElementType() const;
 
         bool operator==(const Type& InOther) const;
 
@@ -109,14 +109,14 @@ namespace Coral {
             }
             else
             {
-                TReturn result{};
+                TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeStaticMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result, OutException);
+                    InvokeStaticMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::derived_from<TReturn, Object>, &result, OutException);
                 }
                 else
                 {
-                    InvokeStaticMethodRetRaw(InMethod, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result, OutException);
+                    InvokeStaticMethodRetRaw(InMethod, nullptr, nullptr, 0, std::derived_from<TReturn, Object>, &result, OutException);
                 }
                 return result;
             }
@@ -125,11 +125,12 @@ namespace Coral {
         Object CreateInstanceRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
         void InvokeStaticMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
         void InvokeStaticMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
+
     private:
         TypeId m_Id = -1;
-        Type* m_BaseType = nullptr;
-        StdOptional<StdVector<Type*>> m_InterfaceTypes = StdNullOpt;
-        Type* m_ElementType = nullptr;
+        mutable Type* m_BaseType = nullptr;
+        mutable StdOptional<StdVector<Type>> m_InterfaceTypes = StdNullOpt;
+        mutable Type* m_ElementType = nullptr;
 
         friend class HostInstance;
         friend class Assembly;
@@ -145,7 +146,7 @@ namespace Coral {
     class ReflectionType
     {
     public:
-        operator Type& () const;
+        operator Type&() const;
 
     public:
         TypeId m_TypeID;

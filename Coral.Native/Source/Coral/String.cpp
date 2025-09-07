@@ -1,84 +1,44 @@
-#include "Coral/String.hpp"
+﻿#include "Coral/String.hpp"
 #include "Coral/StringHelper.hpp"
-#include "Coral/Memory.hpp"
-
-#include "Verify.hpp"
+#include "CoralManagedFunctions.hpp"
 
 namespace Coral {
-
-    String String::New(const char* InString)
+    String::String(int32_t InLength)
     {
-        String result;
-        result.Assign(InString);
+        m_Handle = s_ManagedFunctions.CreateNewManagedStringFptr(nullptr, InLength);
+    }
+    String::String(const char16_t* InString, int32_t InLength)
+    {
+        m_Handle = s_ManagedFunctions.CreateNewManagedStringFptr(InString, InLength);
+    }
+    String String::CreateEmptyString(int32_t InLength)
+    {
+        return String(InLength);
+    }
+    String String::CreateStringUtf8(StdStringView InString)
+    {
+        return CreateStringUtf16(StringHelper::ConvertUtf8ToWide(InString));
+    }
+    String String::CreateStringUtf16(StdWStringView InString)
+    {
+        return String(reinterpret_cast<const char16_t*>(InString.data()), InString.length());
+    }
+
+    StdString String::GetStringUtf8() const
+    {
+        return StringHelper::ConvertWideToUtf8(GetStringUtf16());
+    }
+    StdWString String::GetStringUtf16() const
+    {
+        int32_t length = GetLength();
+        StdWString result = {};
+        result.resize(static_cast<size_t>(length));
+        s_ManagedFunctions.GetStringContentsFptr(m_Handle, reinterpret_cast<char16_t*>(result.data()));
         return result;
     }
 
-    String String::New(StdStringView InString)
+    int32_t String::GetLength() const
     {
-        String result;
-        result.Assign(InString);
-        return result;
+        return s_ManagedFunctions.GetStringContentsFptr(m_Handle, nullptr);
     }
-
-    void String::Free(String& InString)
-    {
-        if (InString.m_String == nullptr)
-            return;
-
-        Memory::FreeCoTaskMem(InString.m_String);
-        InString.m_String = nullptr;
-    }
-
-    void String::Assign(StdStringView InString)
-    {
-        if (m_String != nullptr)
-            Memory::FreeCoTaskMem(m_String);
-
-        m_String = Memory::StringToCoTaskMemAuto(StringHelper::ConvertUtf8ToWide(InString));
-    }
-
-    String::operator StdString() const
-    {
-        UCStringView string(m_String);
-
-        return StringHelper::ConvertWideToUtf8(string);
-    }
-
-    bool String::operator==(const String& InOther) const
-    {
-        if (m_String == InOther.m_String)
-        {
-            return true;
-        }
-
-        if (m_String == nullptr || InOther.m_String == nullptr)
-        {
-            return false;
-        }
-
-#ifdef CORAL_WIDE_CHARS
-        return wcscmp(m_String, InOther.m_String) == 0;
-#else
-        return strcmp(m_String, InOther.m_String) == 0;
-#endif
-    }
-
-    bool String::operator==(StdStringView InOther) const
-    {
-        if (m_String == nullptr && InOther.empty())
-        {
-            return true;
-        }
-
-        if (m_String == nullptr)
-            return false;
-
-#ifdef CORAL_WIDE_CHARS
-        auto str = StringHelper::ConvertUtf8ToWide(InOther);
-        return wcscmp(m_String, str.data()) == 0;
-#else
-        return strcmp(m_String, InOther.data()) == 0;
-#endif
-    }
-
 }

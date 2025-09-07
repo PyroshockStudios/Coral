@@ -63,9 +63,9 @@ internal static class TypeInterface
         { typeof(bool), ManagedType.Bool },
         { typeof(char), ManagedType.Char },
         { typeof(object), ManagedType.Object },
-        { typeof(Array), ManagedType.Array },
-        { typeof(NativeString), ManagedType.String },
-        { typeof(string), ManagedType.String },
+        { typeof(Array), ManagedType.Object },
+        { typeof(NativeString), ManagedType.NativeString },
+        { typeof(string), ManagedType.Object },
     };
 
     internal static unsafe T? FindSuitableMethod<T>(string? InMethodName, ManagedType* InParameterTypes, int InParameterCount, ReadOnlySpan<T> InMethods) where T : MethodBase
@@ -104,7 +104,7 @@ internal static class TypeInterface
                 }
                 else if (methodParams[i].ParameterType.IsArray || methodParams[i].ParameterType == typeof(Array))
                 {
-                    paramType = ManagedType.Array;
+                    paramType = ManagedType.NativeArray;
                 }
                 else if (methodParams[i].ParameterType.IsClass || methodParams[i].ParameterType == typeof(object))
                 {
@@ -1114,7 +1114,7 @@ internal static class TypeInterface
                 return;
             }
             
-            Marshalling.MarshalReturnValue(attribute, fieldInfo.GetValue(attribute), fieldInfo, OutValue);
+            Marshalling.MarshalReturnValue(fieldInfo.GetValue(attribute), fieldInfo.FieldType, OutValue);
         }
         catch (Exception ex)
         {

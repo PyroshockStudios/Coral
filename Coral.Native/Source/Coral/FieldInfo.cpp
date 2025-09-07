@@ -10,7 +10,7 @@ namespace Coral {
 
     StdString FieldInfo::GetName() const
     {
-        String str = s_ManagedFunctions.GetFieldInfoNameFptr(m_Handle);
+        NativeString str = s_ManagedFunctions.GetFieldInfoNameFptr(m_Handle);
         return StringHelper::ConsumeNativeString(str);
     }
 

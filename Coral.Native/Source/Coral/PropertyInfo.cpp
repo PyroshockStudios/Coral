@@ -11,7 +11,7 @@ namespace Coral {
 
     StdString PropertyInfo::GetName() const
     {
-        String str = s_ManagedFunctions.GetPropertyInfoNameFptr(m_Handle);
+        NativeString str = s_ManagedFunctions.GetPropertyInfoNameFptr(m_Handle);
         return StringHelper::ConsumeNativeString(str);
     }
 

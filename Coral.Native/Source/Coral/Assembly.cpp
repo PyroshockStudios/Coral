@@ -18,7 +18,7 @@ namespace Coral {
         assemblyQualifiedName += ", ";
         assemblyQualifiedName += m_Name;
 
-        const auto& name = m_InternalCallNameStorage.emplace_back(StringHelper::ConvertUtf8ToWide(assemblyQualifiedName));
+        const auto& name = m_InternalCallNameStorage.emplace_back(StringHelper::ConvertUtf8ToUC(assemblyQualifiedName));
 
         InternalCall internalCall;
         // TODO(Emily): This would require proper conversion from UTF8 to native UC encoding.
@@ -68,7 +68,7 @@ namespace Coral {
     // TODO(Emily): Massive de-dup needed between `LoadAssembly` and `LoadAssemblyFromMemory`.
     Assembly& AssemblyLoadContext::LoadAssembly(StdStringView InFilePath)
     {
-        auto filepath = String::New(InFilePath);
+        auto filepath = NativeString::New(InFilePath);
 
         auto [idx, result] = m_LoadedAssemblies.EmplaceBack();
         result.m_Host = m_Host;
@@ -78,7 +78,7 @@ namespace Coral {
 
         LoadAssemblyData(result);
 
-        String::Free(filepath);
+        NativeString::Free(filepath);
         return result;
     }
 
@@ -134,7 +134,7 @@ namespace Coral {
         {
             auto assemblyName = s_ManagedFunctions.GetAssemblyNameFptr(m_ContextId, assembly.m_AssemblyId);
             assembly.m_Name = assemblyName;
-            String::Free(assemblyName);
+            NativeString::Free(assemblyName);
 
             // TODO(Emily): Is it always desirable to preload every type from an assembly?
             int32_t typeCount = 0;

@@ -74,7 +74,7 @@ namespace Coral {
 
         s_CoreCLRFunctions.SetHostFXRErrorWriter([](const UCChar* InMessage)
         {
-            auto message = StringHelper::ConvertWideToUtf8(InMessage);
+            auto message = StringHelper::ConvertUCToUtf8(InMessage);
             MessageCallback(message, MessageLevel::Error);
         });
 
@@ -101,8 +101,8 @@ namespace Coral {
 
     AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName)
     {
-        ScopedString name = String::New(InName);
-        ScopedString dllPath = String::New("");
+        ScopedString name = NativeString::New(InName);
+        ScopedString dllPath = NativeString::New("");
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
         alc.m_Host = this;
@@ -112,8 +112,8 @@ namespace Coral {
 
     AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName, StdStringView InDllPath)
     {
-        ScopedString name = String::New(InName);
-        ScopedString dllPath = String::New(InDllPath);
+        ScopedString name = NativeString::New(InName);
+        ScopedString dllPath = NativeString::New(InDllPath);
         AssemblyLoadContext alc;
         alc.m_ContextId = s_ManagedFunctions.CreateAssemblyLoadContextFptr(name, dllPath);
         alc.m_Host = this;
@@ -267,20 +267,20 @@ namespace Coral {
             CORAL_VERIFY(status == StatusCode::Success);
         }
 
-        using InitializeFn = void (*)(void (*)(String, MessageLevel), void (*)(String));
+        using InitializeFn = void (*)(void (*)(NativeString, MessageLevel), void (*)(NativeString));
         InitializeFn coralManagedEntryPoint = nullptr;
         coralManagedEntryPoint = LoadCoralManagedFunctionPtr<InitializeFn>(CORAL_STR("Coral.Managed.ManagedHost, Coral.Managed"), CORAL_STR("Initialize"));
 
         LoadCoralFunctions();
 
-        coralManagedEntryPoint([](String InMessage, MessageLevel InLevel)
+        coralManagedEntryPoint([](NativeString InMessage, MessageLevel InLevel)
         {
             if (MessageFilter & InLevel)
             {
                 StdString message = InMessage;
                 MessageCallback(message, InLevel);
             }
-        }, [](String InMessage)
+        }, [](NativeString InMessage)
         {
             StdString message = InMessage;
             if (!ExceptionCallback)
@@ -384,6 +384,13 @@ namespace Coral {
         s_ManagedFunctions.GetObjectBoxedValueFptr = LoadCoralManagedFunctionPtr<GetObjectBoxedValueFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("GetObjectBoxedValue"));
         s_ManagedFunctions.GetObjectUnboxedValueFptr = LoadCoralManagedFunctionPtr<GetObjectUnboxedValueFn>(CORAL_STR("Coral.Managed.ManagedObject, Coral.Managed"), CORAL_STR("GetObjectUnboxedValue"));
 
+        s_ManagedFunctions.CreateNewManagedStringFptr = LoadCoralManagedFunctionPtr<CreateNewManagedStringFn>(CORAL_STR("Coral.Managed.ManagedString, Coral.Managed"), CORAL_STR("CreateNewManagedString"));
+        s_ManagedFunctions.GetStringContentsFptr = LoadCoralManagedFunctionPtr<GetStringContentsFn>(CORAL_STR("Coral.Managed.ManagedString, Coral.Managed"), CORAL_STR("GetStringContents"));
+        s_ManagedFunctions.WriteStringContentsUtf16Fptr = LoadCoralManagedFunctionPtr<WriteStringContentsUtf16Fn>(CORAL_STR("Coral.Managed.ManagedString, Coral.Managed"), CORAL_STR("WriteStringContentsUtf16"));
+        s_ManagedFunctions.CreateNewManagedArrayFptr = LoadCoralManagedFunctionPtr<CreateNewManagedArrayFn>(CORAL_STR("Coral.Managed.ManagedArray, Coral.Managed"), CORAL_STR("CreateNewManagedArray"));
+        s_ManagedFunctions.SetArrayElementFptr = LoadCoralManagedFunctionPtr<SetArrayElementFn>(CORAL_STR("Coral.Managed.ManagedArray, Coral.Managed"), CORAL_STR("SetArrayElement"));
+        s_ManagedFunctions.GetArrayElementFptr = LoadCoralManagedFunctionPtr<GetArrayElementFn>(CORAL_STR("Coral.Managed.ManagedArray, Coral.Managed"), CORAL_STR("GetArrayElement"));
+
         s_ManagedFunctions.CollectGarbageFptr = LoadCoralManagedFunctionPtr<CollectGarbageFn>(CORAL_STR("Coral.Managed.GarbageCollector, Coral.Managed"), CORAL_STR("CollectGarbage"));
         s_ManagedFunctions.WaitForPendingFinalizersFptr = LoadCoralManagedFunctionPtr<WaitForPendingFinalizersFn>(CORAL_STR("Coral.Managed.GarbageCollector, Coral.Managed"), CORAL_STR("WaitForPendingFinalizers"));
     }
@@ -395,7 +402,7 @@ namespace Coral {
         int status = s_CoreCLRFunctions.GetManagedFunctionPtr(InAssemblyPath.data(), InTypeName, InMethodName, InDelegateType, nullptr, &funcPtr);
         if (status != StatusCode::Success || !funcPtr)
         {
-            std::cerr << "Failed to retrieve managed function pointer `" << StringHelper::UCCharToString(InTypeName).c_str() << "`::`" << StringHelper::UCCharToString(InMethodName).c_str() << "` from `" << StringHelper::ConvertWideToUtf8(InAssemblyPath).c_str() << "`" << std::endl;
+            std::cerr << "Failed to retrieve managed function pointer `" << StringHelper::UCCharToString(InTypeName).c_str() << "`::`" << StringHelper::UCCharToString(InMethodName).c_str() << "` from `" << StringHelper::ConvertUCToUtf8(InAssemblyPath).c_str() << "`" << std::endl;
             CORAL_VERIFY(false);
         }
 

@@ -62,6 +62,11 @@ namespace Coral {
         Assembly& LoadAssemblyFromMemory(const std::byte* data, int64_t dataLength);
         const StableVector<Assembly>& GetLoadedAssemblies() const { return m_LoadedAssemblies; }
 
+        const Assembly& GetSystemAssembly() const
+        {
+            return *m_SystemAssembly;
+        }
+
     private:
         void LoadSystemAssembly();
 
