@@ -205,7 +205,7 @@ internal static class ManagedObject
                 return;
             }
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
-            methodInfo.Invoke(null, parameters);
+            ManagedInvoker.Invoke(methodInfo, null, parameters);
         }
         catch (Exception ex)
         {
@@ -246,7 +246,7 @@ internal static class ManagedObject
 
             var methodParameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
 
-            object? value = methodInfo.Invoke(null, methodParameters);
+            object? value =  ManagedInvoker.Invoke(methodInfo, null, methodParameters);
 
             if (value == null)
                 return;
@@ -300,7 +300,7 @@ internal static class ManagedObject
 
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
 
-            methodInfo.Invoke(target, parameters);
+             ManagedInvoker.Invoke(methodInfo, target, parameters);
         }
         catch (Exception ex)
         {
@@ -340,7 +340,7 @@ internal static class ManagedObject
                 return;
             }
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
-            object? value = methodInfo.Invoke(target, parameters);
+            object? value =  ManagedInvoker.Invoke(methodInfo, target, parameters);
 
             if (value == null)
                 return;
@@ -379,16 +379,17 @@ internal static class ManagedObject
         if (exception != null) *exception = IntPtr.Zero;
         try
         {
-            var target = GCHandle.FromIntPtr(InObjectHandle).Target;
-            if (target == null)
+            var delObj = GCHandle.FromIntPtr(InObjectHandle).Target;
+            if (delObj == null)
             {
                 LogMessage($"Cannot invoke null delegate! Ignoring...", MessageLevel.Error);
                 return;
             }
-            Delegate @delegate = (Delegate)target;
+            Delegate @delegate = (Delegate)delObj;
             MethodInfo methodInfo = @delegate.Method;
+            object? target = @delegate.Target;
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
-            @delegate.DynamicInvoke(parameters);
+            ManagedInvoker.Invoke(methodInfo, target, parameters);
         }
         catch (Exception ex)
         {
@@ -422,10 +423,11 @@ internal static class ManagedObject
                 LogMessage($"Cannot invoke null delegate! Ignoring...", MessageLevel.Error);
                 return;
             }
-            Delegate @delegate = (Delegate)target;
+            Delegate @delegate = (Delegate)delObj;
             MethodInfo methodInfo = @delegate.Method;
+            object? target = @delegate.Target;
             var parameters = Marshalling.MarshalParameterArray(InParameters, InParameterCount, InParameterTypes, methodInfo);
-            object? value = @delegate.DynamicInvoke(parameters);
+            object? value = ManagedInvoker.Invoke(methodInfo, target, parameters);
 
             if (value == null)
                 return;
