@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
-#include "String.hpp"
+#include "NativeString.hpp"
 
 namespace Coral {
 
@@ -15,7 +15,7 @@ namespace Coral {
         StdString GetName() const;
 
         Type& GetReturnType();
-        const StdVector<Type*>& GetParameterTypes();
+        const StdVector<Type>& GetParameterTypes();
 
         TypeAccessibility GetAccessibility() const;
         bool IsStatic() const;
@@ -31,7 +31,7 @@ namespace Coral {
     private:
         ManagedHandle m_Handle = -1;
         Type* m_ReturnType = nullptr;
-        StdVector<Type*> m_ParameterTypes;
+        StdOptional<StdVector<Type>> m_ParameterTypes;
 
         friend class Type;
         friend class Object;

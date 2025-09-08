@@ -9,12 +9,14 @@
 #include <Coral/HostInstance.hpp>
 #include <Coral/DotnetServices.hpp>
 #include <Coral/GC.hpp>
-#include <Coral/Array.hpp>
+#include <Coral/NativeArray.hpp>
 #include <Coral/Attribute.hpp>
+#include <Coral/String.hpp>
+#include <Coral/Array.hpp>
 
 static Coral::Type g_TestsType;
 
-static void ExceptionCallback(std::string_view InMessage)
+static void ExceptionCallback(Coral::StdStringView InMessage)
 {
     std::cout << "\033[1;31m " << "Unhandled native exception: " << InMessage << "\033[0m\n";
 }
@@ -39,17 +41,17 @@ static int32_t* IntPtrMarshalIcall(int32_t* InValue)
     *InValue *= 2;
     return InValue;
 }
-static Coral::String StringMarshalIcall(Coral::String InStr)
+static Coral::NativeString StringMarshalIcall(Coral::NativeString InStr)
 {
     return InStr;
 }
-static void StringMarshalIcall2(Coral::String InStr)
+static void StringMarshalIcall2(Coral::NativeString InStr)
 {
     std::cout << std::string(InStr) << std::endl;
 }
 static bool TypeMarshalIcall(Coral::ReflectionType InReflectionType)
 {
-    Coral::Type& type = InReflectionType;
+    const Coral::Type& type = InReflectionType;
     return type == g_TestsType;
 }
 
@@ -75,16 +77,16 @@ static DummyStruct* DummyStructPtrMarshalIcall(DummyStruct* InStruct)
     return InStruct;
 }
 
-static Coral::Array<int32_t> EmptyArrayIcall()
+static Coral::NativeArray<int32_t> EmptyArrayIcall()
 {
     std::vector<int32_t> empty;
-    return Coral::Array<int32_t>::New(empty);
+    return Coral::NativeArray<int32_t>::New(empty);
 }
 
-static Coral::Array<float> FloatArrayIcall()
+static Coral::NativeArray<float> FloatArrayIcall()
 {
     std::vector<float> floats = { 5.0f, 10.0f, 15.0f, 50.0f };
-    return Coral::Array<float>::New(floats);
+    return Coral::NativeArray<float>::New(floats);
 }
 
 static Coral::Object instance;
@@ -144,7 +146,7 @@ struct Test
 };
 static std::vector<Test> tests;
 
-static void RegisterTest(std::string_view InName, std::function<bool()> InFunc)
+static void RegisterTest(Coral::StdStringView InName, std::function<bool()> InFunc)
 {
     tests.push_back(Test { std::string(InName), std::move(InFunc) });
 }
@@ -170,8 +172,8 @@ static void RegisterMemberMethodTests(Coral::Object& InObject)
     ObjectTest_Fn = InObject.GetType().GetMethod("ObjectTest");
     DummyStructTest_Fn = InObject.GetType().GetMethod("DummyStructTest");
     DummyStructPtrTest_Fn = InObject.GetType().GetMethod("DummyStructPtrTest");
-    OverloadIntTest_Fn = InObject.GetType().GetMethodByParamTypes("OverloadTest", { &Coral::Type::IntType() });
-    OverloadFloatTest_Fn = InObject.GetType().GetMethodByParamTypes("OverloadTest", { &Coral::Type::FloatType() });
+    OverloadIntTest_Fn = InObject.GetType().GetMethodByParamTypes("OverloadTest", { Coral::Type::IntType() });
+    OverloadFloatTest_Fn = InObject.GetType().GetMethodByParamTypes("OverloadTest", { Coral::Type::FloatType() });
 
     RegisterTest("SByteTest", [&InObject]() mutable
     {
@@ -224,18 +226,33 @@ static void RegisterMemberMethodTests(Coral::Object& InObject)
     });
     RegisterTest("StringTest", [&InObject]() mutable
     {
-        Coral::ScopedString str = InObject.InvokeMethod<Coral::String>(StringTest_Fn, MethodParams { Coral::String::New("Hello") });
-        return str == std::string_view("Hello, World!");
+        Coral::ScopedNativeString str = InObject.InvokeMethod<Coral::NativeString>(StringTest_Fn, MethodParams { Coral::NativeString::New("Hello") });
+        return str == Coral::StdStringView("Hello, World!");
+    });
+    RegisterTest("ManagedStringTest", [&InObject]() mutable
+    {
+        Coral::String str = InObject.InvokeMethod<Coral::String>(StringTest_Fn, MethodParams { Coral::String::CreateStringUtf8("Hello") });
+        return str.GetStringUtf8() == "Hello, World!";
     });
     RegisterTest("ArrayTest", [&InObject]() mutable
     {
-        int result = InObject.InvokeMethod<int32_t>(ArrayTest_Fn, MethodParams { Coral::Array<int32_t>::New({ 5, 2, -1, 8 }) });
+        int result = InObject.InvokeMethod<int32_t>(ArrayTest_Fn, MethodParams { Coral::NativeArray<int32_t>::New({ 5, 2, -1, 8 }) });
+        return result == 14;
+    });
+    RegisterTest("ManagedArrayTest", [&InObject]() mutable
+    {
+        Coral::Array array = Coral::Array::CreateEmptyArray(4, Coral::Type::IntType());
+        array.SetElement(5, 0);
+        array.SetElement(2, 1);
+        array.SetElement(-1, 2);
+        array.SetElement(Coral::Object::Box(8, Coral::Type::IntType()), 3); // try boxed value too
+        int result = InObject.InvokeMethod<int32_t>(ArrayTest_Fn, MethodParams { array });
         return result == 14;
     });
     RegisterTest("ObjectTest", [&InObject]() mutable
     {
-        Coral::ScopedString str = InObject.InvokeMethod<Coral::String>(ObjectTest_Fn, MethodParams { InObject });
-        return str == (std::string_view) "Type:MemberMethodTest";
+        Coral::ScopedNativeString str = InObject.InvokeMethod<Coral::NativeString>(ObjectTest_Fn, MethodParams { InObject });
+        return str == (Coral::StdStringView) "Type:MemberMethodTest";
     });
 
     RegisterTest("DummyStructTest", [&InObject]() mutable
@@ -507,10 +524,10 @@ static void RegisterFieldMarshalTests(Coral::Object& InObject)
     RegisterTest("StringPropertyTest", [&InObject]() mutable
     {
         auto prop = InObject.GetType().GetProperty("StringPropertyTest");
-        std::string value = InObject.GetPropertyValue<Coral::String>(prop);
+        std::string value = InObject.GetPropertyValue<Coral::NativeString>(prop);
         if (value != "Hello") return false;
-        InObject.SetPropertyValue(prop, Coral::String::New("Hello, World!"));
-        value = InObject.GetPropertyValue<Coral::String>(prop);
+        InObject.SetPropertyValue(prop, Coral::NativeString::New("Hello, World!"));
+        value = InObject.GetPropertyValue<Coral::NativeString>(prop);
         return value == "Hello, World!";
     });
 }
@@ -525,8 +542,8 @@ static void RegisterDelegateTests(Coral::Object& InObject)
             if (attributes.empty()) return false;
             if (attributes[0].GetFieldValue<int32_t>("SomeValue") != 2) return false;
             Coral::Object myDelegate = InObject.GetType().InvokeStaticMethod<Coral::Object>(InObject.GetType().GetMethod("GetMyDelegate", true), MethodParams{ 81 });
-            Coral::ScopedString str = myDelegate.InvokeDelegate<Coral::String>(MethodParams{ fooDelegate });
-            return str == (std::string_view)"Knock Knock... Hello 81";
+            Coral::ScopedNativeString str = myDelegate.InvokeDelegate<Coral::NativeString>(MethodParams{ fooDelegate });
+            return str == (Coral::StdStringView)"Knock Knock... Hello 81";
         });
 }
 
@@ -575,8 +592,8 @@ int main([[maybe_unused]] int argc, char** argv)
 
     auto& testsType = assembly.GetType("Testing.Managed.Tests");
     g_TestsType = testsType;
-    auto staticMethodTest0 = testsType.GetMethodByParamTypes("StaticMethodTest", { &Coral::Type::FloatType() }, true);
-    auto staticMethodTest1 = testsType.GetMethodByParamTypes("StaticMethodTest", { &Coral::Type::IntType() }, true);
+    auto staticMethodTest0 = testsType.GetMethodByParamTypes("StaticMethodTest", { Coral::Type::FloatType() }, true);
+    auto staticMethodTest1 = testsType.GetMethodByParamTypes("StaticMethodTest", { Coral::Type::IntType() }, true);
     testsType.InvokeStaticMethod(staticMethodTest0, MethodParams { 50.0f });
     testsType.InvokeStaticMethod(staticMethodTest1, MethodParams { 1000 });
 
@@ -665,6 +682,7 @@ int main([[maybe_unused]] int argc, char** argv)
 
     memberMethodTest.Destroy();
     fieldTestObject.Destroy();
+    delegateTest.Destroy();
 
     auto& virtualMethodTestType1 = assembly.GetType("Testing.Managed.Override1");
     auto& virtualMethodTestType2 = assembly.GetType("Testing.Managed.Override2");
@@ -716,7 +734,7 @@ int main([[maybe_unused]] int argc, char** argv)
     const auto& interfaceTypes = multiInheritanceTestType.GetInterfaceTypes();
     for (const auto& type : interfaceTypes)
     {
-        std::cout << "\t\t" << std::string(type->GetFullName()) << std::endl;
+        std::cout << "\t\t" << std::string(type.GetFullName()) << std::endl;
     }
 
     Coral::Object testsInstance2 = testsType2.CreateInstance();

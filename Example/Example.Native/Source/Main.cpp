@@ -8,7 +8,7 @@
 
 #include <Coral/HostInstance.hpp>
 #include <Coral/GC.hpp>
-#include <Coral/Array.hpp>
+#include <Coral/NativeArray.hpp>
 #include <Coral/Attribute.hpp>
 
 static void ExceptionCallback(std::string_view InMessage)
@@ -31,12 +31,12 @@ static void VectorAddIcall(MyVec3* InVec0, const MyVec3* InVec1)
     InVec0->Z += InVec1->Z;
 }
 
-static void PrintStringIcall(Coral::String InString)
+static void PrintStringIcall(Coral::NativeString InString)
 {
     std::cout << std::string(InString) << std::endl;
 }
 
-static void NativeArrayIcall(Coral::Array<float> InValues)
+static void NativeArrayIcall(Coral::NativeArray<float> InValues)
 {
     std::cout << "NativeArrayIcall" << std::endl;
     for (auto value : InValues)
@@ -45,10 +45,10 @@ static void NativeArrayIcall(Coral::Array<float> InValues)
     }
 }
 
-static Coral::Array<float> ArrayReturnIcall()
+static Coral::NativeArray<float> ArrayReturnIcall()
 {
     std::cout << "ArrayReturnIcall" << std::endl;
-    return Coral::Array<float>::New({ 10.0f, 5000.0f, 1000.0f });
+    return Coral::NativeArray<float>::New({ 10.0f, 5000.0f, 1000.0f });
 }
 
 int main([[maybe_unused]] int argc, char** argv)
@@ -118,9 +118,9 @@ int main([[maybe_unused]] int argc, char** argv)
 
     // Invokes ArrayDemo method which will in turn invoke NativeArrayIcall and pass the values we give here
     // and also invoke ArrayReturnIcall
-    auto arr = Coral::Array<float>::New({ 5.0f, 0.0f, 10.0f, -50.0f });
+    auto arr = Coral::NativeArray<float>::New({ 5.0f, 0.0f, 10.0f, -50.0f });
     exampleInstance.InvokeMethod(exampleType.GetMethod("ArrayDemo", 1), MethodParams { arr });
-    Coral::Array<float>::Free(arr);
+    Coral::NativeArray<float>::Free(arr);
 
     return 0;
 }

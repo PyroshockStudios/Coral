@@ -39,11 +39,11 @@ public sealed class NativeArrayEnumerator<T> : IEnumerator<T>
 [StructLayout(LayoutKind.Sequential, Size=32, Pack=8)]
 public struct NativeArray<T> : IDisposable, IEnumerable<T>
 {
-	private IntPtr m_NativeArray;
-	private IntPtr m_ArrayHandle;
-	private int m_NativeLength;
+	internal IntPtr m_NativeArray;
+	internal IntPtr m_ArrayHandle;
+	internal int m_NativeLength;
 
-	private Bool32 m_IsDisposed;
+    internal Bool32 m_IsDisposed;
 
 	public int Length => m_NativeLength;
 
@@ -69,7 +69,7 @@ public struct NativeArray<T> : IDisposable, IEnumerable<T>
 		}
 	}
 
-	public NativeArray(IntPtr InArray, IntPtr InHandle, int InLength)
+    public NativeArray(IntPtr InArray, IntPtr InHandle, int InLength)
 	{
 		m_NativeArray = InArray;
 		m_ArrayHandle = InHandle;
@@ -134,38 +134,6 @@ public struct NativeArray<T> : IDisposable, IEnumerable<T>
 
 }
 
-public static class ArrayStorage
-{
-	private static Dictionary<int, GCHandle> s_FieldArrays = new();
-
-	public static bool HasFieldArray(object? InTarget, MemberInfo? InArrayMemberInfo)
-	{
-		if (InArrayMemberInfo == null)
-			return false;
-
-		int arrayId = InArrayMemberInfo.GetHashCode();
-		arrayId += InTarget != null ? InTarget.GetHashCode() : 0;
-		return s_FieldArrays.ContainsKey(arrayId);
-	}
-
-	public static GCHandle? GetFieldArray(object? InTarget, object? InValue, MemberInfo? InArrayMemberInfo)
-	{
-		if (InArrayMemberInfo == null)
-			return null;
-
-		int arrayId = InArrayMemberInfo.GetHashCode();
-		arrayId += InTarget != null ? InTarget.GetHashCode() : 0;
-
-		if (!s_FieldArrays.TryGetValue(arrayId, out var arrayHandle))
-		{
-			var arrayObject = InValue as Array;
-			arrayHandle = GCHandle.Alloc(arrayObject, GCHandleType.Pinned);
-			s_FieldArrays.Add(arrayId, arrayHandle);
-		}
-
-		return arrayHandle;
-	}
-}
 
 [StructLayout(LayoutKind.Sequential, Size=16, Pack=8)]
 public struct NativeInstance<T> : IDisposable
@@ -205,7 +173,7 @@ public struct NativeInstance<T> : IDisposable
 		GCHandle handle = GCHandle.FromIntPtr(m_Handle);
 
 		if (!(handle.Target is T))
-			return default;
+			throw new InvalidCastException($"Target is not {typeof(T).Name}");
 		
 		return (T)handle.Target;
 	}

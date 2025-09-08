@@ -7,53 +7,53 @@
 
 namespace Coral {
 
-    Type& Type::VoidType() { return *TypeCache::Get().m_VoidType; }
-    Type& Type::ByteType() { return *TypeCache::Get().m_ByteType; }
-    Type& Type::SByteType() { return *TypeCache::Get().m_SByteType; }
-    Type& Type::ShortType() { return *TypeCache::Get().m_ShortType; }
-    Type& Type::UShortType() { return *TypeCache::Get().m_UShortType; }
-    Type& Type::IntType() { return *TypeCache::Get().m_IntType; }
-    Type& Type::UIntType() { return *TypeCache::Get().m_UIntType; }
-    Type& Type::LongType() { return *TypeCache::Get().m_LongType; }
-    Type& Type::ULongType() { return *TypeCache::Get().m_ULongType; }
-    Type& Type::FloatType() { return *TypeCache::Get().m_FloatType; }
-    Type& Type::DoubleType() { return *TypeCache::Get().m_DoubleType; }
-    Type& Type::BoolType() { return *TypeCache::Get().m_BoolType; }
-    Type& Type::CharType() { return *TypeCache::Get().m_CharType; }
-    Type& Type::StringType() { return *TypeCache::Get().m_StringType; }
-    Type& Type::ObjectType() { return *TypeCache::Get().m_ObjectType; }
-    Type& Type::IntPtrType() { return *TypeCache::Get().m_IntPtrType; }
-    Type& Type::UIntPtrType() { return *TypeCache::Get().m_UIntPtrType; }
-    Type& Type::DecimalType() { return *TypeCache::Get().m_DecimalType; }
-    Type& Type::DateTimeType() { return *TypeCache::Get().m_DateTimeType; }
-    Type& Type::ExceptionType() { return *TypeCache::Get().m_ExceptionType; }
-    Type& Type::ArrayType() { return *TypeCache::Get().m_ArrayType; }
+    const Type& Type::VoidType() { return *TypeCache::Get().m_VoidType; }
+    const Type& Type::ByteType() { return *TypeCache::Get().m_ByteType; }
+    const Type& Type::SByteType() { return *TypeCache::Get().m_SByteType; }
+    const Type& Type::ShortType() { return *TypeCache::Get().m_ShortType; }
+    const Type& Type::UShortType() { return *TypeCache::Get().m_UShortType; }
+    const Type& Type::IntType() { return *TypeCache::Get().m_IntType; }
+    const Type& Type::UIntType() { return *TypeCache::Get().m_UIntType; }
+    const Type& Type::LongType() { return *TypeCache::Get().m_LongType; }
+    const Type& Type::ULongType() { return *TypeCache::Get().m_ULongType; }
+    const Type& Type::FloatType() { return *TypeCache::Get().m_FloatType; }
+    const Type& Type::DoubleType() { return *TypeCache::Get().m_DoubleType; }
+    const Type& Type::BoolType() { return *TypeCache::Get().m_BoolType; }
+    const Type& Type::CharType() { return *TypeCache::Get().m_CharType; }
+    const Type& Type::StringType() { return *TypeCache::Get().m_StringType; }
+    const Type& Type::ObjectType() { return *TypeCache::Get().m_ObjectType; }
+    const Type& Type::IntPtrType() { return *TypeCache::Get().m_IntPtrType; }
+    const Type& Type::UIntPtrType() { return *TypeCache::Get().m_UIntPtrType; }
+    const Type& Type::DecimalType() { return *TypeCache::Get().m_DecimalType; }
+    const Type& Type::DateTimeType() { return *TypeCache::Get().m_DateTimeType; }
+    const Type& Type::ExceptionType() { return *TypeCache::Get().m_ExceptionType; }
+    const Type& Type::ArrayType() { return *TypeCache::Get().m_ArrayType; }
 
     StdString Type::GetFullName() const
     {
-        String str = s_ManagedFunctions.GetFullTypeNameFptr(m_Id);
+        NativeString str = s_ManagedFunctions.GetFullTypeNameFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
     }
 
     StdString Type::GetName() const
     {
-        String str = s_ManagedFunctions.GetTypeNameFptr(m_Id);
+        NativeString str = s_ManagedFunctions.GetTypeNameFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
     }
 
     StdString Type::GetNamespace() const
     {
-        String str = s_ManagedFunctions.GetTypeNamespaceFptr(m_Id);
+        NativeString str = s_ManagedFunctions.GetTypeNamespaceFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
     }
 
     StdString Type::GetAssemblyQualifiedName() const
     {
-        String str = s_ManagedFunctions.GetAssemblyQualifiedNameFptr(m_Id);
+        NativeString str = s_ManagedFunctions.GetAssemblyQualifiedNameFptr(m_Id);
         return StringHelper::ConsumeNativeString(str);
     }
 
-    Type& Type::GetBaseType()
+    const Type& Type::GetBaseType() const
     {
         if (!m_BaseType)
         {
@@ -65,7 +65,7 @@ namespace Coral {
         return *m_BaseType;
     }
 
-    StdVector<Type*>& Type::GetInterfaceTypes()
+    const StdVector<Type>& Type::GetInterfaceTypes() const
     {
         if (!m_InterfaceTypes)
         {
@@ -76,14 +76,14 @@ namespace Coral {
             typeIds.resize(static_cast<size_t>(count));
             s_ManagedFunctions.GetInterfaceTypesFptr(m_Id, typeIds.data());
 
-            m_InterfaceTypes = StdVector<Type*>();
+            m_InterfaceTypes = StdVector<Type>();
             m_InterfaceTypes->reserve(static_cast<size_t>(count));
 
             for (auto id : typeIds)
             {
                 Type type;
                 type.m_Id = id;
-                m_InterfaceTypes->emplace_back(TypeCache::Get().CacheType(std::move(type)));
+                m_InterfaceTypes->emplace_back(*TypeCache::Get().CacheType(std::move(type)));
             }
         }
 
@@ -156,8 +156,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(MethodName);
-        MethodInfo method{};
+        ScopedNativeString string = ScopedNativeString(MethodName);
+        MethodInfo method {};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, flags);
         return method;
     }
@@ -165,22 +165,22 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(MethodName);
-        MethodInfo method{};
+        ScopedNativeString string = ScopedNativeString(MethodName);
+        MethodInfo method {};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
         return method;
     }
-    MethodInfo Type::GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type*>& InParamTypes, bool InStatic) const
+    MethodInfo Type::GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type>& InParamTypes, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(MethodName);
-        MethodInfo method{};
+        ScopedNativeString string = ScopedNativeString(MethodName);
+        MethodInfo method {};
         StdVector<TypeId> typeIds = {};
         typeIds.reserve(InParamTypes.size());
-        for (const Type* type : InParamTypes)
+        for (const Type& type : InParamTypes)
         {
-            typeIds.push_back(type->GetTypeId());
+            typeIds.push_back(type.GetTypeId());
         }
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamTypesFptr(m_Id, string, static_cast<int32_t>(typeIds.size()), typeIds.data(), flags);
         return method;
@@ -190,8 +190,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(FieldName);
-        FieldInfo field{};
+        ScopedNativeString string = ScopedNativeString(FieldName);
+        FieldInfo field {};
         field.m_Handle = s_ManagedFunctions.GetFieldInfoByNameFptr(m_Id, string, flags);
         return field;
     }
@@ -200,8 +200,8 @@ namespace Coral {
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
-        ScopedString string = ScopedString(PropertyName);
-        PropertyInfo property{};
+        ScopedNativeString string = ScopedNativeString(PropertyName);
+        PropertyInfo property {};
         property.m_Handle = s_ManagedFunctions.GetPropertyInfoByNameFptr(m_Id, string, flags);
         return property;
     }
@@ -228,7 +228,8 @@ namespace Coral {
     Attribute Type::GetAttribute(const Type& InAttributeType) const
     {
         auto list = GetAttributes();
-        for (Attribute& attr : list) {
+        for (Attribute& attr : list)
+        {
             if (attr.GetType() == InAttributeType) return attr;
         }
         return {};
@@ -239,13 +240,13 @@ namespace Coral {
         return s_ManagedFunctions.GetTypeManagedTypeFptr(m_Id);
     }
 
-    Type& Type::GetGenericArgument(int32_t InArgIndex) const
+    const Type& Type::GetGenericArgument(int32_t InArgIndex) const
     {
         TypeId id = s_ManagedFunctions.GetTypeGenericArgumentFptr(m_Id, InArgIndex);
         return *TypeCache::Get().GetTypeByID(id);
     }
 
-    Type& Type::GetGenericTypeDefinition() const
+    const Type& Type::GetGenericTypeDefinition() const
     {
         TypeId id = s_ManagedFunctions.GetTypeGenericTypeDefinitionFptr(m_Id);
         return *TypeCache::Get().GetTypeByID(id);
@@ -256,7 +257,37 @@ namespace Coral {
         return s_ManagedFunctions.IsTypeSZArrayFptr(m_Id);
     }
 
-    Type& Type::GetElementType()
+    bool Type::IsArray() const
+    {
+        return s_ManagedFunctions.IsTypeArrayFptr(m_Id);
+    }
+
+    bool Type::IsClass() const
+    {
+        return s_ManagedFunctions.IsTypeClassFptr(m_Id);
+    }
+
+    bool Type::IsInterface() const
+    {
+        return s_ManagedFunctions.IsTypeInterfaceFptr(m_Id);
+    }
+
+    bool Type::IsAbstract() const
+    {
+        return s_ManagedFunctions.IsTypeAbstractFptr(m_Id);
+    }
+
+    bool Type::IsSealed() const
+    {
+        return s_ManagedFunctions.IsTypeSealedFptr(m_Id);
+    }
+
+    bool Type::IsValueType() const
+    {
+        return s_ManagedFunctions.IsTypeValueTypeFptr(m_Id);
+    }
+
+    const Type& Type::GetElementType() const
     {
         if (!m_ElementType)
         {
@@ -271,6 +302,13 @@ namespace Coral {
     bool Type::operator==(const Type& InOther) const
     {
         return m_Id == InOther.m_Id;
+    }
+
+    Type::operator ReflectionType() const
+    {
+        ReflectionType ret;
+        ret.m_TypeID = m_Id;
+        return ret;
     }
 
     Object Type::CreateInstanceRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
@@ -309,7 +347,7 @@ namespace Coral {
         }
     }
 
-    ReflectionType::operator Type& () const
+    ReflectionType::operator const Type&() const
     {
         static Type s_NullType;
 

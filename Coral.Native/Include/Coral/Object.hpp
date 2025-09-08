@@ -2,10 +2,12 @@
 
 #include "Core.hpp"
 #include "Utility.hpp"
-#include "String.hpp"
+#include "NativeString.hpp"
 
 namespace Coral {
-
+    namespace Internal {
+        struct Object_LayoutTest;
+    }
     class FieldInfo;
     class MethodInfo;
     class PropertyInfo;
@@ -40,14 +42,14 @@ namespace Coral {
             }
             else
             {
-                TReturn result{};
+                TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result, OutException);
+                    InvokeMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::derived_from<TReturn, Object>, &result, OutException);
                 }
                 else
                 {
-                    InvokeMethodRetRaw(InMethod, nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result, OutException);
+                    InvokeMethodRetRaw(InMethod, nullptr, nullptr, 0, std::derived_from<TReturn, Object>, &result, OutException);
                 }
                 return result;
             }
@@ -69,21 +71,21 @@ namespace Coral {
             }
             else
             {
-                TReturn result{};
+                TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeDelegateRetRaw(InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_same_v<TReturn, Object>, &result, OutException);
+                    InvokeDelegateRetRaw(InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::derived_from<TReturn, Object>, &result, OutException);
                 }
                 else
                 {
-                    InvokeDelegateRetRaw(nullptr, nullptr, 0, std::is_same_v<TReturn, Object>, &result, OutException);
+                    InvokeDelegateRetRaw(nullptr, nullptr, 0, std::derived_from<TReturn, Object>, &result, OutException);
                 }
                 return result;
             }
         }
 
         template <typename TValue>
-        void SetFieldValue(const FieldInfo& InField, TValue InValue) const
+        void SetFieldValue(const FieldInfo& InField, const TValue& InValue)
         {
             SetFieldValueRaw(InField, &InValue);
         }
@@ -97,7 +99,7 @@ namespace Coral {
         }
 
         template <typename TValue>
-        void SetPropertyValue(const PropertyInfo& InProperty, TValue InValue) const
+        void SetPropertyValue(const PropertyInfo& InProperty, TValue InValue)
         {
             SetPropertyValueRaw(InProperty, &InValue);
         }
@@ -110,17 +112,17 @@ namespace Coral {
             return result;
         }
 
-        void SetFieldValueRaw(const FieldInfo& InField, const void* InValue) const;
+        void SetFieldValueRaw(const FieldInfo& InField, const void* InValue);
         void GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const;
-        void SetFieldValueObject(const FieldInfo& InField, const Object& InObject) const;
+        void SetFieldValueObject(const FieldInfo& InField, const Object& InObject);
         Object GetFieldValueObject(const FieldInfo& InField) const;
 
-        void SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException = nullptr) const;
+        void SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException = nullptr);
         void GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, Object* OutException = nullptr) const;
-        void SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException = nullptr) const;
+        void SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException = nullptr);
         Object GetPropertyValueObject(const PropertyInfo& InProperty, Object* OutException = nullptr) const;
 
-        const Type& GetType();
+        const Type& GetType() const;
 
         void Destroy();
 
@@ -129,13 +131,15 @@ namespace Coral {
         inline operator bool() const { return IsValid(); }
 
         template <typename T>
-        static Object Box(const T& value, const Type& type) {
+        static Object Box(const T& value, const Type& type)
+        {
             constexpr ManagedType t = GetManagedType<T>();
             static_assert(IsManagedTypeValueType(t) || t == ManagedType::Unknown /*could be struct*/, "Only value types can be boxed/unboxed!");
             return BoxRaw(&value, sizeof(T), type);
         }
         template <typename T>
-        T Unbox() {
+        T Unbox()
+        {
             constexpr ManagedType t = GetManagedType<T>();
             static_assert(IsManagedTypeValueType(t) || t == ManagedType::Unknown /*could be struct*/, "Only value types can be boxed/unboxed!");
             T v;
@@ -146,42 +150,47 @@ namespace Coral {
         static Object BoxRaw(const void* InValue, int32_t InSize, const Type& InType);
         void UnboxRaw(void* OutValue) const;
 
-
         void InvokeMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
         void InvokeMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
 
         void InvokeDelegateRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
         void InvokeDelegateRetRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
 
-    public:
+    protected:
         alignas(8) void* m_Handle = nullptr;
-        alignas(8) const Type* m_Type = nullptr;
+        alignas(8) mutable const Type* m_Type = nullptr;
+
     private:
+        friend struct Internal::Object_LayoutTest;
         friend class Assembly;
         friend class Type;
     };
 
-    static_assert(offsetof(Object, m_Handle) == 0);
-    static_assert(offsetof(Object, m_Type) == 8);
-    static_assert(sizeof(Object) == 16);
-
+    namespace Internal {
+        struct Object_LayoutTest
+        {
+            static_assert(offsetof(Object, m_Handle) == 0);
+            static_assert(offsetof(Object, m_Type) == 8);
+            static_assert(sizeof(Object) == 16);
+        };
+    }
 
     template <>
-    inline void Object::SetFieldValue(const FieldInfo& InField, Coral::Object& InValue) const
+    inline void Object::SetFieldValue(const FieldInfo& InField, const Coral::Object& InValue)
     {
         SetFieldValueObject(InField, InValue);
     }
 
     template <>
-    inline void Object::SetFieldValue(const FieldInfo& InField, StdString InValue) const
+    inline void Object::SetFieldValue(const FieldInfo& InField, const StdString& InValue)
     {
-        String s = String::New(InValue);
+        NativeString s = NativeString::New(InValue);
         SetFieldValueRaw(InField, &s);
-        String::Free(s);
+        NativeString::Free(s);
     }
 
     template <>
-    inline void Object::SetFieldValue(const FieldInfo& InField, bool InValue) const
+    inline void Object::SetFieldValue(const FieldInfo& InField, const bool& InValue)
     {
         Bool32 s = InValue;
         SetFieldValueRaw(InField, &s);
@@ -196,10 +205,10 @@ namespace Coral {
     template <>
     inline StdString Object::GetFieldValue(const FieldInfo& InField) const
     {
-        String result;
+        NativeString result;
         GetFieldValueRaw(InField, &result);
         auto s = result.Data() ? StdString(result) : "";
-        String::Free(result);
+        NativeString::Free(result);
         return s;
     }
 
@@ -212,21 +221,21 @@ namespace Coral {
     }
 
     template <>
-    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, Coral::Object& InValue) const
+    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, const Coral::Object& InValue)
     {
         SetPropertyValueObject(InProperty, InValue);
     }
 
     template <>
-    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, StdString InValue) const
+    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, const StdString& InValue)
     {
-        String s = String::New(InValue);
+        NativeString s = NativeString::New(InValue);
         SetPropertyValueRaw(InProperty, &s);
-        String::Free(s);
+        NativeString::Free(s);
     }
 
     template <>
-    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, bool InValue) const
+    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, bool InValue)
     {
         Bool32 s = InValue;
         SetPropertyValueRaw(InProperty, &s);
@@ -235,16 +244,16 @@ namespace Coral {
     template <>
     inline Object Object::GetPropertyValue(const PropertyInfo& InProperty) const
     {
-      return  GetPropertyValueObject(InProperty);
+        return GetPropertyValueObject(InProperty);
     }
 
     template <>
     inline StdString Object::GetPropertyValue(const PropertyInfo& InProperty) const
     {
-        String result;
+        NativeString result;
         GetPropertyValueRaw(InProperty, &result);
         auto s = result.Data() ? StdString(result) : "";
-        String::Free(result);
+        NativeString::Free(result);
         return s;
     }
 

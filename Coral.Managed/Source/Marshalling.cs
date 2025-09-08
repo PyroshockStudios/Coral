@@ -10,7 +10,7 @@ namespace Coral.Managed;
 public static class Marshalling
 {
 #pragma warning disable 0649
-    // This needs to map to Coral::Array, hence the unused ArrayHandle
+    // This needs to map to Coral::NativeArray, hence the unused ArrayHandle
     struct ValueArrayContainer
     {
         public IntPtr Data;
@@ -18,7 +18,7 @@ public static class Marshalling
         public int Length;
     };
 
-    // This needs to map to Coral::Array, hence the unused ArrayHandle
+    // This needs to map to Coral::NativeArray, hence the unused ArrayHandle
     struct ObjectArrayContainer
     {
         public IntPtr Data;
@@ -33,55 +33,33 @@ public static class Marshalling
     }
 #pragma warning restore 0649
 
-    public static void MarshalReturnValue(object? InTarget, object? InValue, MemberInfo? InMemberInfo, IntPtr OutValue)
+    public static void MarshalReturnValue(object? InValue, Type? InElementType, IntPtr OutValue)
     {
-        if (InMemberInfo == null)
+        if (InElementType == null)
             return;
 
-        Type? type = null;
-
-        if (InMemberInfo is FieldInfo fieldInfo)
+        if (InElementType.IsSZArray)
         {
-            type = fieldInfo.FieldType;
+            var pinnedArray = GCHandle.Alloc(InValue, GCHandleType.Pinned);
+            Marshal.WriteIntPtr(OutValue, pinnedArray.AddrOfPinnedObject());
+            pinnedArray.Free();
         }
-        else if (InMemberInfo is PropertyInfo propertyInfo)
-        {
-            type = propertyInfo.PropertyType;
-        }
-        else if (InMemberInfo is MethodInfo methodInfo)
-        {
-            type = methodInfo.ReturnType;
-        }
-
-        if (type != null && type.IsSZArray)
-        {
-            var fieldArray = ArrayStorage.GetFieldArray(InTarget, InValue, InMemberInfo);
-
-            if (fieldArray != null)
-            {
-                Marshal.WriteIntPtr(OutValue, fieldArray.Value.AddrOfPinnedObject());
-            }
-            else
-            {
-                Marshal.WriteIntPtr(OutValue, IntPtr.Zero);
-            }
-        }
-        else if (type == typeof(string) && InValue != null)
+        else if (InElementType == typeof(string) && InValue != null)
         {
             NativeString nativeString = (NativeString)(string)InValue;
             Marshal.StructureToPtr(nativeString, OutValue, false);
         }
-        else if (type == typeof(bool) && InValue != null)
+        else if (InElementType == typeof(bool) && InValue != null)
         {
             Bool32 value = (Bool32)(bool)InValue;
             Marshal.StructureToPtr(value, OutValue, false);
         }
-        else if (type == typeof(NativeString) && InValue != null)
+        else if (InElementType == typeof(NativeString) && InValue != null)
         {
             NativeString nativeString = (NativeString)InValue;
             Marshal.StructureToPtr((NativeString)InValue, OutValue, false);
         }
-        else if (type != null && type.IsPointer)
+        else if (InElementType.IsPointer)
         {
             unsafe
             {
@@ -96,7 +74,7 @@ public static class Marshalling
                 }
             }
         }
-        else if (type != null && type.IsClass)
+        else if (InElementType.IsClass)
         {
             unsafe
             {
@@ -104,9 +82,9 @@ public static class Marshalling
                     GCHandle.ToIntPtr(GCHandle.Alloc(InValue, GCHandleType.Normal));
             }
         }
-        else if (type != null)
+        else
         {
-            int valueSize = type.IsEnum ? Marshal.SizeOf(Enum.GetUnderlyingType(type)) : Marshal.SizeOf(type);
+            int valueSize = InElementType.IsEnum ? Marshal.SizeOf(Enum.GetUnderlyingType(InElementType)) : Marshal.SizeOf(InElementType);
             var handle = GCHandle.Alloc(InValue, GCHandleType.Pinned);
 
             unsafe
@@ -116,7 +94,6 @@ public static class Marshalling
 
             handle.Free();
         }
-        else throw new ArgumentNullException("InMemberInfo:Type");
     }
 
     public static object? MarshalArray(IntPtr InArray, Type? InElementType)
@@ -129,16 +106,6 @@ public static class Marshalling
         if (InElementType.IsValueType)
         {
             var arrayContainer = MarshalPointer<ValueArrayContainer>(InArray);
-
-            if (ArrayStorage.HasFieldArray(null, null))
-            {
-                var fieldArray = ArrayStorage.GetFieldArray(null, null, null);
-
-                if (arrayContainer.Data == fieldArray!.Value.AddrOfPinnedObject())
-                {
-                    return fieldArray.Value.Target;
-                }
-            }
 
             result = Array.CreateInstance(InElementType, arrayContainer.Length);
 
@@ -157,16 +124,6 @@ public static class Marshalling
         {
             var arrayContainer = MarshalPointer<ObjectArrayContainer>(InArray);
 
-            if (ArrayStorage.HasFieldArray(null, null))
-            {
-                var fieldArray = ArrayStorage.GetFieldArray(null, null, null);
-
-                if (arrayContainer.Data == fieldArray!.Value.AddrOfPinnedObject())
-                {
-                    return fieldArray.Value.Target;
-                }
-            }
-
             result = Array.CreateInstance(InElementType, arrayContainer.Length);
 
             unsafe
@@ -184,7 +141,7 @@ public static class Marshalling
         return result;
     }
 
-    /*public static void CopyArrayToBuffer(GCHandle InArrayHandle, Array? InArray, Type? InElementType)
+    /*public static void CopyArrayToBuffer(GCHandle InArrayHandle, NativeArray? InArray, Type? InElementType)
 	{
 		if (InArray == null || InElementType == null)
 			return;
@@ -313,7 +270,7 @@ public static class Marshalling
         return result;
     }
 
-    internal static IntPtr MarhsalBoxValue(IntPtr InValue, Type InType)
+    public static IntPtr MarhsalBoxValue(IntPtr InValue, Type InType)
     {
         // Copy unmanaged bytes into managed struct
         object boxed = Marshal.PtrToStructure(InValue, InType)!;
@@ -323,7 +280,7 @@ public static class Marshalling
         return GCHandle.ToIntPtr(handle);
     }
 
-    internal static void MarshalUnboxValue(object InValue, Type InValueType, IntPtr OutValue)
+    public static void MarshalUnboxValue(object InValue, Type InValueType, IntPtr OutValue)
     {
         int size = Marshal.SizeOf(InValueType);
 

@@ -34,8 +34,8 @@ public enum ManagedType : uint
 
     Char,
 
-    String,
-    Array,
+    NativeString,
+    NativeArray,
     Object,
 
     Pointer
@@ -257,7 +257,7 @@ internal static class ManagedObject
             }
             else
             {
-                Marshalling.MarshalReturnValue(null, value, methodInfo, InResultStorage);
+                Marshalling.MarshalReturnValue(value, methodInfo.ReturnType, InResultStorage);
             }
         }
         catch (Exception ex)
@@ -351,7 +351,7 @@ internal static class ManagedObject
             }
             else
             {
-                Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+                Marshalling.MarshalReturnValue(value, methodInfo.ReturnType, InResultStorage);
             }
         }
         catch (Exception ex)
@@ -437,7 +437,7 @@ internal static class ManagedObject
             }
             else
             {
-                Marshalling.MarshalReturnValue(target, value, methodInfo, InResultStorage);
+                Marshalling.MarshalReturnValue(value, methodInfo.ReturnType, InResultStorage);
             }
         }
         catch (Exception ex)
@@ -546,7 +546,7 @@ internal static class ManagedObject
             }
             else
             {
-                Marshalling.MarshalReturnValue(target, target, fieldInfo, OutValue);
+                Marshalling.MarshalReturnValue(value, fieldInfo.FieldType, OutValue);
             }
         }
         catch (Exception ex)
@@ -663,11 +663,11 @@ internal static class ManagedObject
             if (value == null) return;
             if (InIsObject)
             {
-                Marshal.WriteIntPtr(OutValue, GCHandle.ToIntPtr(GCHandle.Alloc(target)));
+                Marshal.WriteIntPtr(OutValue, GCHandle.ToIntPtr(GCHandle.Alloc(value)));
             }
             else
             {
-                Marshalling.MarshalReturnValue(target, target, propertyInfo, OutValue);
+                Marshalling.MarshalReturnValue(value, propertyInfo.PropertyType, OutValue);
             }
         }
         catch (Exception ex)

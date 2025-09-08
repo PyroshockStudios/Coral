@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
-#include "String.hpp"
+#include "NativeString.hpp"
 #include <type_traits>
 
 namespace Coral {
@@ -20,7 +20,7 @@ namespace Coral {
 
     class Type;
     template <typename TValue>
-    class alignas(8) Array;
+    class alignas(8) NativeArray;
     class Object;
 
     enum class ManagedType : uint32_t
@@ -45,8 +45,8 @@ namespace Coral {
 
         Char,
 
-        String,
-        Array,
+        NativeString,
+        NativeArray,
         Object,
 
         Pointer
@@ -81,12 +81,12 @@ namespace Coral {
             return ManagedType::Bool;
         else if constexpr (std::same_as<TArg, Coral::Char>)
             return ManagedType::Char;
-        else if constexpr (std::same_as<TArg, Coral::Object>)
+        else if constexpr (std::derived_from<TArg, Coral::Object>)
             return ManagedType::Object;
-        else if constexpr (is_specialization_of_v<Coral::Array, TArg>)
-            return ManagedType::Array;
-        else if constexpr (std::same_as<TArg, StdString> || std::same_as<TArg, Coral::String>)
-            return ManagedType::String;
+        else if constexpr (is_specialization_of_v<Coral::NativeArray, TArg>)
+            return ManagedType::NativeArray;
+        else if constexpr (std::same_as<TArg, StdString> || std::same_as<TArg, Coral::NativeString>)
+            return ManagedType::NativeString;
         else if constexpr (std::same_as<TArg, void>)
             return ManagedType::Void;
         else
@@ -95,7 +95,7 @@ namespace Coral {
 
     constexpr bool IsManagedTypeValueType(ManagedType type)
     {
-        return type != ManagedType::Void && type != ManagedType::Object && type != ManagedType::Array && type != ManagedType::String && type != ManagedType::Unknown;
+        return type != ManagedType::Void && type != ManagedType::Object && type != ManagedType::NativeArray && type != ManagedType::NativeString && type != ManagedType::Unknown;
     }
 
     template <typename TArg, size_t TIndex>
@@ -115,7 +115,7 @@ namespace Coral {
     }
 
     /*
-     * TODO(Emily): Work out a way to allow method invoke to use C++-y types (i.e. `StdString` instead of `Coral::String`).
+     * TODO(Emily): Work out a way to allow method invoke to use C++-y types (i.e. `StdString` instead of `Coral::NativeString`).
      * 				See Testing/Main.cpp:StringTest/BoolTest.
      */
     template <typename... TArgs>

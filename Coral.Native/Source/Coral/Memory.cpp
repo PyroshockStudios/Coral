@@ -35,9 +35,9 @@ namespace Coral {
         {
             memset(buffer, 0xCE, size);
     #ifdef CORAL_WIDE_CHARS
-            wcsncpy(buffer, InString.data(), InString.size());
+            wcscpy(buffer, InString.data());
     #else
-            strncpy(buffer, InString.data(), InString.size());
+            strcpy(buffer, InString.data());
     #endif
         }
 #else

@@ -1,6 +1,6 @@
 ﻿#include "Coral/Object.hpp"
 #include "Coral/Assembly.hpp"
-#include "Coral/String.hpp"
+#include "Coral/NativeString.hpp"
 #include "Coral/StringHelper.hpp"
 #include "Coral/Type.hpp"
 
@@ -117,7 +117,7 @@ namespace Coral {
         }
     }
 
-    void Object::SetFieldValueRaw(const FieldInfo& InField, const void* InValue) const
+    void Object::SetFieldValueRaw(const FieldInfo& InField, const void* InValue) 
     {
         s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, InValue, false);
     }
@@ -127,7 +127,7 @@ namespace Coral {
         s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, OutValue, false);
     }
 
-    void Object::SetFieldValueObject(const FieldInfo& InField, const Object& InObject) const
+    void Object::SetFieldValueObject(const FieldInfo& InField, const Object& InObject) 
     {
         s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, &InObject.m_Handle, true);
     }
@@ -139,7 +139,7 @@ namespace Coral {
         return result;
     }
 
-    void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException) const
+    void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException) 
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, InValue, false, OutException ? &exceptionResult : nullptr);
@@ -161,7 +161,7 @@ namespace Coral {
         }
     }
 
-    void Object::SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException) const
+    void Object::SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException) 
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, &InObject.m_Handle, true, OutException ? &exceptionResult : nullptr);
@@ -185,7 +185,7 @@ namespace Coral {
         return result;
     }
 
-    const Type& Object::GetType()
+    const Type& Object::GetType() const
     {
         if (!m_Type)
         {

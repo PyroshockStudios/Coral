@@ -1,79 +1,43 @@
-#pragma once
+﻿#pragma once
 
-#include "Core.hpp"
+#include "Object.hpp"
 
 namespace Coral {
-
-    // TODO(Emily): Could this benefit from retaining a var for size?
-    class String
+    class alignas(8) String : public Object
     {
     public:
-        static String New(const char* InString);
-        static String New(StdStringView InString);
-        static void Free(String& InString);
+        String() = default;
+        static String CreateEmptyString(int32_t InLength);
+        static String CreateStringUtf8(StdStringView InString);
+        static String CreateStringUtf16(StdWStringView InString);
 
-        void Assign(StdStringView InString);
+        StdString GetStringUtf8() const;
+        StdWString GetStringUtf16() const;
 
-        operator StdString() const;
-
-        bool operator==(const String& InOther) const;
-        bool operator==(StdStringView InOther) const;
-
-        UCChar* Data() { return m_String; }
-        const UCChar* Data() const { return m_String; }
-
-    public:
-        UCChar* m_String = nullptr;
-        [[maybe_unused]] Bool32 m_IsDisposed = false; // NOTE(Peter): Required for the layout to match the C# NativeString struct, unused in C++
-    };
-
-    static_assert(offsetof(String, m_String) == 0);
-    static_assert(offsetof(String, m_IsDisposed) == 8);
-    static_assert(sizeof(String) == 16);
-
-    struct ScopedString
-    {
-        ScopedString(String InString)
-            : m_String(InString) {}
-        ScopedString(const char* InString)
-            : m_String(String::New(InString)) {}
-        ScopedString(StdStringView InString)
-            : m_String(String::New(InString)) {}
-
-        ScopedString& operator=(String InOther)
-        {
-            String::Free(m_String);
-            m_String = InOther;
-            return *this;
-        }
-
-        ScopedString& operator=(const ScopedString& InOther)
-        {
-            String::Free(m_String);
-            m_String = InOther.m_String;
-            return *this;
-        }
-
-        ~ScopedString()
-        {
-            String::Free(m_String);
-        }
-
-        operator StdString() const { return m_String; }
-        operator String() const { return m_String; }
-
-        bool operator==(const ScopedString& InOther) const
-        {
-            return m_String == InOther.m_String;
-        }
-
-        bool operator==(StdStringView InOther) const
-        {
-            return m_String == InOther;
-        }
+        int32_t GetLength() const;
 
     private:
-        String m_String;
-    };
+        using Object::Box;
+        using Object::BoxRaw;
+        using Object::GetFieldValue;
+        using Object::GetFieldValueObject;
+        using Object::GetFieldValueRaw;
+        using Object::GetPropertyValue;
+        using Object::GetPropertyValueObject;
+        using Object::GetPropertyValueRaw;
+        using Object::InvokeDelegate;
+        using Object::InvokeDelegateRaw;
+        using Object::InvokeDelegateRetRaw;
+        using Object::SetFieldValue;
+        using Object::SetFieldValueObject;
+        using Object::SetFieldValueRaw;
+        using Object::SetPropertyValue;
+        using Object::SetPropertyValueObject;
+        using Object::SetPropertyValueRaw;
+        using Object::Unbox;
+        using Object::UnboxRaw;
 
+        String(int32_t InLength);
+        String(const char16_t* InString, int32_t InLength);
+    };
 }

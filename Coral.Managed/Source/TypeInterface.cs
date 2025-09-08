@@ -63,9 +63,9 @@ internal static class TypeInterface
         { typeof(bool), ManagedType.Bool },
         { typeof(char), ManagedType.Char },
         { typeof(object), ManagedType.Object },
-        { typeof(Array), ManagedType.Array },
-        { typeof(NativeString), ManagedType.String },
-        { typeof(string), ManagedType.String },
+        { typeof(Array), ManagedType.Object },
+        { typeof(NativeString), ManagedType.NativeString },
+        { typeof(string), ManagedType.Object },
     };
 
     internal static unsafe T? FindSuitableMethod<T>(string? InMethodName, ManagedType* InParameterTypes, int InParameterCount, ReadOnlySpan<T> InMethods) where T : MethodBase
@@ -104,7 +104,7 @@ internal static class TypeInterface
                 }
                 else if (methodParams[i].ParameterType.IsArray || methodParams[i].ParameterType == typeof(Array))
                 {
-                    paramType = ManagedType.Array;
+                    paramType = ManagedType.NativeArray;
                 }
                 else if (methodParams[i].ParameterType.IsClass || methodParams[i].ParameterType == typeof(object))
                 {
@@ -387,6 +387,138 @@ internal static class TypeInterface
             }
 
             return type.IsSZArray;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeArray(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsArray;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeClass(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsClass;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeInterface(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsInterface;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeAbstract(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsAbstract;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeSealed(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsSealed;
+        }
+        catch (Exception e)
+        {
+            HandleException(e);
+            return false;
+        }
+    }
+
+    [UnmanagedCallersOnly]
+    internal static unsafe Bool32 IsTypeValueType(int InTypeID)
+    {
+        try
+        {
+            if (!s_CachedTypes.TryGetValue(InTypeID, out var type))
+                return false;
+
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.IsValueType;
         }
         catch (Exception e)
         {
@@ -1114,7 +1246,7 @@ internal static class TypeInterface
                 return;
             }
             
-            Marshalling.MarshalReturnValue(attribute, fieldInfo.GetValue(attribute), fieldInfo, OutValue);
+            Marshalling.MarshalReturnValue(fieldInfo.GetValue(attribute), fieldInfo.FieldType, OutValue);
         }
         catch (Exception ex)
         {

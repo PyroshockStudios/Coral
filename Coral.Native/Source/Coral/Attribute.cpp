@@ -1,6 +1,6 @@
 #include "Coral/Attribute.hpp"
 #include "Coral/Type.hpp"
-#include "Coral/String.hpp"
+#include "Coral/NativeString.hpp"
 
 #include "TypeCache.hpp"
 #include "CoralManagedFunctions.hpp"
@@ -22,7 +22,7 @@ namespace Coral {
     template <>
     StdString Attribute::GetFieldValue(StdStringView InFieldName)
     {
-        String result;
+        NativeString result;
         GetFieldValueInternal(InFieldName, &result);
         return StdString(result);
     }
@@ -37,9 +37,9 @@ namespace Coral {
 
     void Attribute::GetFieldValueInternal(StdStringView InFieldName, void* OutValue) const
     {
-        auto fieldName = String::New(InFieldName);
+        auto fieldName = NativeString::New(InFieldName);
         s_ManagedFunctions.GetAttributeFieldValueFptr(m_Handle, fieldName, OutValue);
-        String::Free(fieldName);
+        NativeString::Free(fieldName);
     }
 
 }

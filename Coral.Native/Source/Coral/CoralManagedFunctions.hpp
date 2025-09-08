@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Coral/Core.hpp"
-#include "Coral/String.hpp"
+#include "Coral/NativeString.hpp"
 
 namespace Coral {
 
@@ -13,28 +13,28 @@ namespace Coral {
     class ManagedField;
 
     using SetInternalCallsFn = void (*)(int32_t, void*, int32_t);
-    using CreateAssemblyLoadContextFn = int32_t(*)(String, String);
+    using CreateAssemblyLoadContextFn = int32_t(*)(NativeString, NativeString);
     using UnloadAssemblyLoadContextFn = void (*)(int32_t);
-    using LoadAssemblyFn = int32_t(*)(int32_t, String);
+    using LoadAssemblyFn = int32_t(*)(int32_t, NativeString);
     using LoadAssemblyFromMemoryFn = int32_t(*)(int32_t, const std::byte*, int64_t);
     using GetLastLoadStatusFn = AssemblyLoadStatus(*)();
-    using GetAssemblyNameFn = String(*)(int32_t, int32_t);
+    using GetAssemblyNameFn = NativeString(*)(int32_t, int32_t);
     using GetSystemAssemblyFn = int32_t(*)(int32_t);
     using GetMethodInfoFromTokenFn = ManagedHandle(*)(int32_t, int32_t, MetadataToken);
     using GetFieldInfoFromTokenFn = ManagedHandle(*)(int32_t, int32_t, MetadataToken);
 
 #pragma region DotnetServices
-    using RunMSBuildFn = void (*)(String, Bool32, Bool32*);
+    using RunMSBuildFn = void (*)(NativeString, Bool32, Bool32*);
 #pragma endregion DotnetServices
 
 #pragma region TypeInterface
 
     using GetAssemblyTypesFn = void (*)(int32_t, int32_t, TypeId*, int32_t*);
-    using GetTypeIdFn = void (*)(String, TypeId*);
-    using GetFullTypeNameFn = String(*)(TypeId);
-    using GetTypeNameFn = String(*)(TypeId);
-    using GetTypeNamespaceFn = String(*)(TypeId);
-    using GetAssemblyQualifiedNameFn = String(*)(TypeId);
+    using GetTypeIdFn = void (*)(NativeString, TypeId*);
+    using GetFullTypeNameFn = NativeString(*)(TypeId);
+    using GetTypeNameFn = NativeString(*)(TypeId);
+    using GetTypeNamespaceFn = NativeString(*)(TypeId);
+    using GetAssemblyQualifiedNameFn = NativeString(*)(TypeId);
     using GetBaseTypeFn = void (*)(TypeId, TypeId*);
     using GetInterfaceTypeCountFn = void (*)(TypeId, int32_t*);
     using GetInterfaceTypesFn = void (*)(TypeId, TypeId*);
@@ -43,6 +43,13 @@ namespace Coral {
     using IsTypeAssignableToFn = Bool32(*)(TypeId, TypeId);
     using IsTypeAssignableFromFn = Bool32(*)(TypeId, TypeId);
     using IsTypeSZArrayFn = Bool32(*)(TypeId);
+    using IsTypeArrayFn = Bool32(*)(TypeId);
+    using IsTypeClassFn = Bool32(*)(TypeId);
+    using IsTypeInterfaceFn = Bool32(*)(TypeId);
+    using IsTypeAbstractFn = Bool32(*)(TypeId);
+    using IsTypeSealedFn = Bool32(*)(TypeId);
+    using IsTypeValueTypeFn = Bool32(*)(TypeId);
+
     using GetElementTypeFn = void (*)(TypeId, TypeId*);
     using GetTypeMethodsFn = void (*)(TypeId, ManagedHandle*, int32_t*);
     using GetTypeFieldsFn = void (*)(TypeId, ManagedHandle*, int32_t*);
@@ -56,10 +63,10 @@ namespace Coral {
 #pragma endregion
 
 #pragma region MethodInfo
-    using GetMethodInfoByNameFn = ManagedHandle(*)(TypeId, String, BindingFlags);
-    using GetMethodInfoByNameParamCountFn = ManagedHandle(*)(TypeId, String, int32_t, BindingFlags);
-    using GetMethodInfoByNameParamTypesFn = ManagedHandle(*)(TypeId, String, int32_t, const TypeId*, BindingFlags);
-    using GetMethodInfoNameFn = String(*)(ManagedHandle);
+    using GetMethodInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
+    using GetMethodInfoByNameParamCountFn = ManagedHandle(*)(TypeId, NativeString, int32_t, BindingFlags);
+    using GetMethodInfoByNameParamTypesFn = ManagedHandle(*)(TypeId, NativeString, int32_t, const TypeId*, BindingFlags);
+    using GetMethodInfoNameFn = NativeString(*)(ManagedHandle);
     using GetMethodInfoReturnTypeFn = void (*)(ManagedHandle, TypeId*);
     using GetMethodInfoParameterTypesFn = void (*)(ManagedHandle, TypeId*, int32_t*);
     using GetMethodInfoAccessibilityFn = TypeAccessibility(*)(ManagedHandle);
@@ -69,8 +76,8 @@ namespace Coral {
 #pragma endregion
 
 #pragma region FieldInfo
-    using GetFieldInfoByNameFn = ManagedHandle(*)(TypeId, String, BindingFlags);
-    using GetFieldInfoNameFn = String(*)(ManagedHandle);
+    using GetFieldInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
+    using GetFieldInfoNameFn = NativeString(*)(ManagedHandle);
     using GetFieldInfoTypeFn = void (*)(ManagedHandle, TypeId*);
     using GetFieldInfoAccessibilityFn = TypeAccessibility(*)(ManagedHandle);
     using GetFieldInfoIsStaticFn = Bool32(*)(ManagedHandle);
@@ -80,8 +87,8 @@ namespace Coral {
 #pragma endregion
 
 #pragma region PropertyInfo
-    using GetPropertyInfoByNameFn = ManagedHandle(*)(TypeId, String, BindingFlags);
-    using GetPropertyInfoNameFn = String(*)(ManagedHandle);
+    using GetPropertyInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
+    using GetPropertyInfoNameFn = NativeString(*)(ManagedHandle);
     using GetPropertyInfoTypeFn = void (*)(ManagedHandle, TypeId*);
     using GetPropertyInfoGetMethodFn = ManagedHandle(*)(ManagedHandle);
     using GetPropertyInfoSetMethodFn = ManagedHandle(*)(ManagedHandle);
@@ -89,7 +96,7 @@ namespace Coral {
 #pragma endregion
 
 #pragma region Attribute
-    using GetAttributeFieldValueFn = void (*)(ManagedHandle, String, void*);
+    using GetAttributeFieldValueFn = void (*)(ManagedHandle, NativeString, void*);
     using GetAttributeTypeFn = void (*)(ManagedHandle, TypeId*);
 #pragma endregion
 
@@ -109,6 +116,13 @@ namespace Coral {
     using GetObjectTypeIdFn = void (*)(void*, int32_t*);
     using GetObjectBoxedValueFn = void* (*)(const void*, int32_t, TypeId);
     using GetObjectUnboxedValueFn = void (*)(void*, void*);
+
+    using CreateNewManagedStringFn = void* (*)(const char16_t*, int32_t);
+    using GetStringContentsFn = int (*)(void*, char16_t*);
+    using WriteStringContentsUtf16Fn = void (*)(void*, const char16_t*, int32_t);
+    using CreateNewManagedArrayFn = void* (*)(int32_t, TypeId);
+    using SetArrayElementFn = void (*)(void*, const void*, Bool32, int32_t);
+    using GetArrayElementFn = void (*)(void*, void*, Bool32, int32_t);
 
     using CollectGarbageFn = void (*)(int32_t, GCCollectionMode, Bool32, Bool32);
     using WaitForPendingFinalizersFn = void (*)();
@@ -144,6 +158,13 @@ namespace Coral {
         IsTypeAssignableToFn IsTypeAssignableToFptr = nullptr;
         IsTypeAssignableFromFn IsTypeAssignableFromFptr = nullptr;
         IsTypeSZArrayFn IsTypeSZArrayFptr = nullptr;
+        IsTypeArrayFn IsTypeArrayFptr = nullptr;
+        IsTypeClassFn IsTypeClassFptr = nullptr;
+        IsTypeInterfaceFn IsTypeInterfaceFptr = nullptr;
+        IsTypeAbstractFn IsTypeAbstractFptr = nullptr;
+        IsTypeSealedFn IsTypeSealedFptr = nullptr;
+        IsTypeValueTypeFn IsTypeValueTypeFptr = nullptr;
+
         GetElementTypeFn GetElementTypeFptr = nullptr;
         GetTypeMethodsFn GetTypeMethodsFptr = nullptr;
         GetTypeFieldsFn GetTypeFieldsFptr = nullptr;
@@ -211,6 +232,14 @@ namespace Coral {
         GetObjectTypeIdFn GetObjectTypeIdFptr = nullptr;
         GetObjectBoxedValueFn GetObjectBoxedValueFptr = nullptr;
         GetObjectUnboxedValueFn GetObjectUnboxedValueFptr = nullptr;
+
+        CreateNewManagedStringFn CreateNewManagedStringFptr = nullptr;
+
+        GetStringContentsFn GetStringContentsFptr = nullptr;
+        WriteStringContentsUtf16Fn WriteStringContentsUtf16Fptr = nullptr;
+        CreateNewManagedArrayFn CreateNewManagedArrayFptr = nullptr;
+        SetArrayElementFn SetArrayElementFptr = nullptr;
+        GetArrayElementFn GetArrayElementFptr = nullptr;
 
         CollectGarbageFn CollectGarbageFptr = nullptr;
         WaitForPendingFinalizersFn WaitForPendingFinalizersFptr = nullptr;
