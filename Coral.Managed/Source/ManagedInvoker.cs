@@ -25,8 +25,8 @@ internal static class ManagedInvoker
         var paramInfos = method.GetParameters();
         var dynamicMethod = new DynamicMethod(
             $"Invoke_{method.Name}",
-            typeof(object?),
-            new Type[] { typeof(object?), typeof(object?[]?) },
+            typeof(object),
+            new Type[] { typeof(object), typeof(object?[]) },
             method.DeclaringType.Module,
             true // skip visibility checks
         );
@@ -56,6 +56,10 @@ internal static class ManagedInvoker
             {
                 throw new NotSupportedException("ByRef parameters not supported.");
             }
+            else if (paramType.IsPointer)
+            {
+                throw new NotSupportedException("Pointer parameters not supported.");
+            }
             else if (paramType.IsValueType)
             {
                 il.Emit(OpCodes.Unbox_Any, paramType); // unbox value types
@@ -76,6 +80,10 @@ internal static class ManagedInvoker
         if (method.ReturnType == typeof(void))
         {
             il.Emit(OpCodes.Ldnull);
+        }
+        else if (method.ReturnType.IsPointer)
+        {
+            throw new NotSupportedException("Pointer return types are not supported.");
         }
         else if (method.ReturnType.IsValueType)
         {

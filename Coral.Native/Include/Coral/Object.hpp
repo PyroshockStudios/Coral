@@ -126,7 +126,7 @@ namespace Coral {
 
         void Destroy();
 
-        bool IsValid() const { return m_Handle != nullptr && m_Type != nullptr; }
+        bool IsValid() const { return m_Handle != nullptr; }
 
         inline operator bool() const { return IsValid(); }
 

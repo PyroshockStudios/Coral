@@ -417,8 +417,8 @@ internal static class ManagedObject
         if (exception != null) *exception = IntPtr.Zero;
         try
         {
-            var target = GCHandle.FromIntPtr(InObjectHandle).Target;
-            if (target == null)
+            var delObj = GCHandle.FromIntPtr(InObjectHandle).Target;
+            if (delObj == null)
             {
                 LogMessage($"Cannot invoke null delegate! Ignoring...", MessageLevel.Error);
                 return;
