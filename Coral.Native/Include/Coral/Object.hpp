@@ -158,7 +158,7 @@ namespace Coral {
 
     protected:
         alignas(8) void* m_Handle = nullptr;
-        alignas(8) mutable const Type* m_Type = nullptr;
+        //alignas(8) mutable const Type* m_Type = nullptr;
 
     private:
         friend struct Internal::Object_LayoutTest;
@@ -170,8 +170,9 @@ namespace Coral {
         struct Object_LayoutTest
         {
             static_assert(offsetof(Object, m_Handle) == 0);
-            static_assert(offsetof(Object, m_Type) == 8);
-            static_assert(sizeof(Object) == 16);
+            //static_assert(offsetof(Object, m_Type) == 8);
+            //static_assert(sizeof(Object) == 16);
+            static_assert(sizeof(Object) == 8);
         };
     }
 

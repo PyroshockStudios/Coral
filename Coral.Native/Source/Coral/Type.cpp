@@ -316,7 +316,7 @@ namespace Coral {
         void* exceptionResult = nullptr;
         Object result;
         result.m_Handle = s_ManagedFunctions.CreateObjectFptr(m_Id, false, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
-        result.m_Type = this;
+        //result.m_Type = this;
         if (OutException)
         {
             *OutException = Object();

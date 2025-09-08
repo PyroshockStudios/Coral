@@ -14,14 +14,14 @@ namespace Coral {
         if (InOther.m_Handle)
         {
             m_Handle = s_ManagedFunctions.CopyObjectFptr(InOther.m_Handle);
-            m_Type = InOther.m_Type;
+            //m_Type = InOther.m_Type;
         }
     }
 
-    Object::Object(Object&& InOther) noexcept : m_Handle(InOther.m_Handle), m_Type(InOther.m_Type)
+    Object::Object(Object&& InOther) noexcept : m_Handle(InOther.m_Handle)//, m_Type(InOther.m_Type)
     {
         InOther.m_Handle = nullptr;
-        InOther.m_Type = nullptr;
+        //InOther.m_Type = nullptr;
     }
 
     Object::~Object()
@@ -34,9 +34,9 @@ namespace Coral {
         if (this != &InOther)
         {
             m_Handle = InOther.m_Handle;
-            m_Type = InOther.m_Type;
+            //m_Type = InOther.m_Type;
             InOther.m_Handle = nullptr;
-            InOther.m_Type = nullptr;
+            //InOther.m_Type = nullptr;
         }
 
         return *this;
@@ -50,7 +50,7 @@ namespace Coral {
             if (InOther.m_Handle)
             {
                 m_Handle = s_ManagedFunctions.CopyObjectFptr(InOther.m_Handle);
-                m_Type = InOther.m_Type;
+                //m_Type = InOther.m_Type;
             }
         }
 
@@ -187,14 +187,17 @@ namespace Coral {
 
     const Type& Object::GetType() const
     {
-        if (!m_Type)
-        {
-            Type type;
-            s_ManagedFunctions.GetObjectTypeIdFptr(m_Handle, &type.m_Id);
-            m_Type = TypeCache::Get().CacheType(std::move(type));
-        }
+        //if (!m_Type)
+        //{
+        //    Type type;
+        //    s_ManagedFunctions.GetObjectTypeIdFptr(m_Handle, &type.m_Id);
+        //    m_Type = TypeCache::Get().CacheType(std::move(type));
+        //}
+        //return *m_Type;
 
-        return *m_Type;
+        Type type;
+        s_ManagedFunctions.GetObjectTypeIdFptr(m_Handle, &type.m_Id);
+        return *TypeCache::Get().CacheType(std::move(type));
     }
 
     void Object::Destroy()
@@ -204,7 +207,7 @@ namespace Coral {
 
         s_ManagedFunctions.DestroyObjectFptr(m_Handle);
         m_Handle = nullptr;
-        m_Type = nullptr;
+        //m_Type = nullptr;
     }
 
 }

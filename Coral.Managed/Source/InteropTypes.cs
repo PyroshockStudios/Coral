@@ -135,16 +135,16 @@ public struct NativeArray<T> : IDisposable, IEnumerable<T>
 }
 
 
-[StructLayout(LayoutKind.Sequential, Size=16, Pack=8)]
+[StructLayout(LayoutKind.Sequential, Size=8, Pack=8)]
 public struct NativeInstance<T> : IDisposable
 {
 	private IntPtr m_Handle;
-	private readonly IntPtr m_Unused;
+	//private readonly IntPtr m_Unused;
 
 	private NativeInstance(IntPtr handle)
 	{
 		m_Handle = handle;
-		m_Unused = IntPtr.Zero;
+		//m_Unused = IntPtr.Zero;
 	}
 
 	public void Dispose()
