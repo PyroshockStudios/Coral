@@ -7,9 +7,8 @@
 #include "FieldInfo.hpp"
 #include "PropertyInfo.hpp"
 
-#include <optional>
-
 namespace Coral {
+    class TypeImpl;
     class ReflectionType;
     class Type
     {
@@ -42,8 +41,8 @@ namespace Coral {
         StdString GetNamespace() const;
         StdString GetAssemblyQualifiedName() const;
 
-        const Type& GetBaseType() const;
-        const StdVector<Type>& GetInterfaceTypes() const;
+        Type GetBaseType() const;
+        StdVector<Type> GetInterfaceTypes() const;
 
         int32_t GetSize() const;
 
@@ -67,8 +66,8 @@ namespace Coral {
 
         ManagedType GetManagedType() const;
 
-        const Type& GetGenericArgument(int32_t InArgIndex) const;
-        const Type& GetGenericTypeDefinition() const;
+        Type GetGenericArgument(int32_t InArgIndex) const;
+        Type GetGenericTypeDefinition() const;
 
         bool IsSZArray() const;
         bool IsArray() const;
@@ -78,7 +77,7 @@ namespace Coral {
         bool IsSealed() const;
         bool IsValueType() const;
 
-        const Type& GetElementType() const;
+        Type GetElementType() const;
 
         bool operator==(const Type& InOther) const;
 
@@ -136,9 +135,6 @@ namespace Coral {
 
     private:
         TypeId m_Id = -1;
-        mutable Type* m_BaseType = nullptr;
-        mutable StdOptional<StdVector<Type>> m_InterfaceTypes = StdNullOpt;
-        mutable Type* m_ElementType = nullptr;
 
         friend class HostInstance;
         friend class Assembly;
@@ -149,6 +145,7 @@ namespace Coral {
         friend class Attribute;
         friend class ReflectionType;
         friend class Object;
+        friend class TypeImpl;
     };
 
     class ReflectionType

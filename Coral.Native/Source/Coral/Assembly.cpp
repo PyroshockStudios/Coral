@@ -34,21 +34,15 @@ namespace Coral {
 
     static Type s_NullType;
 
-    Type& Assembly::GetType(StdStringView InClassName) const
+    Type Assembly::GetType(StdStringView InClassName) const
     {
         auto it = m_LocalTypeNameCache.find(StdString(InClassName));
-        return it == m_LocalTypeNameCache.end() ? s_NullType : *it->second;
+        return it == m_LocalTypeNameCache.end() ? s_NullType : it->second;
     }
 
-    Type& Assembly::GetType(TypeId InClassId) const
+    const StdVector<Type>& Assembly::GetTypes() const
     {
-        auto it = m_LocalTypeIdCache.find(InClassId);
-        return it == m_LocalTypeIdCache.end() ? s_NullType : *it->second;
-    }
-
-    const StdVector<Type*>& Assembly::GetTypes() const
-    {
-        return m_LocalTypeRefs;
+        return m_LocalTypes;
     }
 
     MethodInfo Assembly::GetMethodFromToken(MetadataToken InToken) const
@@ -105,27 +99,27 @@ namespace Coral {
 
         LoadAssemblyData(result);
 
-        TypeCache::Get().m_VoidType = TypeCache::Get().GetTypeByName("System.Void");
-        TypeCache::Get().m_ByteType = TypeCache::Get().GetTypeByName("System.Byte");
-        TypeCache::Get().m_SByteType = TypeCache::Get().GetTypeByName("System.SByte");
-        TypeCache::Get().m_ShortType = TypeCache::Get().GetTypeByName("System.Int16");
-        TypeCache::Get().m_UShortType = TypeCache::Get().GetTypeByName("System.UInt16");
-        TypeCache::Get().m_IntType = TypeCache::Get().GetTypeByName("System.Int32");
-        TypeCache::Get().m_UIntType = TypeCache::Get().GetTypeByName("System.UInt32");
-        TypeCache::Get().m_LongType = TypeCache::Get().GetTypeByName("System.Int64");
-        TypeCache::Get().m_ULongType = TypeCache::Get().GetTypeByName("System.UInt64");
-        TypeCache::Get().m_FloatType = TypeCache::Get().GetTypeByName("System.Single");
-        TypeCache::Get().m_DoubleType = TypeCache::Get().GetTypeByName("System.Double");
-        TypeCache::Get().m_BoolType = TypeCache::Get().GetTypeByName("System.Boolean");
-        TypeCache::Get().m_CharType = TypeCache::Get().GetTypeByName("System.Char");
-        TypeCache::Get().m_StringType = TypeCache::Get().GetTypeByName("System.String");
-        TypeCache::Get().m_ObjectType = TypeCache::Get().GetTypeByName("System.Object");
-        TypeCache::Get().m_IntPtrType = TypeCache::Get().GetTypeByName("System.IntPtr");
-        TypeCache::Get().m_UIntPtrType = TypeCache::Get().GetTypeByName("System.UIntPtr");
-        TypeCache::Get().m_DecimalType = TypeCache::Get().GetTypeByName("System.Decimal");
-        TypeCache::Get().m_DateTimeType = TypeCache::Get().GetTypeByName("System.DateTime");
-        TypeCache::Get().m_ExceptionType = TypeCache::Get().GetTypeByName("System.Exception");
-        TypeCache::Get().m_ArrayType = TypeCache::Get().GetTypeByName("System.Array");
+        TypeCache::Get().m_VoidType = result.GetType("System.Void");
+        TypeCache::Get().m_ByteType = result.GetType("System.Byte");
+        TypeCache::Get().m_SByteType = result.GetType("System.SByte");
+        TypeCache::Get().m_ShortType = result.GetType("System.Int16");
+        TypeCache::Get().m_UShortType = result.GetType("System.UInt16");
+        TypeCache::Get().m_IntType = result.GetType("System.Int32");
+        TypeCache::Get().m_UIntType = result.GetType("System.UInt32");
+        TypeCache::Get().m_LongType = result.GetType("System.Int64");
+        TypeCache::Get().m_ULongType = result.GetType("System.UInt64");
+        TypeCache::Get().m_FloatType = result.GetType("System.Single");
+        TypeCache::Get().m_DoubleType = result.GetType("System.Double");
+        TypeCache::Get().m_BoolType = result.GetType("System.Boolean");
+        TypeCache::Get().m_CharType = result.GetType("System.Char");
+        TypeCache::Get().m_StringType = result.GetType("System.String");
+        TypeCache::Get().m_ObjectType = result.GetType("System.Object");
+        TypeCache::Get().m_IntPtrType = result.GetType("System.IntPtr");
+        TypeCache::Get().m_UIntPtrType = result.GetType("System.UIntPtr");
+        TypeCache::Get().m_DecimalType = result.GetType("System.Decimal");
+        TypeCache::Get().m_DateTimeType = result.GetType("System.DateTime");
+        TypeCache::Get().m_ExceptionType = result.GetType("System.Exception");
+        TypeCache::Get().m_ArrayType = result.GetType("System.Array");
         m_SystemAssembly = &result;
     }
     void AssemblyLoadContext::LoadAssemblyData(Assembly& assembly)
@@ -145,20 +139,12 @@ namespace Coral {
 
             // reserve to avoid bad references after resizing
             assembly.m_LocalTypes.reserve(typeIds.size());
-            assembly.m_LocalTypeRefs.reserve(typeIds.size());
-            for (auto typeId : typeIds)
+            for (TypeId typeId : typeIds)
             {
-                // global cache
                 Type type;
                 type.m_Id = typeId;
-                TypeCache::Get().CacheType(std::move(type));
-                // local cache
-                Type type2;
-                type2.m_Id = typeId;
-                Type& inserted = assembly.m_LocalTypes.emplace_back(std::move(type2));
-                assembly.m_LocalTypeRefs.push_back(&inserted);
-                assembly.m_LocalTypeIdCache[inserted.GetTypeId()] = &inserted;
-                assembly.m_LocalTypeNameCache[inserted.GetFullName()] = &inserted;
+                assembly.m_LocalTypes.emplace_back(type);
+                assembly.m_LocalTypeNameCache[type.GetFullName()] = type;
             }
         }
     }

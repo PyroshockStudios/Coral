@@ -28,10 +28,9 @@ namespace Coral {
         void AddInternalCall(StdStringView InClassName, StdStringView InVariableName, void* InFunctionPtr);
         void UploadInternalCalls();
 
-        Type& GetType(StdStringView InClassName) const;
-        Type& GetType(TypeId InTypeId) const;
+        Type GetType(StdStringView InClassName) const;
 
-        const StdVector<Type*>& GetTypes() const;
+        const StdVector<Type>& GetTypes() const;
 
         MethodInfo GetMethodFromToken(MetadataToken InToken) const;
         FieldInfo GetFieldFromToken(MetadataToken InToken) const;
@@ -47,9 +46,7 @@ namespace Coral {
         StdVector<InternalCall> m_InternalCalls;
 
         StdVector<Type> m_LocalTypes;
-        StdVector<Type*> m_LocalTypeRefs;
-        StdUnorderedMap<StdString, Type*> m_LocalTypeNameCache;
-        StdUnorderedMap<TypeId, Type*> m_LocalTypeIdCache;
+        StdUnorderedMap<StdString, Type> m_LocalTypeNameCache;
 
         friend class HostInstance;
         friend class AssemblyLoadContext;

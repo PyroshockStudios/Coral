@@ -7,6 +7,8 @@
 #include "TypeCache.hpp"
 #include "CoralManagedFunctions.hpp"
 
+#include <cassert>
+
 namespace Coral {
 
     Object::Object(const Object& InOther)
@@ -18,7 +20,7 @@ namespace Coral {
         }
     }
 
-    Object::Object(Object&& InOther) noexcept : m_Handle(InOther.m_Handle)//, m_Type(InOther.m_Type)
+    Object::Object(Object&& InOther) noexcept : m_Handle(InOther.m_Handle) //, m_Type(InOther.m_Type)
     {
         InOther.m_Handle = nullptr;
         //InOther.m_Type = nullptr;
@@ -47,10 +49,9 @@ namespace Coral {
         if (this != &InOther)
         {
             Destroy();
-            if (InOther.m_Handle)
+            if (InOther.IsValid())
             {
                 m_Handle = s_ManagedFunctions.CopyObjectFptr(InOther.m_Handle);
-                //m_Type = InOther.m_Type;
             }
         }
 
@@ -66,11 +67,13 @@ namespace Coral {
 
     void Object::UnboxRaw(void* OutValue) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         s_ManagedFunctions.GetObjectUnboxedValueFptr(m_Handle, OutValue);
     }
 
     void Object::InvokeMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         // NOTE(Peter): If you get an exception in this function it's most likely because you're using a Native only debugger type in Visual Studio
         //				and it's catching a C# exception even though it shouldn't. I recommend switching the debugger type to Mixed (.NET Core)
         //				which should be the default for Hazelnut, or simply press "Continue" until it works.
@@ -84,8 +87,9 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeMethodRetRaw( const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
+    void Object::InvokeMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
         if (OutException)
@@ -95,8 +99,9 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeDelegateRaw( const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
+    void Object::InvokeDelegateRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeDelegateFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
         if (OutException)
@@ -108,6 +113,7 @@ namespace Coral {
 
     void Object::InvokeDelegateRetRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeDelegateRetFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
         if (OutException)
@@ -117,30 +123,35 @@ namespace Coral {
         }
     }
 
-    void Object::SetFieldValueRaw(const FieldInfo& InField, const void* InValue) 
+    void Object::SetFieldValueRaw(const FieldInfo& InField, const void* InValue)
     {
+        assert(IsValid() && "Do not use an invalid object!");
         s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, InValue, false);
     }
 
     void Object::GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, OutValue, false);
     }
 
-    void Object::SetFieldValueObject(const FieldInfo& InField, const Object& InObject) 
+    void Object::SetFieldValueObject(const FieldInfo& InField, const Object& InObject)
     {
+        assert(IsValid() && "Do not use an invalid object!");
         s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, &InObject.m_Handle, true);
     }
 
     Object Object::GetFieldValueObject(const FieldInfo& InField) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         Object result = {};
         s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, &result.m_Handle, true);
         return result;
     }
 
-    void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException) 
+    void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException)
     {
+        assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
         s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, InValue, false, OutException ? &exceptionResult : nullptr);
         if (OutException)
@@ -152,6 +163,7 @@ namespace Coral {
 
     void Object::GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, Object* OutException) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
         s_ManagedFunctions.GetPropertyValueFptr(m_Handle, InProperty.m_Handle, OutValue, false, OutException ? &exceptionResult : nullptr);
         if (OutException)
@@ -161,8 +173,9 @@ namespace Coral {
         }
     }
 
-    void Object::SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException) 
+    void Object::SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException)
     {
+        assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
         s_ManagedFunctions.SetPropertyValueFptr(m_Handle, InProperty.m_Handle, &InObject.m_Handle, true, OutException ? &exceptionResult : nullptr);
         if (OutException)
@@ -174,6 +187,7 @@ namespace Coral {
 
     Object Object::GetPropertyValueObject(const PropertyInfo& InProperty, Object* OutException) const
     {
+        assert(IsValid() && "Do not use an invalid object!");
         Object result = {};
         void* exceptionResult = nullptr;
         s_ManagedFunctions.GetPropertyValueFptr(m_Handle, InProperty.m_Handle, &result.m_Handle, true, OutException ? &exceptionResult : nullptr);
@@ -185,29 +199,21 @@ namespace Coral {
         return result;
     }
 
-    const Type& Object::GetType() const
+    Type Object::GetType() const
     {
-        //if (!m_Type)
-        //{
-        //    Type type;
-        //    s_ManagedFunctions.GetObjectTypeIdFptr(m_Handle, &type.m_Id);
-        //    m_Type = TypeCache::Get().CacheType(std::move(type));
-        //}
-        //return *m_Type;
-
+        assert(IsValid() && "Do not use an invalid object!");
         Type type;
         s_ManagedFunctions.GetObjectTypeIdFptr(m_Handle, &type.m_Id);
-        return *TypeCache::Get().CacheType(std::move(type));
+        return type;
     }
 
     void Object::Destroy()
     {
-        if (!m_Handle)
+        if (!IsValid())
             return;
 
         s_ManagedFunctions.DestroyObjectFptr(m_Handle);
         m_Handle = nullptr;
-        //m_Type = nullptr;
     }
 
 }

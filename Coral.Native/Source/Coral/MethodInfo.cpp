@@ -16,14 +16,9 @@ namespace Coral {
 
     Type& MethodInfo::GetReturnType()
     {
-        if (!m_ReturnType)
-        {
-            Type returnType;
-            s_ManagedFunctions.GetMethodInfoReturnTypeFptr(m_Handle, &returnType.m_Id);
-            m_ReturnType = TypeCache::Get().CacheType(std::move(returnType));
-        }
-
-        return *m_ReturnType;
+        Type returnType;
+        s_ManagedFunctions.GetMethodInfoReturnTypeFptr(m_Handle, &returnType.m_Id);
+        return returnType;
     }
 
     const StdVector<Type>& MethodInfo::GetParameterTypes()
@@ -37,14 +32,14 @@ namespace Coral {
             s_ManagedFunctions.GetMethodInfoParameterTypesFptr(m_Handle, parameterTypes.data(), &parameterCount);
 
             StdVector<Type> types {};
-            
+
             types.resize(parameterTypes.size());
 
             for (size_t i = 0; i < parameterTypes.size(); i++)
             {
                 Type type;
                 type.m_Id = parameterTypes[i];
-                types[i] = *TypeCache::Get().CacheType(std::move(type));
+                types[i] = type;
             }
             m_ParameterTypes.emplace(std::move(types));
         }
@@ -61,7 +56,7 @@ namespace Coral {
     {
         return s_ManagedFunctions.GetMethodInfoIsStaticFptr(m_Handle);
     }
-    
+
     bool MethodInfo::HasAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
@@ -87,7 +82,8 @@ namespace Coral {
     {
         // TODO: make efficient
         auto list = GetAttributes();
-        for (Attribute& attr : list) {
+        for (Attribute& attr : list)
+        {
             if (attr.GetType() == InAttributeType) return attr;
         }
         return {};

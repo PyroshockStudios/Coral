@@ -29,7 +29,6 @@ namespace Coral {
 
     private:
         ManagedHandle m_Handle = -1;
-        Type* m_Type = nullptr;
 
         friend class Type;
         friend class Object;

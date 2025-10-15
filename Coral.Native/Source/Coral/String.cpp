@@ -1,7 +1,8 @@
 ﻿#include "Coral/String.hpp"
 #include "Coral/StringHelper.hpp"
 #include "CoralManagedFunctions.hpp"
-#include <stack>
+#include <cassert>
+
 namespace Coral {
     String::String(int32_t InLength)
     {
@@ -26,10 +27,12 @@ namespace Coral {
 
     StdString String::GetStringUtf8() const
     {
+        assert(IsValid() && "Do not use an invalid string!");
         return StringHelper::ConvertWideToUtf8(GetStringUtf16());
     }
     StdWString String::GetStringUtf16() const
     {
+        assert(IsValid() && "Do not use an invalid string!");
         int32_t length = GetLength();
         StdWString result = {};
         result.resize(static_cast<size_t>(length));
@@ -39,6 +42,7 @@ namespace Coral {
 
     int32_t String::GetLength() const
     {
+        assert(IsValid() && "Do not use an invalid string!");
         return s_ManagedFunctions.GetStringContentsFptr(m_Handle, nullptr);
     }
 }

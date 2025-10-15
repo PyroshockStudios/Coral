@@ -16,14 +16,9 @@ namespace Coral {
 
     Type& FieldInfo::GetType()
     {
-        if (!m_Type)
-        {
-            Type fieldType;
-            s_ManagedFunctions.GetFieldInfoTypeFptr(m_Handle, &fieldType.m_Id);
-            m_Type = TypeCache::Get().CacheType(std::move(fieldType));
-        }
-
-        return *m_Type;
+        Type fieldType;
+        s_ManagedFunctions.GetFieldInfoTypeFptr(m_Handle, &fieldType.m_Id);
+        return fieldType;
     }
 
     TypeAccessibility FieldInfo::GetAccessibility() const
@@ -65,7 +60,8 @@ namespace Coral {
     {
         // TODO: make efficient
         auto list = GetAttributes();
-        for (Attribute& attr : list) {
+        for (Attribute& attr : list)
+        {
             if (attr.GetType() == InAttributeType) return attr;
         }
         return {};

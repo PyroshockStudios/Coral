@@ -7,16 +7,11 @@
 
 namespace Coral {
 
-    Type& Attribute::GetType()
+    Type Attribute::GetType()
     {
-        if (!m_Type)
-        {
-            Type type;
-            s_ManagedFunctions.GetAttributeTypeFptr(m_Handle, &type.m_Id);
-            m_Type = TypeCache::Get().CacheType(std::move(type));
-        }
-
-        return *m_Type;
+        Type type;
+        s_ManagedFunctions.GetAttributeTypeFptr(m_Handle, &type.m_Id);
+        return type;
     }
 
     template <>

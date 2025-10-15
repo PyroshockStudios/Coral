@@ -17,14 +17,9 @@ namespace Coral {
 
     Type& PropertyInfo::GetType()
     {
-        if (!m_Type)
-        {
-            Type propertyType;
-            s_ManagedFunctions.GetPropertyInfoTypeFptr(m_Handle, &propertyType.m_Id);
-            m_Type = TypeCache::Get().CacheType(std::move(propertyType));
-        }
-
-        return *m_Type;
+        Type propertyType;
+        s_ManagedFunctions.GetPropertyInfoTypeFptr(m_Handle, &propertyType.m_Id);
+        return propertyType;
     }
 
     MethodInfo PropertyInfo::GetGetMethod() const
@@ -66,7 +61,8 @@ namespace Coral {
     {
         // TODO: make efficient
         auto list = GetAttributes();
-        for (Attribute& attr : list) {
+        for (Attribute& attr : list)
+        {
             if (attr.GetType() == InAttributeType) return attr;
         }
         return {};

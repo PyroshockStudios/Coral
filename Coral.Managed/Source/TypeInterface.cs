@@ -538,8 +538,10 @@ internal static class TypeInterface
             var elementType = type.GetElementType();
 
             if (elementType == null)
+            {
                 *OutElementTypeID = 0;
-
+                return;
+            }
             *OutElementTypeID = s_CachedTypes.Add(elementType);
         }
         catch (Exception e)
