@@ -119,26 +119,26 @@ static void RegisterTestInternalCalls(Coral::Assembly& InAssembly)
     InAssembly.AddInternalCall("Testing.Managed.Tests", "NativeInstanceIcall", reinterpret_cast<void*>(&NativeInstanceIcall));
 }
 
-static Coral::MethodInfo SByteTest_Fn;
-static Coral::MethodInfo ByteTest_Fn;
-static Coral::MethodInfo ShortTest_Fn;
-static Coral::MethodInfo UShortTest_Fn;
-static Coral::MethodInfo IntTest_Fn;
-static Coral::MethodInfo UIntTest_Fn;
-static Coral::MethodInfo LongTest_Fn;
-static Coral::MethodInfo ULongTest_Fn;
-static Coral::MethodInfo FloatTest_Fn;
-static Coral::MethodInfo DoubleTest_Fn;
-static Coral::MethodInfo BoolTest_Fn;
-static Coral::MethodInfo IntPtrTest_Fn;
-static Coral::MethodInfo StringTest_Fn;
-static Coral::MethodInfo ArrayTest_Fn;
-static Coral::MethodInfo ObjectTest_Fn;
-static Coral::MethodInfo DummyStructTest_Fn;
-static Coral::MethodInfo DummyStructPtrTest_Fn;
-static Coral::MethodInfo DummyStructPtrTestBad_Fn;
-static Coral::MethodInfo OverloadIntTest_Fn;
-static Coral::MethodInfo OverloadFloatTest_Fn;
+static Coral::Method SByteTest_Fn;
+static Coral::Method ByteTest_Fn;
+static Coral::Method ShortTest_Fn;
+static Coral::Method UShortTest_Fn;
+static Coral::Method IntTest_Fn;
+static Coral::Method UIntTest_Fn;
+static Coral::Method LongTest_Fn;
+static Coral::Method ULongTest_Fn;
+static Coral::Method FloatTest_Fn;
+static Coral::Method DoubleTest_Fn;
+static Coral::Method BoolTest_Fn;
+static Coral::Method IntPtrTest_Fn;
+static Coral::Method StringTest_Fn;
+static Coral::Method ArrayTest_Fn;
+static Coral::Method ObjectTest_Fn;
+static Coral::Method DummyStructTest_Fn;
+static Coral::Method DummyStructPtrTest_Fn;
+static Coral::Method DummyStructPtrTestBad_Fn;
+static Coral::Method OverloadIntTest_Fn;
+static Coral::Method OverloadFloatTest_Fn;
 
 struct Test
 {

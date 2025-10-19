@@ -62,7 +62,7 @@ namespace Coral {
 
 #pragma endregion
 
-#pragma region MethodInfo
+#pragma region Method
     using GetMethodInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
     using GetMethodInfoByNameParamCountFn = ManagedHandle(*)(TypeId, NativeString, int32_t, BindingFlags);
     using GetMethodInfoByNameParamTypesFn = ManagedHandle(*)(TypeId, NativeString, int32_t, const TypeId*, BindingFlags);
@@ -75,7 +75,7 @@ namespace Coral {
     using GetMethodInfoTokenFn = MetadataToken(*)(ManagedHandle);
 #pragma endregion
 
-#pragma region FieldInfo
+#pragma region Field
     using GetFieldInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
     using GetFieldInfoNameFn = NativeString(*)(ManagedHandle);
     using GetFieldInfoTypeFn = void (*)(ManagedHandle, TypeId*);
@@ -86,7 +86,7 @@ namespace Coral {
     using GetFieldInfoTokenFn = MetadataToken(*)(ManagedHandle);
 #pragma endregion
 
-#pragma region PropertyInfo
+#pragma region Property
     using GetPropertyInfoByNameFn = ManagedHandle(*)(TypeId, NativeString, BindingFlags);
     using GetPropertyInfoNameFn = NativeString(*)(ManagedHandle);
     using GetPropertyInfoTypeFn = void (*)(ManagedHandle, TypeId*);
@@ -177,7 +177,7 @@ namespace Coral {
 
 #pragma endregion
 
-#pragma region MethodInfo
+#pragma region Method
         GetMethodInfoByNameFn GetMethodInfoByNameFptr = nullptr;
         GetMethodInfoByNameParamCountFn GetMethodInfoByNameParamCountFptr = nullptr;
         GetMethodInfoByNameParamTypesFn GetMethodInfoByNameParamTypesFptr = nullptr;
@@ -190,7 +190,7 @@ namespace Coral {
         GetMethodInfoTokenFn GetMethodInfoTokenFptr = nullptr;
 #pragma endregion
 
-#pragma region FieldInfo
+#pragma region Field
         GetFieldInfoByNameFn GetFieldInfoByNameFptr = nullptr;
         GetFieldInfoNameFn GetFieldInfoNameFptr = nullptr;
         GetFieldInfoTypeFn GetFieldInfoTypeFptr = nullptr;
@@ -201,7 +201,7 @@ namespace Coral {
         GetFieldInfoTokenFn GetFieldInfoTokenFptr = nullptr;
 #pragma endregion
 
-#pragma region PropertyInfo
+#pragma region Property
         GetPropertyInfoByNameFn GetPropertyInfoByNameFptr = nullptr;
         GetPropertyInfoNameFn GetPropertyInfoNameFptr = nullptr;
         GetPropertyInfoTypeFn GetPropertyInfoTypeFptr = nullptr;

@@ -8,8 +8,8 @@ namespace Coral {
     class Type;
     class Attribute;
     class Object;
-    class PropertyInfo;
-    class MethodInfo
+    class Property;
+    class Method
     {
     public:
         StdString GetName() const;
@@ -35,7 +35,7 @@ namespace Coral {
 
         friend class Type;
         friend class Object;
-        friend class PropertyInfo;
+        friend class Property;
         friend class Assembly;
     };
 

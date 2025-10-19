@@ -71,7 +71,7 @@ namespace Coral {
         s_ManagedFunctions.GetObjectUnboxedValueFptr(m_Handle, OutValue);
     }
 
-    void Object::InvokeMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
+    void Object::InvokeMethodRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
         assert(IsValid() && "Do not use an invalid object!");
         // NOTE(Peter): If you get an exception in this function it's most likely because you're using a Native only debugger type in Visual Studio
@@ -87,7 +87,7 @@ namespace Coral {
         }
     }
 
-    void Object::InvokeMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
+    void Object::InvokeMethodRetRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
     {
         assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
@@ -123,25 +123,25 @@ namespace Coral {
         }
     }
 
-    void Object::SetFieldValueRaw(const FieldInfo& InField, const void* InValue)
+    void Object::SetFieldValueRaw(const Field& InField, const void* InValue)
     {
         assert(IsValid() && "Do not use an invalid object!");
         s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, InValue, false);
     }
 
-    void Object::GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const
+    void Object::GetFieldValueRaw(const Field& InField, void* OutValue) const
     {
         assert(IsValid() && "Do not use an invalid object!");
         s_ManagedFunctions.GetFieldValueFptr(m_Handle, InField.m_Handle, OutValue, false);
     }
 
-    void Object::SetFieldValueObject(const FieldInfo& InField, const Object& InObject)
+    void Object::SetFieldValueObject(const Field& InField, const Object& InObject)
     {
         assert(IsValid() && "Do not use an invalid object!");
         s_ManagedFunctions.SetFieldValueFptr(m_Handle, InField.m_Handle, &InObject.m_Handle, true);
     }
 
-    Object Object::GetFieldValueObject(const FieldInfo& InField) const
+    Object Object::GetFieldValueObject(const Field& InField) const
     {
         assert(IsValid() && "Do not use an invalid object!");
         Object result = {};
@@ -149,7 +149,7 @@ namespace Coral {
         return result;
     }
 
-    void Object::SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException)
+    void Object::SetPropertyValueRaw(const Property& InProperty, const void* InValue, Object* OutException)
     {
         assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
@@ -161,7 +161,7 @@ namespace Coral {
         }
     }
 
-    void Object::GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, Object* OutException) const
+    void Object::GetPropertyValueRaw(const Property& InProperty, void* OutValue, Object* OutException) const
     {
         assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
@@ -173,7 +173,7 @@ namespace Coral {
         }
     }
 
-    void Object::SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException)
+    void Object::SetPropertyValueObject(const Property& InProperty, const Object& InObject, Object* OutException)
     {
         assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
@@ -185,7 +185,7 @@ namespace Coral {
         }
     }
 
-    Object Object::GetPropertyValueObject(const PropertyInfo& InProperty, Object* OutException) const
+    Object Object::GetPropertyValueObject(const Property& InProperty, Object* OutException) const
     {
         assert(IsValid() && "Do not use an invalid object!");
         Object result = {};

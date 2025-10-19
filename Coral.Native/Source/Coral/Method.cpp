@@ -1,4 +1,4 @@
-#include "Coral/MethodInfo.hpp"
+#include "Coral/Method.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
 #include "Coral/StringHelper.hpp"
@@ -8,20 +8,20 @@
 
 namespace Coral {
 
-    StdString MethodInfo::GetName() const
+    StdString Method::GetName() const
     {
         NativeString str = s_ManagedFunctions.GetMethodInfoNameFptr(m_Handle);
         return StringHelper::ConsumeNativeString(str);
     }
 
-    Type& MethodInfo::GetReturnType()
+    Type& Method::GetReturnType()
     {
         Type returnType;
         s_ManagedFunctions.GetMethodInfoReturnTypeFptr(m_Handle, &returnType.m_Id);
         return returnType;
     }
 
-    const StdVector<Type>& MethodInfo::GetParameterTypes()
+    const StdVector<Type>& Method::GetParameterTypes()
     {
         if (!m_ParameterTypes)
         {
@@ -47,23 +47,23 @@ namespace Coral {
         return *m_ParameterTypes;
     }
 
-    TypeAccessibility MethodInfo::GetAccessibility() const
+    TypeAccessibility Method::GetAccessibility() const
     {
         return s_ManagedFunctions.GetMethodInfoAccessibilityFptr(m_Handle);
     }
 
-    bool MethodInfo::IsStatic() const
+    bool Method::IsStatic() const
     {
         return s_ManagedFunctions.GetMethodInfoIsStaticFptr(m_Handle);
     }
 
-    bool MethodInfo::HasAttribute(const Type& InAttributeType) const
+    bool Method::HasAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         return GetAttribute(InAttributeType);
     }
 
-    StdVector<Attribute> MethodInfo::GetAttributes() const
+    StdVector<Attribute> Method::GetAttributes() const
     {
         int32_t attributeCount;
         s_ManagedFunctions.GetMethodInfoAttributesFptr(m_Handle, nullptr, &attributeCount);
@@ -78,7 +78,7 @@ namespace Coral {
         return result;
     }
 
-    Attribute MethodInfo::GetAttribute(const Type& InAttributeType) const
+    Attribute Method::GetAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         auto list = GetAttributes();
@@ -89,7 +89,7 @@ namespace Coral {
         return {};
     }
 
-    MetadataToken MethodInfo::GetMetadataToken() const
+    MetadataToken Method::GetMetadataToken() const
     {
         return s_ManagedFunctions.GetMethodInfoTokenFptr(m_Handle);
     }

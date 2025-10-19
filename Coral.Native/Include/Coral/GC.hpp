@@ -1,5 +1,5 @@
 ﻿#pragma once
-
+#include <cstdint>
 namespace Coral {
 
     enum class GCCollectionMode

@@ -1,5 +1,5 @@
-#include "Coral/PropertyInfo.hpp"
-#include "Coral/MethodInfo.hpp"
+#include "Coral/Property.hpp"
+#include "Coral/Method.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
 #include "Coral/StringHelper.hpp"
@@ -9,40 +9,40 @@
 
 namespace Coral {
 
-    StdString PropertyInfo::GetName() const
+    StdString Property::GetName() const
     {
         NativeString str = s_ManagedFunctions.GetPropertyInfoNameFptr(m_Handle);
         return StringHelper::ConsumeNativeString(str);
     }
 
-    Type& PropertyInfo::GetType()
+    Type& Property::GetType()
     {
         Type propertyType;
         s_ManagedFunctions.GetPropertyInfoTypeFptr(m_Handle, &propertyType.m_Id);
         return propertyType;
     }
 
-    MethodInfo PropertyInfo::GetGetMethod() const
+    Method Property::GetGetMethod() const
     {
-        MethodInfo info;
+        Method info;
         info.m_Handle = s_ManagedFunctions.GetPropertyInfoGetMethodFptr(m_Handle);
         return info;
     }
 
-    MethodInfo PropertyInfo::GetSetMethod() const
+    Method Property::GetSetMethod() const
     {
-        MethodInfo info;
+        Method info;
         info.m_Handle = s_ManagedFunctions.GetPropertyInfoSetMethodFptr(m_Handle);
         return info;
     }
 
-    bool PropertyInfo::HasAttribute(const Type& InAttributeType) const
+    bool Property::HasAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         return GetAttribute(InAttributeType);
     }
 
-    StdVector<Attribute> PropertyInfo::GetAttributes() const
+    StdVector<Attribute> Property::GetAttributes() const
     {
         int32_t attributeCount;
         s_ManagedFunctions.GetPropertyInfoAttributesFptr(m_Handle, nullptr, &attributeCount);
@@ -57,7 +57,7 @@ namespace Coral {
         return result;
     }
 
-    Attribute PropertyInfo::GetAttribute(const Type& InAttributeType) const
+    Attribute Property::GetAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         auto list = GetAttributes();

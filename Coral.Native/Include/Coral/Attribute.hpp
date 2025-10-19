@@ -32,9 +32,9 @@ namespace Coral {
         ManagedHandle m_Handle = -1;
 
         friend class Type;
-        friend class MethodInfo;
-        friend class FieldInfo;
-        friend class PropertyInfo;
+        friend class Method;
+        friend class Field;
+        friend class Property;
     };
 
 }

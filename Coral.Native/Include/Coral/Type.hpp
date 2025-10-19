@@ -3,9 +3,9 @@
 #include "Core.hpp"
 #include "NativeString.hpp"
 #include "Object.hpp"
-#include "MethodInfo.hpp"
-#include "FieldInfo.hpp"
-#include "PropertyInfo.hpp"
+#include "Method.hpp"
+#include "Field.hpp"
+#include "Property.hpp"
 
 namespace Coral {
     class TypeImpl;
@@ -50,15 +50,15 @@ namespace Coral {
         bool IsAssignableTo(const Type& InOther) const;
         bool IsAssignableFrom(const Type& InOther) const;
 
-        StdVector<MethodInfo> GetMethods() const;
-        StdVector<FieldInfo> GetFields() const;
-        StdVector<PropertyInfo> GetProperties() const;
+        StdVector<Method> GetMethods() const;
+        StdVector<Field> GetFields() const;
+        StdVector<Property> GetProperties() const;
 
-        MethodInfo GetMethod(StdStringView MethodName, bool InStatic = false) const;
-        MethodInfo GetMethod(StdStringView MethodName, int32_t InParamCount, bool InStatic = false) const;
-        MethodInfo GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type>& InParamTypes, bool InStatic = false) const;
-        FieldInfo GetField(StdStringView FieldName, bool InStatic = false) const;
-        PropertyInfo GetProperty(StdStringView PropertyName, bool InStatic = false) const;
+        Method GetMethod(StdStringView MethodName, bool InStatic = false) const;
+        Method GetMethod(StdStringView MethodName, int32_t InParamCount, bool InStatic = false) const;
+        Method GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type>& InParamTypes, bool InStatic = false) const;
+        Field GetField(StdStringView FieldName, bool InStatic = false) const;
+        Property GetProperty(StdStringView PropertyName, bool InStatic = false) const;
 
         bool HasAttribute(const Type& InAttributeType) const;
         StdVector<Attribute> GetAttributes() const;
@@ -101,7 +101,7 @@ namespace Coral {
         }
 
         template <typename TReturn = void, typename... TArgs>
-        auto InvokeStaticMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
+        auto InvokeStaticMethod(const Method& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
             if constexpr (std::is_void_v<TReturn>)
             {
@@ -130,8 +130,8 @@ namespace Coral {
         }
 
         Object CreateInstanceRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
-        void InvokeStaticMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
-        void InvokeStaticMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
+        void InvokeStaticMethodRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
+        void InvokeStaticMethodRetRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
 
     private:
         TypeId m_Id = -1;
@@ -139,9 +139,9 @@ namespace Coral {
         friend class HostInstance;
         friend class Assembly;
         friend class AssemblyLoadContext;
-        friend class MethodInfo;
-        friend class FieldInfo;
-        friend class PropertyInfo;
+        friend class Method;
+        friend class Field;
+        friend class Property;
         friend class Attribute;
         friend class ReflectionType;
         friend class Object;

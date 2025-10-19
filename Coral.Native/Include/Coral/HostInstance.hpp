@@ -30,12 +30,12 @@ namespace Coral {
         StdVector<const char*> SupportedTargets = { "9" };
     };
 
-    enum class CoralInitStatus
+    enum class CoralInitStatus : int32_t
     {
-        Success,
-        CoralManagedNotFound,
-        CoralManagedInitError,
-        DotNetNotFound,
+        Success = 0,
+        CoralManagedNotFound = -1,
+        CoralManagedInitError = -2,
+        DotNetNotFound = -3,
     };
 
     class HostInstance

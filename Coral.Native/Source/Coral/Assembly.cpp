@@ -45,16 +45,16 @@ namespace Coral {
         return m_LocalTypes;
     }
 
-    MethodInfo Assembly::GetMethodFromToken(MetadataToken InToken) const
+    Method Assembly::GetMethodFromToken(MetadataToken InToken) const
     {
-        MethodInfo info{};
+        Method info{};
         info.m_Handle = s_ManagedFunctions.GetMethodInfoFromTokenFptr(m_OwnerContextId, m_AssemblyId, InToken);
         return info;
     }
 
-    FieldInfo Assembly::GetFieldFromToken(MetadataToken InToken) const
+    Field Assembly::GetFieldFromToken(MetadataToken InToken) const
     {
-        FieldInfo info{};
+        Field info{};
         info.m_Handle = s_ManagedFunctions.GetFieldInfoFromTokenFptr(m_OwnerContextId, m_AssemblyId, InToken);
         return info;
     }

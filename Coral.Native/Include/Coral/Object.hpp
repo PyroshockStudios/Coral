@@ -8,9 +8,9 @@ namespace Coral {
     namespace Internal {
         struct Object_LayoutTest;
     }
-    class FieldInfo;
-    class MethodInfo;
-    class PropertyInfo;
+    class Field;
+    class Method;
+    class Property;
 
     class Assembly;
     class Type;
@@ -27,7 +27,7 @@ namespace Coral {
         Object& operator=(Object&& InOther) noexcept;
 
         template <typename TReturn = void, typename... TArgs>
-        auto InvokeMethod(const MethodInfo& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
+        auto InvokeMethod(const Method& InMethod, MethodParams<TArgs...>&& InParameters = {}, Object* OutException = nullptr) const
         {
             if constexpr (std::is_void_v<TReturn>)
             {
@@ -85,13 +85,13 @@ namespace Coral {
         }
 
         template <typename TValue>
-        void SetFieldValue(const FieldInfo& InField, const TValue& InValue)
+        void SetFieldValue(const Field& InField, const TValue& InValue)
         {
             SetFieldValueRaw(InField, &InValue);
         }
 
         template <typename TReturn>
-        TReturn GetFieldValue(const FieldInfo& InField) const
+        TReturn GetFieldValue(const Field& InField) const
         {
             TReturn result;
             GetFieldValueRaw(InField, &result);
@@ -99,28 +99,28 @@ namespace Coral {
         }
 
         template <typename TValue>
-        void SetPropertyValue(const PropertyInfo& InProperty, TValue InValue)
+        void SetPropertyValue(const Property& InProperty, TValue InValue)
         {
             SetPropertyValueRaw(InProperty, &InValue);
         }
 
         template <typename TReturn>
-        TReturn GetPropertyValue(const PropertyInfo& InProperty) const
+        TReturn GetPropertyValue(const Property& InProperty) const
         {
             TReturn result;
             GetPropertyValueRaw(InProperty, &result);
             return result;
         }
 
-        void SetFieldValueRaw(const FieldInfo& InField, const void* InValue);
-        void GetFieldValueRaw(const FieldInfo& InField, void* OutValue) const;
-        void SetFieldValueObject(const FieldInfo& InField, const Object& InObject);
-        Object GetFieldValueObject(const FieldInfo& InField) const;
+        void SetFieldValueRaw(const Field& InField, const void* InValue);
+        void GetFieldValueRaw(const Field& InField, void* OutValue) const;
+        void SetFieldValueObject(const Field& InField, const Object& InObject);
+        Object GetFieldValueObject(const Field& InField) const;
 
-        void SetPropertyValueRaw(const PropertyInfo& InProperty, const void* InValue, Object* OutException = nullptr);
-        void GetPropertyValueRaw(const PropertyInfo& InProperty, void* OutValue, Object* OutException = nullptr) const;
-        void SetPropertyValueObject(const PropertyInfo& InProperty, const Object& InObject, Object* OutException = nullptr);
-        Object GetPropertyValueObject(const PropertyInfo& InProperty, Object* OutException = nullptr) const;
+        void SetPropertyValueRaw(const Property& InProperty, const void* InValue, Object* OutException = nullptr);
+        void GetPropertyValueRaw(const Property& InProperty, void* OutValue, Object* OutException = nullptr) const;
+        void SetPropertyValueObject(const Property& InProperty, const Object& InObject, Object* OutException = nullptr);
+        Object GetPropertyValueObject(const Property& InProperty, Object* OutException = nullptr) const;
 
         Type GetType() const;
 
@@ -150,8 +150,8 @@ namespace Coral {
         static Object BoxRaw(const void* InValue, int32_t InSize, const Type& InType);
         void UnboxRaw(void* OutValue) const;
 
-        void InvokeMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
-        void InvokeMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
+        void InvokeMethodRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
+        void InvokeMethodRetRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
 
         void InvokeDelegateRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException = nullptr) const;
         void InvokeDelegateRetRaw(const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException = nullptr) const;
@@ -174,13 +174,13 @@ namespace Coral {
     }
 
     template <>
-    inline void Object::SetFieldValue(const FieldInfo& InField, const Coral::Object& InValue)
+    inline void Object::SetFieldValue(const Field& InField, const Coral::Object& InValue)
     {
         SetFieldValueObject(InField, InValue);
     }
 
     template <>
-    inline void Object::SetFieldValue(const FieldInfo& InField, const StdString& InValue)
+    inline void Object::SetFieldValue(const Field& InField, const StdString& InValue)
     {
         NativeString s = NativeString::New(InValue);
         SetFieldValueRaw(InField, &s);
@@ -188,20 +188,20 @@ namespace Coral {
     }
 
     template <>
-    inline void Object::SetFieldValue(const FieldInfo& InField, const bool& InValue)
+    inline void Object::SetFieldValue(const Field& InField, const bool& InValue)
     {
         Bool32 s = InValue;
         SetFieldValueRaw(InField, &s);
     }
 
     template <>
-    inline Object Object::GetFieldValue(const FieldInfo& InField) const
+    inline Object Object::GetFieldValue(const Field& InField) const
     {
         return GetFieldValueObject(InField);
     }
 
     template <>
-    inline StdString Object::GetFieldValue(const FieldInfo& InField) const
+    inline StdString Object::GetFieldValue(const Field& InField) const
     {
         NativeString result;
         GetFieldValueRaw(InField, &result);
@@ -211,7 +211,7 @@ namespace Coral {
     }
 
     template <>
-    inline bool Object::GetFieldValue(const FieldInfo& InField) const
+    inline bool Object::GetFieldValue(const Field& InField) const
     {
         Bool32 result;
         GetFieldValueRaw(InField, &result);
@@ -219,13 +219,13 @@ namespace Coral {
     }
 
     template <>
-    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, const Coral::Object& InValue)
+    inline void Object::SetPropertyValue(const Property& InProperty, const Coral::Object& InValue)
     {
         SetPropertyValueObject(InProperty, InValue);
     }
 
     template <>
-    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, const StdString& InValue)
+    inline void Object::SetPropertyValue(const Property& InProperty, const StdString& InValue)
     {
         NativeString s = NativeString::New(InValue);
         SetPropertyValueRaw(InProperty, &s);
@@ -233,20 +233,20 @@ namespace Coral {
     }
 
     template <>
-    inline void Object::SetPropertyValue(const PropertyInfo& InProperty, bool InValue)
+    inline void Object::SetPropertyValue(const Property& InProperty, bool InValue)
     {
         Bool32 s = InValue;
         SetPropertyValueRaw(InProperty, &s);
     }
 
     template <>
-    inline Object Object::GetPropertyValue(const PropertyInfo& InProperty) const
+    inline Object Object::GetPropertyValue(const Property& InProperty) const
     {
         return GetPropertyValueObject(InProperty);
     }
 
     template <>
-    inline StdString Object::GetPropertyValue(const PropertyInfo& InProperty) const
+    inline StdString Object::GetPropertyValue(const Property& InProperty) const
     {
         NativeString result;
         GetPropertyValueRaw(InProperty, &result);
@@ -256,7 +256,7 @@ namespace Coral {
     }
 
     template <>
-    inline bool Object::GetPropertyValue(const PropertyInfo& InProperty) const
+    inline bool Object::GetPropertyValue(const Property& InProperty) const
     {
         Bool32 result;
         GetPropertyValueRaw(InProperty, &result);

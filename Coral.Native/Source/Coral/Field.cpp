@@ -1,4 +1,4 @@
-#include "Coral/FieldInfo.hpp"
+#include "Coral/Field.hpp"
 #include "Coral/Type.hpp"
 #include "Coral/Attribute.hpp"
 #include "Coral/StringHelper.hpp"
@@ -8,41 +8,41 @@
 
 namespace Coral {
 
-    StdString FieldInfo::GetName() const
+    StdString Field::GetName() const
     {
         NativeString str = s_ManagedFunctions.GetFieldInfoNameFptr(m_Handle);
         return StringHelper::ConsumeNativeString(str);
     }
 
-    Type& FieldInfo::GetType()
+    Type& Field::GetType()
     {
         Type fieldType;
         s_ManagedFunctions.GetFieldInfoTypeFptr(m_Handle, &fieldType.m_Id);
         return fieldType;
     }
 
-    TypeAccessibility FieldInfo::GetAccessibility() const
+    TypeAccessibility Field::GetAccessibility() const
     {
         return s_ManagedFunctions.GetFieldInfoAccessibilityFptr(m_Handle);
     }
 
-    bool FieldInfo::IsStatic() const
+    bool Field::IsStatic() const
     {
         return s_ManagedFunctions.GetFieldInfoIsStaticFptr(m_Handle);
     }
 
-    bool FieldInfo::IsLiteral() const
+    bool Field::IsLiteral() const
     {
         return s_ManagedFunctions.GetFieldInfoIsLiteralFptr(m_Handle);
     }
 
-    bool FieldInfo::HasAttribute(const Type& InAttributeType) const
+    bool Field::HasAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         return GetAttribute(InAttributeType);
     }
 
-    StdVector<Attribute> FieldInfo::GetAttributes() const
+    StdVector<Attribute> Field::GetAttributes() const
     {
         int32_t attributeCount;
         s_ManagedFunctions.GetFieldInfoAttributesFptr(m_Handle, nullptr, &attributeCount);
@@ -56,7 +56,7 @@ namespace Coral {
         return result;
     }
 
-    Attribute FieldInfo::GetAttribute(const Type& InAttributeType) const
+    Attribute Field::GetAttribute(const Type& InAttributeType) const
     {
         // TODO: make efficient
         auto list = GetAttributes();
@@ -67,7 +67,7 @@ namespace Coral {
         return {};
     }
 
-    MetadataToken FieldInfo::GetMetadataToken() const
+    MetadataToken Field::GetMetadataToken() const
     {
         return s_ManagedFunctions.GetFieldInfoTokenFptr(m_Handle);
     }

@@ -6,7 +6,6 @@ namespace Coral {
     namespace Internal {
         struct NativeString_LayoutTest;
     }
-    // TODO(Emily): Could this benefit from retaining a var for size?
     class NativeString
     {
     public:

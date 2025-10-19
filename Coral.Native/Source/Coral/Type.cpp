@@ -106,72 +106,72 @@ namespace Coral {
         return s_ManagedFunctions.IsTypeAssignableFromFptr(m_Id, InOther.m_Id);
     }
 
-    StdVector<MethodInfo> Type::GetMethods() const
+    StdVector<Method> Type::GetMethods() const
     {
         int32_t methodCount = 0;
         s_ManagedFunctions.GetTypeMethodsFptr(m_Id, nullptr, &methodCount);
         StdVector<ManagedHandle> handles(static_cast<size_t>(methodCount));
         s_ManagedFunctions.GetTypeMethodsFptr(m_Id, handles.data(), &methodCount);
 
-        StdVector<MethodInfo> methods(handles.size());
+        StdVector<Method> methods(handles.size());
         for (size_t i = 0; i < handles.size(); i++)
             methods[i].m_Handle = handles[i];
 
         return methods;
     }
 
-    StdVector<FieldInfo> Type::GetFields() const
+    StdVector<Field> Type::GetFields() const
     {
         int32_t fieldCount = 0;
         s_ManagedFunctions.GetTypeFieldsFptr(m_Id, nullptr, &fieldCount);
         StdVector<ManagedHandle> handles(static_cast<size_t>(fieldCount));
         s_ManagedFunctions.GetTypeFieldsFptr(m_Id, handles.data(), &fieldCount);
 
-        StdVector<FieldInfo> fields(handles.size());
+        StdVector<Field> fields(handles.size());
         for (size_t i = 0; i < handles.size(); i++)
             fields[i].m_Handle = handles[i];
 
         return fields;
     }
 
-    StdVector<PropertyInfo> Type::GetProperties() const
+    StdVector<Property> Type::GetProperties() const
     {
         int32_t propertyCount = 0;
         s_ManagedFunctions.GetTypePropertiesFptr(m_Id, nullptr, &propertyCount);
         StdVector<ManagedHandle> handles(static_cast<size_t>(propertyCount));
         s_ManagedFunctions.GetTypePropertiesFptr(m_Id, handles.data(), &propertyCount);
 
-        StdVector<PropertyInfo> properties(handles.size());
+        StdVector<Property> properties(handles.size());
         for (size_t i = 0; i < handles.size(); i++)
             properties[i].m_Handle = handles[i];
 
         return properties;
     }
 
-    MethodInfo Type::GetMethod(StdStringView MethodName, bool InStatic) const
+    Method Type::GetMethod(StdStringView MethodName, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedNativeString string = ScopedNativeString(MethodName);
-        MethodInfo method {};
+        Method method {};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameFptr(m_Id, string, flags);
         return method;
     }
-    MethodInfo Type::GetMethod(StdStringView MethodName, int32_t InParamCount, bool InStatic) const
+    Method Type::GetMethod(StdStringView MethodName, int32_t InParamCount, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedNativeString string = ScopedNativeString(MethodName);
-        MethodInfo method {};
+        Method method {};
         method.m_Handle = s_ManagedFunctions.GetMethodInfoByNameParamCountFptr(m_Id, string, InParamCount, flags);
         return method;
     }
-    MethodInfo Type::GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type>& InParamTypes, bool InStatic) const
+    Method Type::GetMethodByParamTypes(StdStringView MethodName, const StdVector<Type>& InParamTypes, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedNativeString string = ScopedNativeString(MethodName);
-        MethodInfo method {};
+        Method method {};
         StdVector<TypeId> typeIds = {};
         typeIds.reserve(InParamTypes.size());
         for (const Type& type : InParamTypes)
@@ -182,22 +182,22 @@ namespace Coral {
         return method;
     }
 
-    FieldInfo Type::GetField(StdStringView FieldName, bool InStatic) const
+    Field Type::GetField(StdStringView FieldName, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedNativeString string = ScopedNativeString(FieldName);
-        FieldInfo field {};
+        Field field {};
         field.m_Handle = s_ManagedFunctions.GetFieldInfoByNameFptr(m_Id, string, flags);
         return field;
     }
 
-    PropertyInfo Type::GetProperty(StdStringView PropertyName, bool InStatic) const
+    Property Type::GetProperty(StdStringView PropertyName, bool InStatic) const
     {
         BindingFlags flags = BindingFlags::Public | BindingFlags::NonPublic;
         flags |= InStatic ? BindingFlags::Static : BindingFlags::Instance;
         ScopedNativeString string = ScopedNativeString(PropertyName);
-        PropertyInfo property {};
+        Property property {};
         property.m_Handle = s_ManagedFunctions.GetPropertyInfoByNameFptr(m_Id, string, flags);
         return property;
     }
@@ -321,7 +321,7 @@ namespace Coral {
         return result;
     }
 
-    void Type::InvokeStaticMethodRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
+    void Type::InvokeStaticMethodRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeStaticMethodFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), OutException ? &exceptionResult : nullptr);
@@ -332,7 +332,7 @@ namespace Coral {
         }
     }
 
-    void Type::InvokeStaticMethodRetRaw(const MethodInfo& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
+    void Type::InvokeStaticMethodRetRaw(const Method& InMethod, const void** InParameters, const ManagedType* InParameterTypes, size_t InLength, bool InRetIsObject, void* InResultStorage, Object* OutException) const
     {
         void* exceptionResult = nullptr;
         s_ManagedFunctions.InvokeStaticMethodRetFptr(m_Id, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);

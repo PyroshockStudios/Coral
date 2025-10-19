@@ -32,8 +32,8 @@ namespace Coral {
 
         const StdVector<Type>& GetTypes() const;
 
-        MethodInfo GetMethodFromToken(MetadataToken InToken) const;
-        FieldInfo GetFieldFromToken(MetadataToken InToken) const;
+        Method GetMethodFromToken(MetadataToken InToken) const;
+        Field GetFieldFromToken(MetadataToken InToken) const;
     private:
         HostInstance* m_Host = nullptr;
         int32_t m_AssemblyId = -1;
