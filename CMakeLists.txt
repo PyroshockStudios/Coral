@@ -4,7 +4,8 @@ project(Coral)
 option(CORAL_EXAMPLE "Build the example programs" OFF)
 option(CORAL_TESTING "Build the tests" ON)
 set(CORAL_DOTNET_VERSION "9.0.0" CACHE STRING "Required .NET version")
-set(CORAL_CUSTOM_CONFIGURATION "" CACHE PATH "Custom configuration file")
+set(CORAL_CUSTOM_CONFIG "" CACHE PATH "Custom configuration file")
+set(CORAL_CUSTOM_CONFIG_LIBS "" CACHE STRING "Libraries referenced by the configuration file")
 
 include(ExternalProject)
 
@@ -83,12 +84,14 @@ target_compile_features(Coral PUBLIC cxx_std_20)
 target_precompile_headers(Coral PRIVATE ${CORAL_ROOT}/Coral.Native/Source/CoralPCH.hpp)
 target_compile_definitions(Coral PRIVATE CORAL_NATIVE_COMPILE_SRC)
 
-if(NOT "${CORAL_CUSTOM_CONFIGURATION}" STREQUAL "")
+if(NOT "${CORAL_CUSTOM_CONFIG}" STREQUAL "")
     target_compile_definitions(Coral
         PUBLIC
-        CORAL_CUSTOM_CONFIG_FILE=\"${CORAL_CUSTOM_CONFIGURATION}\"
+        CORAL_CUSTOM_CONFIG_FILE=\"${CORAL_CUSTOM_CONFIG}\"
     )
 endif()
+
+target_link_libraries(Coral PRIVATE ${CORAL_CUSTOM_CONFIG_LIBS})
 
 file(GLOB CORAL_HDR ${CORAL_ROOT}/Coral.Native/Include/Coral/*.hpp)
 target_sources(Coral PUBLIC ${CORAL_HDR})
