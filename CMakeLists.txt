@@ -91,7 +91,9 @@ if(NOT "${CORAL_CUSTOM_CONFIG}" STREQUAL "")
     )
 endif()
 
-target_link_libraries(Coral PRIVATE ${CORAL_CUSTOM_CONFIG_LIBS})
+if(NOT "${CORAL_CUSTOM_CONFIG_LIBS}" STREQUAL "")
+    target_link_libraries(Coral PRIVATE ${CORAL_CUSTOM_CONFIG_LIBS})
+endif()
 
 file(GLOB CORAL_HDR ${CORAL_ROOT}/Coral.Native/Include/Coral/*.hpp)
 target_sources(Coral PUBLIC ${CORAL_HDR})
