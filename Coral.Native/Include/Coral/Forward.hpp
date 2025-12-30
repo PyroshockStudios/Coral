@@ -9,6 +9,7 @@ namespace Coral {
     class Field;
     class HostInstance;
     class Method;
+    template <typename TValue>
     class NativeArray;
     class NativeString;
     class Object;

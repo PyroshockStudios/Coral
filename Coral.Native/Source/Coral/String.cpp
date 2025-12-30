@@ -34,6 +34,9 @@ namespace Coral {
     {
         assert(IsValid() && "Do not use an invalid string!");
         int32_t length = GetLength();
+        if (length == -1) {
+            return {};
+        }
         StdWString result = {};
         result.resize(static_cast<size_t>(length));
         s_ManagedFunctions.GetStringContentsFptr(m_Handle, reinterpret_cast<char16_t*>(result.data()));

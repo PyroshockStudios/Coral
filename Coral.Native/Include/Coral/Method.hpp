@@ -14,8 +14,8 @@ namespace Coral {
     public:
         StdString GetName() const;
 
-        Type& GetReturnType();
-        const StdVector<Type>& GetParameterTypes();
+        Type GetReturnType() const;
+        StdVector<Type> GetParameterTypes() const;
 
         TypeAccessibility GetAccessibility() const;
         bool IsStatic() const;
@@ -30,8 +30,6 @@ namespace Coral {
 
     private:
         ManagedHandle m_Handle = -1;
-        Type* m_ReturnType = nullptr;
-        StdOptional<StdVector<Type>> m_ParameterTypes;
 
         friend class Type;
         friend class Object;

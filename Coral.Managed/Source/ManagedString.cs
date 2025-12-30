@@ -44,9 +44,10 @@ internal static class ManagedString
             }
 
             string str = (string)target;
-            if (InStringStorage  != IntPtr.Zero)
+            fixed (char* ptr = str)
             {
-                Marshal.Copy(str.ToCharArray(), 0, InStringStorage, str.Length);
+                long byteCount = str.Length * sizeof(char);
+                Buffer.MemoryCopy(ptr, (void*)InStringStorage, byteCount, byteCount);
             }
             return str.Length;
         }
@@ -54,43 +55,6 @@ internal static class ManagedString
         {
             HandleException(ex);
             return -1;
-        }
-    }
-    [UnmanagedCallersOnly]
-    internal static unsafe void WriteStringContentsUtf16(IntPtr InStringHandle, char* InStringValueUtf16, int InLength)
-    {
-        try
-        {
-            var target = GCHandle.FromIntPtr(InStringHandle).Target;
-            if (target == null)
-            {
-                LogMessage($"Cannot read string with handle {InStringHandle}. Target was null.", MessageLevel.Error);
-                return;
-            }
-
-            string str = (string)target;
-            if (str.Length < InLength || InLength < 0)
-            {
-                LogMessage($"Length is out of range! Tried to write length {InLength}, but string length is {str.Length}.", MessageLevel.Error);
-                return;
-            }
-
-            GCHandle pinned = GCHandle.Alloc(target, GCHandleType.Pinned);
-            try
-            {
-                void* dstPtr = pinned.AddrOfPinnedObject().ToPointer();
-
-                long byteCount = InLength * sizeof(char); // UTF-16 = 2 bytes per char
-                Buffer.MemoryCopy(InStringValueUtf16, dstPtr, byteCount, byteCount);
-            }
-            finally
-            {
-                pinned.Free();
-            }
-        }
-        catch (Exception ex)
-        {
-            HandleException(ex);
         }
     }
 }

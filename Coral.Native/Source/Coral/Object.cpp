@@ -91,7 +91,7 @@ namespace Coral {
     {
         assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
+        s_ManagedFunctions.InvokeMethodRetFptr(m_Handle, InMethod.m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject ? 1U : 0U, OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();
@@ -115,7 +115,7 @@ namespace Coral {
     {
         assert(IsValid() && "Do not use an invalid object!");
         void* exceptionResult = nullptr;
-        s_ManagedFunctions.InvokeDelegateRetFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject, OutException ? &exceptionResult : nullptr);
+        s_ManagedFunctions.InvokeDelegateRetFptr(m_Handle, InParameters, InParameterTypes, static_cast<int32_t>(InLength), InResultStorage, InRetIsObject ? 1U : 0U, OutException ? &exceptionResult : nullptr);
         if (OutException)
         {
             *OutException = Object();

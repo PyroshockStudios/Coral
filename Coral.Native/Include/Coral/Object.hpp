@@ -45,11 +45,11 @@ namespace Coral {
                 TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::derived_from<TReturn, Object>, &result, OutException);
+                    InvokeMethodRetRaw(InMethod, InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_base_of_v<Object, TReturn>, &result, OutException);
                 }
                 else
                 {
-                    InvokeMethodRetRaw(InMethod, nullptr, nullptr, 0, std::derived_from<TReturn, Object>, &result, OutException);
+                    InvokeMethodRetRaw(InMethod, nullptr, nullptr, 0, std::is_base_of_v<Object, TReturn>, &result, OutException);
                 }
                 return result;
             }
@@ -74,11 +74,11 @@ namespace Coral {
                 TReturn result {};
                 if (InParameters.paramCount > 0)
                 {
-                    InvokeDelegateRetRaw(InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::derived_from<TReturn, Object>, &result, OutException);
+                    InvokeDelegateRetRaw(InParameters.parameterValues, InParameters.parameterTypes, InParameters.paramCount, std::is_base_of_v<Object, TReturn>, &result, OutException);
                 }
                 else
                 {
-                    InvokeDelegateRetRaw(nullptr, nullptr, 0, std::derived_from<TReturn, Object>, &result, OutException);
+                    InvokeDelegateRetRaw(nullptr, nullptr, 0, std::is_base_of_v<Object, TReturn>, &result, OutException);
                 }
                 return result;
             }

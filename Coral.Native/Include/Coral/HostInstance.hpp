@@ -12,6 +12,24 @@ namespace Coral {
 
     using ExceptionCallbackFn = StdFunction<void(StdStringView)>;
 
+    enum class DotNetTarget : uint32_t
+    {
+        NONE = 0,
+        CORE_2_0 = 0x20,
+        CORE_2_1 = 0x21,
+        CORE_2_2 = 0x22,
+        CORE_3_0 = 0x30,
+        CORE_3_1 = 0x31,
+        NET_5_0 = 0x50,
+        NET_6_0 = 0x60,
+        NET_7_0 = 0x70,
+        NET_8_0 = 0x80,
+        NET_9_0 = 0x90,
+        NET_10_0 = 0x10,
+
+        MAX = NET_10_0
+    };
+
     struct HostSettings
     {
         /// <summary>
@@ -26,8 +44,9 @@ namespace Coral {
 
         /// <summary>
         /// List of major versions that are supported
+        /// Descending order of priority (first is highest)
         /// </summary>
-        StdVector<const char*> SupportedTargets = { "9" };
+        StdVector<DotNetTarget> SupportedTargets = { DotNetTarget::NET_10_0, DotNetTarget::NET_9_0, DotNetTarget::NET_8_0, DotNetTarget::NET_7_0 };
     };
 
     enum class CoralInitStatus : int32_t
@@ -51,8 +70,10 @@ namespace Coral {
         // This does not affect the behaviour of LoadAssembly from native code.
         AssemblyLoadContext CreateAssemblyLoadContext(StdStringView InName, StdStringView InDllPath);
 
+        DotNetTarget GetActiveDotNetTarget() const;
+
     private:
-        bool LoadHostFXR() const;
+        bool LoadHostFXR();
         bool InitializeCoralManaged();
         void LoadCoralFunctions();
 
@@ -67,7 +88,8 @@ namespace Coral {
     private:
         HostSettings m_Settings;
         UCString m_CoralManagedAssemblyPath;
-        StdVector<const char*> m_SupportedTargets;
+        StdVector<DotNetTarget> m_SupportedTargets;
+        DotNetTarget m_ActiveTarget = DotNetTarget::NONE;
         void* m_HostFXRContext = nullptr;
         bool m_Initialized = false;
 

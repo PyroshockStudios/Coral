@@ -81,7 +81,7 @@ namespace Coral {
             return ManagedType::Bool;
         else if constexpr (std::same_as<TArg, Coral::Char>)
             return ManagedType::Char;
-        else if constexpr (std::derived_from<TArg, Coral::Object>)
+        else if constexpr (std::is_base_of_v<Coral::Object, TArg>)
             return ManagedType::Object;
         else if constexpr (is_specialization_of_v<Coral::NativeArray, TArg>)
             return ManagedType::NativeArray;

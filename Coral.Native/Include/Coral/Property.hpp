@@ -14,7 +14,7 @@ namespace Coral {
     {
     public:
         StdString GetName() const;
-        Type& GetType();
+        Type GetType() const;
 
         Method GetGetMethod() const;
         Method GetSetMethod() const;
@@ -26,7 +26,6 @@ namespace Coral {
         constexpr inline operator bool() const { return m_Handle != -1; }
     private:
         ManagedHandle m_Handle = -1;
-        Type* m_Type = nullptr;
 
         friend class Type;
         friend class Object;

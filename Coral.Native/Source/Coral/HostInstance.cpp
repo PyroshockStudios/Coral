@@ -7,9 +7,9 @@
 #include "CoralManagedFunctions.hpp"
 
 #ifdef CORAL_WINDOWS
-#include <ShlObj_core.h>
+    #include <ShlObj_core.h>
 #else
-#include <dlfcn.h>
+    #include <dlfcn.h>
 #endif
 #include <cassert>
 
@@ -51,7 +51,9 @@ namespace Coral {
             break;
         }
 
-        std::cout << "[Coral](" << level << "): " << InMessage.data() << std::endl;
+        std::cout << "[Coral](" << level << "): ";
+        std::cout.write(InMessage.data(), InMessage.length());
+        std::cout << "\n";
     }
 
     CoralInitStatus HostInstance::Initialize(HostSettings InSettings)
@@ -73,10 +75,10 @@ namespace Coral {
         MessageFilter = m_Settings.MessageFilter;
 
         s_CoreCLRFunctions.SetHostFXRErrorWriter([](const UCChar* InMessage)
-            {
-                auto message = StringHelper::ConvertUCToUtf8(InMessage);
-                MessageCallback(message, MessageLevel::Error);
-            });
+        {
+            auto message = StringHelper::ConvertUCToUtf8(InMessage);
+            MessageCallback(message, MessageLevel::Error);
+        });
 
         m_CoralManagedAssemblyPath = (std::filesystem::path(m_Settings.CoralDirectory.c_str()) / "Coral.Managed.dll").c_str();
 
@@ -101,6 +103,7 @@ namespace Coral {
 
     AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName)
     {
+        CORAL_VERIFY(m_Initialized && "Cannot create assembly load context if HostFXR is not initialised!");
         ScopedNativeString name = NativeString::New(InName);
         ScopedNativeString dllPath = NativeString::New("");
         AssemblyLoadContext alc;
@@ -112,6 +115,7 @@ namespace Coral {
 
     AssemblyLoadContext HostInstance::CreateAssemblyLoadContext(StdStringView InName, StdStringView InDllPath)
     {
+        CORAL_VERIFY(m_Initialized && "Cannot create assembly load context if HostFXR is not initialised!");
         ScopedNativeString name = NativeString::New(InName);
         ScopedNativeString dllPath = NativeString::New(InDllPath);
         AssemblyLoadContext alc;
@@ -121,8 +125,11 @@ namespace Coral {
         return alc;
     }
 
+    DotNetTarget HostInstance::GetActiveDotNetTarget() const { return m_ActiveTarget; }
+
     void HostInstance::UnloadAssemblyLoadContext(AssemblyLoadContext& InLoadContext)
     {
+        CORAL_VERIFY(m_Initialized && "Cannot unload assembly load context if HostFXR is not initialised!");
         s_ManagedFunctions.UnloadAssemblyLoadContextFptr(InLoadContext.m_ContextId);
         InLoadContext.m_ContextId = -1;
         InLoadContext.m_LoadedAssemblies.Clear();
@@ -146,9 +153,24 @@ namespace Coral {
     }
 #endif
 
-    static std::filesystem::path GetHostFXRPath(const StdVector<const char*>& supportedTargets)
+    static std::filesystem::path GetHostFXRPath(const StdVector<DotNetTarget>& InSupportedTargets, DotNetTarget& OutUsingTarget)
     {
-        assert(supportedTargets.size() > 0 && "at least one supported target must be defined!");
+        assert(InSupportedTargets.size() > 0 && "at least one supported target must be defined!");
+
+        static StdUnorderedMap<DotNetTarget, const char*> targetStrings = {
+            { DotNetTarget::CORE_2_0, "2.0" },
+            { DotNetTarget::CORE_2_1, "2.1" },
+            { DotNetTarget::CORE_2_2, "2.2" },
+            { DotNetTarget::CORE_3_0, "3.0" },
+            { DotNetTarget::CORE_3_1, "3.1" },
+            { DotNetTarget::NET_5_0, "5.0" },
+            { DotNetTarget::NET_6_0, "6.0" },
+            { DotNetTarget::NET_7_0, "7.0" },
+            { DotNetTarget::NET_8_0, "8.0" },
+            { DotNetTarget::NET_9_0, "9.0" },
+            { DotNetTarget::NET_10_0, "10.0" },
+        };
+
 #ifdef CORAL_WINDOWS
         std::filesystem::path basePath = "";
 
@@ -163,11 +185,11 @@ namespace Coral {
         basePath = pf;
         basePath /= "dotnet/host/fxr/";
 
-        auto searchPaths = StdArray{
+        auto searchPaths = StdArray {
             basePath
         };
 #else
-        auto searchPaths = StdArray{
+        auto searchPaths = StdArray {
             std::filesystem::path("/usr/local/lib/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/lib64/dotnet/host/fxr/"),
             std::filesystem::path("/usr/local/share/dotnet/host/fxr/"),
@@ -191,10 +213,14 @@ namespace Coral {
                 auto dirPath = dir.path().filename().string();
 
                 bool supported = false;
-                for (const char* majorStr : supportedTargets)
+                for (DotNetTarget target : InSupportedTargets)
                 {
-                    if (dirPath.starts_with(majorStr))
+                    if (dirPath.starts_with(targetStrings[target]))
+                    {
                         supported = true;
+                        OutUsingTarget = target;
+                        break;
+                    }
                 }
                 if (!supported) continue;
                 auto res = dir / std::filesystem::path(CORAL_HOSTFXR_NAME);
@@ -202,14 +228,14 @@ namespace Coral {
                 return res;
             }
         }
-
+        OutUsingTarget = DotNetTarget::NONE;
         return "";
     }
 
-    bool HostInstance::LoadHostFXR() const
+    bool HostInstance::LoadHostFXR()
     {
         // Retrieve the file path to the CoreCLR library
-        auto hostfxrPath = GetHostFXRPath(m_SupportedTargets);
+        auto hostfxrPath = GetHostFXRPath(m_SupportedTargets, m_ActiveTarget);
 
         if (hostfxrPath.empty())
         {
@@ -220,11 +246,12 @@ namespace Coral {
         void* libraryHandle = nullptr;
 
 #ifdef CORAL_WINDOWS
-#ifdef CORAL_WIDE_CHARS
+    #ifdef CORAL_WIDE_CHARS
+        // TODO: are we not supposed to unload this afterwards?
         libraryHandle = LoadLibraryW(hostfxrPath.c_str());
-#else
+    #else
         libraryHandle = LoadLibraryA(hostfxrPath.string().c_str());
-#endif
+    #endif
 #else
         libraryHandle = dlopen(hostfxrPath.string().data(), RTLD_NOW | RTLD_GLOBAL);
 #endif
@@ -274,27 +301,27 @@ namespace Coral {
         LoadCoralFunctions();
 
         coralManagedEntryPoint([](NativeString InMessage, MessageLevel InLevel)
+        {
+            if (MessageFilter & InLevel)
             {
-                if (MessageFilter & InLevel)
-                {
-                    StdString message = InMessage;
-                    MessageCallback(message, InLevel);
-                }
-            }, [](NativeString InMessage)
-                {
-                    StdString message = InMessage;
-                    if (!ExceptionCallback)
-                    {
-                        MessageCallback(message, MessageLevel::Error);
-                        return;
-                    }
+                StdString message = InMessage;
+                MessageCallback(message, InLevel);
+            }
+        }, [](NativeString InMessage)
+        {
+            StdString message = InMessage;
+            if (!ExceptionCallback)
+            {
+                MessageCallback(message, MessageLevel::Error);
+                return;
+            }
 
-                    ExceptionCallback(message);
-                });
+            ExceptionCallback(message);
+        });
 
-            ExceptionCallback = m_Settings.ExceptionCallback;
-
-            return true;
+        ExceptionCallback = m_Settings.ExceptionCallback;
+        m_Initialized = true;
+        return true;
     }
 
     void HostInstance::LoadCoralFunctions()
@@ -393,7 +420,6 @@ namespace Coral {
 
         s_ManagedFunctions.CreateNewManagedStringFptr = LoadCoralManagedFunctionPtr<CreateNewManagedStringFn>(CORAL_STR("Coral.Managed.ManagedString, Coral.Managed"), CORAL_STR("CreateNewManagedString"));
         s_ManagedFunctions.GetStringContentsFptr = LoadCoralManagedFunctionPtr<GetStringContentsFn>(CORAL_STR("Coral.Managed.ManagedString, Coral.Managed"), CORAL_STR("GetStringContents"));
-        s_ManagedFunctions.WriteStringContentsUtf16Fptr = LoadCoralManagedFunctionPtr<WriteStringContentsUtf16Fn>(CORAL_STR("Coral.Managed.ManagedString, Coral.Managed"), CORAL_STR("WriteStringContentsUtf16"));
         s_ManagedFunctions.CreateNewManagedArrayFptr = LoadCoralManagedFunctionPtr<CreateNewManagedArrayFn>(CORAL_STR("Coral.Managed.ManagedArray, Coral.Managed"), CORAL_STR("CreateNewManagedArray"));
         s_ManagedFunctions.SetArrayElementFptr = LoadCoralManagedFunctionPtr<SetArrayElementFn>(CORAL_STR("Coral.Managed.ManagedArray, Coral.Managed"), CORAL_STR("SetArrayElement"));
         s_ManagedFunctions.GetArrayElementFptr = LoadCoralManagedFunctionPtr<GetArrayElementFn>(CORAL_STR("Coral.Managed.ManagedArray, Coral.Managed"), CORAL_STR("GetArrayElement"));

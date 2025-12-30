@@ -15,7 +15,7 @@ namespace Coral {
         return StringHelper::ConsumeNativeString(str);
     }
 
-    Type& Property::GetType()
+    Type Property::GetType() const
     {
         Type propertyType;
         s_ManagedFunctions.GetPropertyInfoTypeFptr(m_Handle, &propertyType.m_Id);

@@ -19,13 +19,13 @@ namespace Coral {
         template <typename T>
         void SetElement(int32_t InIndex, const T& InData)
         {
-            SetElementRaw(&InData, InIndex);
+            SetElementRaw(InIndex, &InData);
         }
         template <typename T>
         T GetElement(int32_t InIndex)
         {
             T result = {};
-            GetElementRaw(&result, InIndex);
+            GetElementRaw(InIndex, &result);
             return result;
         }
         using Object::GetType;

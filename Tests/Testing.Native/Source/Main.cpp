@@ -242,12 +242,12 @@ static void RegisterMemberMethodTests(Coral::Object& InObject)
         return result == 14;
     });
     RegisterTest("ManagedArrayTest", [&InObject]() mutable
-    {
-        Coral::Array array = Coral::Array::CreateEmptyArray(4, Coral::Type::IntType());
-        array.SetElement(5, 0);
-        array.SetElement(2, 1);
-        array.SetElement(-1, 2);
-        array.SetElement(Coral::Object::Box(8, Coral::Type::IntType()), 3); // try boxed value too
+    { 
+        Coral::Array array = Coral::Array::CreateEmptyArray(Coral::Type::IntType(), 4);
+        array.SetElement(0, 5);
+        array.SetElement(1, 2);
+        array.SetElement(2, -1);
+        array.SetElement(3, Coral::Object::Box(8, Coral::Type::IntType())); // try boxed value too
         int result = InObject.InvokeMethod<int32_t>(ArrayTest_Fn, MethodParams { array });
         return result == 14;
     });
@@ -587,7 +587,7 @@ int main([[maybe_unused]] int argc, char** argv)
     auto coralDir = exeDir.string();
     Coral::HostSettings settings = {
         .CoralDirectory = coralDir,
-        .ExceptionCallback = ExceptionCallback
+        .ExceptionCallback = ExceptionCallback,
     };
     Coral::HostInstance hostInstance;
     hostInstance.Initialize(settings);

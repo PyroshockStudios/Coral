@@ -14,37 +14,32 @@ namespace Coral {
         return StringHelper::ConsumeNativeString(str);
     }
 
-    Type& Method::GetReturnType()
+    Type Method::GetReturnType() const
     {
         Type returnType;
         s_ManagedFunctions.GetMethodInfoReturnTypeFptr(m_Handle, &returnType.m_Id);
         return returnType;
     }
 
-    const StdVector<Type>& Method::GetParameterTypes()
+    StdVector<Type> Method::GetParameterTypes() const
     {
-        if (!m_ParameterTypes)
+        StdVector<Type> parameterTypes;
+        int32_t parameterCount;
+        s_ManagedFunctions.GetMethodInfoParameterTypesFptr(m_Handle, nullptr, &parameterCount);
+
+        StdVector<TypeId> parameterTypeIds(static_cast<size_t>(parameterCount));
+        s_ManagedFunctions.GetMethodInfoParameterTypesFptr(m_Handle, parameterTypeIds.data(), &parameterCount);
+
+        parameterTypes.resize(parameterTypeIds.size());
+
+        for (size_t i = 0; i < parameterTypeIds.size(); i++)
         {
-            int32_t parameterCount;
-            s_ManagedFunctions.GetMethodInfoParameterTypesFptr(m_Handle, nullptr, &parameterCount);
-
-            StdVector<TypeId> parameterTypes(static_cast<size_t>(parameterCount));
-            s_ManagedFunctions.GetMethodInfoParameterTypesFptr(m_Handle, parameterTypes.data(), &parameterCount);
-
-            StdVector<Type> types {};
-
-            types.resize(parameterTypes.size());
-
-            for (size_t i = 0; i < parameterTypes.size(); i++)
-            {
-                Type type;
-                type.m_Id = parameterTypes[i];
-                types[i] = type;
-            }
-            m_ParameterTypes.emplace(std::move(types));
+            Type type;
+            type.m_Id = parameterTypeIds[i];
+            parameterTypes[i] = type;
         }
 
-        return *m_ParameterTypes;
+        return parameterTypes;
     }
 
     TypeAccessibility Method::GetAccessibility() const

@@ -236,7 +236,6 @@ namespace Coral {
         CreateNewManagedStringFn CreateNewManagedStringFptr = nullptr;
 
         GetStringContentsFn GetStringContentsFptr = nullptr;
-        WriteStringContentsUtf16Fn WriteStringContentsUtf16Fptr = nullptr;
         CreateNewManagedArrayFn CreateNewManagedArrayFptr = nullptr;
         SetArrayElementFn SetArrayElementFptr = nullptr;
         GetArrayElementFn GetArrayElementFptr = nullptr;
