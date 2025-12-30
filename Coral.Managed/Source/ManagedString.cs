@@ -42,12 +42,14 @@ internal static class ManagedString
                 LogMessage($"Cannot read string with handle {InStringHandle}. Target was null.", MessageLevel.Error);
                 return -1;
             }
-
             string str = (string)target;
-            fixed (char* ptr = str)
+            if (InStringStorage != IntPtr.Zero)
             {
-                long byteCount = str.Length * sizeof(char);
-                Buffer.MemoryCopy(ptr, (void*)InStringStorage, byteCount, byteCount);
+                fixed (char* ptr = str)
+                {
+                    long byteCount = str.Length * sizeof(char);
+                    Buffer.MemoryCopy(ptr, (void*)InStringStorage, byteCount, byteCount);
+                }
             }
             return str.Length;
         }

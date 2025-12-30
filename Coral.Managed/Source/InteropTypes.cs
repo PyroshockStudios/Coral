@@ -229,6 +229,17 @@ public struct Bool32
 
 	public static implicit operator Bool32(bool InValue) => new() { Value = InValue ? 1u : 0u };
 	public static implicit operator bool(Bool32 InBool32) => InBool32.Value > 0;
+
+	public override string ToString() => ((bool)this).ToString();
+	public override int GetHashCode() => Value.GetHashCode();
+	public override bool Equals(object? obj)
+	{
+		if (obj is Bool32 other)
+		{
+			return this.Value == other.Value;
+		}
+		return false;
+    }
 }
 
 [StructLayout(LayoutKind.Explicit, Size=4)]
