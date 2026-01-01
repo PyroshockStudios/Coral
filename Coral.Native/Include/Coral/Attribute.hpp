@@ -13,7 +13,7 @@ namespace Coral {
         Type GetType();
 
         template <typename TReturn>
-        TReturn GetFieldValue(StdStringView InFieldName)
+        TReturn GetFieldValue(StdStringView InFieldName) const
         {
             TReturn result;
             GetFieldValueInternal(InFieldName, &result);
@@ -36,5 +36,11 @@ namespace Coral {
         friend class Field;
         friend class Property;
     };
+
+    template <>
+    StdString Attribute::GetFieldValue(StdStringView InFieldName) const;
+
+    template <>
+    bool Attribute::GetFieldValue(StdStringView InFieldName) const;
 
 }

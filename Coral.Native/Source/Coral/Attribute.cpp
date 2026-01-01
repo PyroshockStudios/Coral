@@ -15,7 +15,7 @@ namespace Coral {
     }
 
     template <>
-    StdString Attribute::GetFieldValue(StdStringView InFieldName)
+    StdString Attribute::GetFieldValue(StdStringView InFieldName) const
     {
         NativeString result;
         GetFieldValueInternal(InFieldName, &result);
@@ -23,7 +23,7 @@ namespace Coral {
     }
 
     template <>
-    bool Attribute::GetFieldValue(StdStringView InFieldName)
+    bool Attribute::GetFieldValue(StdStringView InFieldName) const
     {
         Bool32 result;
         GetFieldValueInternal(InFieldName, &result);
