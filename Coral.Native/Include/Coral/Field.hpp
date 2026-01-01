@@ -13,7 +13,7 @@ namespace Coral {
     {
     public:
         StdString GetName() const;
-        Type& GetType();
+        Type GetType() const;
 
         TypeAccessibility GetAccessibility() const;
         bool IsStatic() const;

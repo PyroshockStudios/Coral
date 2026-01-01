@@ -7,7 +7,7 @@
 
 namespace Coral {
 
-    Type Attribute::GetType()
+    Type Attribute::GetType() const
     {
         Type type;
         s_ManagedFunctions.GetAttributeTypeFptr(m_Handle, &type.m_Id);

@@ -12,9 +12,9 @@ namespace Coral {
         static Array CreateEmptyArray(const Type& type, int32_t InLength);
 
         void SetElementRaw(int32_t InIndex, const void* InData);
-        void GetElementRaw(int32_t InIndex, void* OutData);
+        void GetElementRaw(int32_t InIndex, void* OutData) const;
         void SetElementObject(int32_t InIndex, const Coral::Object& InObject);
-        Coral::Object GetElementObject(int32_t InIndex);
+        Coral::Object GetElementObject(int32_t InIndex) const;
 
         template <typename T>
         void SetElement(int32_t InIndex, const T& InData)
@@ -22,7 +22,7 @@ namespace Coral {
             SetElementRaw(InIndex, &InData);
         }
         template <typename T>
-        T GetElement(int32_t InIndex)
+        T GetElement(int32_t InIndex) const
         {
             T result = {};
             GetElementRaw(InIndex, &result);
@@ -44,7 +44,7 @@ namespace Coral {
         SetElementObject(InIndex, InValue);
     }
     template <>
-    inline Coral::Object Array::GetElement(int32_t InIndex)
+    inline Coral::Object Array::GetElement(int32_t InIndex) const
     {
         return GetElementObject(InIndex);
     }

@@ -10,7 +10,7 @@ namespace Coral {
     class Attribute
     {
     public:
-        Type GetType();
+        Type GetType() const;
 
         template <typename TReturn>
         TReturn GetFieldValue(StdStringView InFieldName) const
@@ -20,7 +20,7 @@ namespace Coral {
             return result;
         }
 
-        constexpr inline operator bool()
+        constexpr inline operator bool() const
         {
             return m_Handle != -1;
         }

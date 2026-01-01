@@ -20,7 +20,7 @@ namespace Coral {
         s_ManagedFunctions.SetArrayElementFptr(m_Handle, InData, false, InIndex);
     }
 
-    void Array::GetElementRaw(int32_t InIndex, void* OutData)
+    void Array::GetElementRaw(int32_t InIndex, void* OutData) const
     {
         assert(IsValid() && "Do not use an invalid array!");
         s_ManagedFunctions.GetArrayElementFptr(m_Handle, OutData, false, InIndex);
@@ -32,7 +32,7 @@ namespace Coral {
         s_ManagedFunctions.SetArrayElementFptr(m_Handle, &InObject, true, InIndex);
     }
 
-    Coral::Object Array::GetElementObject(int32_t InIndex)
+    Coral::Object Array::GetElementObject(int32_t InIndex) const
     {
         assert(IsValid() && "Do not use an invalid array!");
         Object result = {};

@@ -14,7 +14,7 @@ namespace Coral {
         return StringHelper::ConsumeNativeString(str);
     }
 
-    Type& Field::GetType()
+    Type Field::GetType() const
     {
         Type fieldType;
         s_ManagedFunctions.GetFieldInfoTypeFptr(m_Handle, &fieldType.m_Id);
