@@ -22,7 +22,7 @@ namespace Coral {
     }
     String String::CreateStringUtf16(StdWStringView InString)
     {
-        return String(reinterpret_cast<const char16_t*>(InString.data()), InString.length());
+        return String(reinterpret_cast<const char16_t*>(InString.data()), static_cast<int32_t>(InString.length()));
     }
 
     StdString String::GetStringUtf8() const

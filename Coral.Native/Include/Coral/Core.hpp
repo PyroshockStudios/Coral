@@ -59,7 +59,7 @@ namespace Coral {
 }
 #endif
 
-#define CORAL_UNMANAGED_CALLERS_ONLY ((const UCChar*)(-1ULL))
+#define CORAL_UNMANAGED_CALLERS_ONLY ((const UCChar*)(~0ULL))
 
 namespace Coral {
     using Bool32 = uint32_t;

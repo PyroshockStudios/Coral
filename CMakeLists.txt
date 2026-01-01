@@ -83,6 +83,12 @@ add_dependencies(Coral CoralManaged)
 set_target_properties(Coral PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(Coral PUBLIC cxx_std_20)
 
+if(MSVC)
+  target_compile_options(Coral PRIVATE /W4 /WX /wd4514 /wd4820 /wd4127 /wd4710 /wd4711 /wd4577 /wd4996 /wd5311 /wd4458 /wd4505 /wd4324)
+else()
+  target_compile_options(Coral PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 target_precompile_headers(Coral PRIVATE ${CORAL_ROOT}/Coral.Native/Source/CoralPCH.hpp)
 target_compile_definitions(Coral PRIVATE CORAL_NATIVE_COMPILE_SRC)
 

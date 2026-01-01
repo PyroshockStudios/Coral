@@ -343,7 +343,7 @@ namespace Coral {
         }
     }
 
-    ReflectionType::operator const Type&() const
+    ReflectionType::operator Type() const
     {
         if (m_TypeID <= 0) return s_NullType;
         Type type;

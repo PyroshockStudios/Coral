@@ -151,7 +151,7 @@ namespace Coral {
     class ReflectionType
     {
     public:
-        operator const Type&() const;
+        operator Type() const;
 
     public:
         TypeId m_TypeID;
