@@ -25,10 +25,11 @@ namespace Coral {
         NET_7_0 = 0x70,
         NET_8_0 = 0x80,
         NET_9_0 = 0x90,
-        NET_10_0 = 0x10,
+        NET_10_0 = 0x100,
 
         MAX = NET_10_0
     };
+    const char* GetDotNetTargetString(DotNetTarget target);
 
     struct HostSettings
     {

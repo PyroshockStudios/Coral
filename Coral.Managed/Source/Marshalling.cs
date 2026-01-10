@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 
 namespace Coral.Managed;
@@ -299,5 +300,13 @@ public static class Marshalling
                 pinned.Free();
             }
         }
+    }
+    public static T? MarshalDelegate<T>(IntPtr functionPtr) where T : Delegate
+    {
+        if (functionPtr == IntPtr.Zero)
+        {
+            return null;
+        }
+        return (T)(object)Marshal.GetDelegateForFunctionPointer(functionPtr, typeof(T));
     }
 }

@@ -14,7 +14,26 @@
 #include <cassert>
 
 namespace Coral {
-
+    
+    const char* GetDotNetTargetString(DotNetTarget target)
+    {
+        static StdUnorderedMap<DotNetTarget, const char*> targetStrings = {
+            { DotNetTarget::CORE_2_0, "2.0" },
+            { DotNetTarget::CORE_2_1, "2.1" },
+            { DotNetTarget::CORE_2_2, "2.2" },
+            { DotNetTarget::CORE_3_0, "3.0" },
+            { DotNetTarget::CORE_3_1, "3.1" },
+            { DotNetTarget::NET_5_0, "5.0" },
+            { DotNetTarget::NET_6_0, "6.0" },
+            { DotNetTarget::NET_7_0, "7.0" },
+            { DotNetTarget::NET_8_0, "8.0" },
+            { DotNetTarget::NET_9_0, "9.0" },
+            { DotNetTarget::NET_10_0, "10.0" },
+        };
+        auto it = targetStrings.find(target);
+        return it == targetStrings.end() ? "" : it->second;
+    }
+   
     struct CoreCLRFunctions
     {
         hostfxr_set_error_writer_fn SetHostFXRErrorWriter = nullptr;
@@ -157,20 +176,6 @@ namespace Coral {
     {
         assert(InSupportedTargets.size() > 0 && "at least one supported target must be defined!");
 
-        static StdUnorderedMap<DotNetTarget, const char*> targetStrings = {
-            { DotNetTarget::CORE_2_0, "2.0" },
-            { DotNetTarget::CORE_2_1, "2.1" },
-            { DotNetTarget::CORE_2_2, "2.2" },
-            { DotNetTarget::CORE_3_0, "3.0" },
-            { DotNetTarget::CORE_3_1, "3.1" },
-            { DotNetTarget::NET_5_0, "5.0" },
-            { DotNetTarget::NET_6_0, "6.0" },
-            { DotNetTarget::NET_7_0, "7.0" },
-            { DotNetTarget::NET_8_0, "8.0" },
-            { DotNetTarget::NET_9_0, "9.0" },
-            { DotNetTarget::NET_10_0, "10.0" },
-        };
-
 #ifdef CORAL_WINDOWS
         std::filesystem::path basePath = "";
 
@@ -215,7 +220,7 @@ namespace Coral {
                 bool supported = false;
                 for (DotNetTarget target : InSupportedTargets)
                 {
-                    if (dirPath.starts_with(targetStrings[target]))
+                    if (dirPath.starts_with(GetDotNetTargetString(target)))
                     {
                         supported = true;
                         OutUsingTarget = target;
