@@ -1,4 +1,5 @@
 #include "Coral/DotnetServices.hpp"
+#include "Coral/Object.hpp"
 
 #include "CoralManagedFunctions.hpp"
 
@@ -17,7 +18,7 @@ namespace Coral {
                 int32_t InLineNumber, int32_t InEndLineNumber, int32_t InColumnNumber, int32_t InEndColumnNumber)
         {
             const MSBuildRunnerParameters* pParams = reinterpret_cast<const MSBuildRunnerParameters*>(InUserData);
-            pParams->InLogMessageCallback( {
+            pParams->InLogMessageCallback({
                 .Severity = InSeverity,
                 .Message = InMessage,
                 .File = InFile,
@@ -32,15 +33,13 @@ namespace Coral {
         static auto buildStartedCallback = [](const void* InUserData)
         {
             const MSBuildRunnerParameters* pParams = reinterpret_cast<const MSBuildRunnerParameters*>(InUserData);
-            pParams->InBuildStartedCallback({
-                .unused_ = 0
-            });
+            pParams->InBuildStartedCallback({ .unused_ = 0 });
         };
         static auto buildFinishedCallback = [](const void* InUserData, Bool32 InBuildSuccess)
         {
             const MSBuildRunnerParameters* pParams = reinterpret_cast<const MSBuildRunnerParameters*>(InUserData);
             pParams->InBuildFinishedCallback({
-                .BuildSuccess = InBuildSuccess,
+                .BuildSuccess = !!InBuildSuccess,
             });
         };
 

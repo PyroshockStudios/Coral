@@ -3,6 +3,7 @@
 #include "Core.hpp"
 
 namespace Coral {
+    class Object;
     enum class MSBuildLogSeverity : int32_t
     {
         Message = 0,
@@ -23,7 +24,7 @@ namespace Coral {
     };
     struct MSBuildBuildStartedHandlerParams
     {
-        int _unused;
+        int unused_;
     };
     struct MSBuildBuildFinishedHandlerParams
     {
