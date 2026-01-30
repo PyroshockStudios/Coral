@@ -24,7 +24,7 @@ namespace Coral {
     };
     struct MSBuildBuildStartedHandlerParams
     {
-        int _unused;
+        int unused_;
     };
     struct MSBuildBuildFinishedHandlerParams
     {

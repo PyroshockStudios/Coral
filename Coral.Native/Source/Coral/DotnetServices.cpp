@@ -32,10 +32,8 @@ namespace Coral {
         };
         static auto buildStartedCallback = [](const void* InUserData)
         {
-            const MSBuildRunnerParameters* pParams = reinterpret_cast<const MSBuildRunnerParameters*>(InUserData);
-            pParams->InBuildStartedCallback({
-
-            });
+            const MSBuildRunnerParameters* pParams = reinterpret_cast<const MSBuilsdRunnerParameters*>(InUserData);
+            pParams->InBuildStartedCallback(MSBuildBuildStartedHandlerParams {});
         };
         static auto buildFinishedCallback = [](const void* InUserData, Bool32 InBuildSuccess)
         {
